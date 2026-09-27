@@ -316,7 +316,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-lockbadge</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-rpc-fallback</p>
     </div>
   </div>
 </main>
@@ -1101,15 +1101,35 @@ async function doRemoveLiquidity() {
 }
 
 // ---------- Pool list (sidebar) ----------
+async function tryRpcFallback(taskFn) {
+  const order = [activeRpc, ...RPC_URLS.filter((u) => u !== activeRpc)];
+  let lastErr;
+  for (const url of order) {
+    try {
+      const p = (url === activeRpc && ro) ? ro : new ethers.JsonRpcProvider(url, { chainId: CHAIN_ID, name: "blockdag" }, { staticNetwork: true });
+      const result = await taskFn(p);
+      if (url !== activeRpc) {
+        activeRpc = url; ro = p;
+        const badge = $("#rpcBadge");
+        if (badge) badge.textContent = "RPC: " + (RPC_ENDPOINTS.find((e) => e.url === url) || {}).name;
+      }
+      return result;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr;
+}
 async function loadPoolList() {
   const list = $("#poolList");
   list.innerHTML = '<div class="empty">Loading pools…</div>';
   try {
-    const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
-    const n = await factory.allPairsLength();
-    const count = Number(n);
-    if (count === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
-    const addrs = await Promise.all(Array.from({ length: count }, (_, i) => factory.allPairs(i)));
+    const addrs = await tryRpcFallback(async (p) => {
+      const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, p);
+      const n = await factory.allPairsLength();
+      const count = Number(n);
+      if (count === 0) return [];
+      return Promise.all(Array.from({ length: count }, (_, i) => factory.allPairs(i)));
+    });
+    if (addrs.length === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
     list.innerHTML = "";
     for (const addr of addrs) {
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
