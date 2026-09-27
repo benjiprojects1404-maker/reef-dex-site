@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reef &middot; dex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0c0c0e;--raised:#1c1d21;--card:#18191d;--line:rgba(223,227,233,.12);--line2:rgba(223,227,233,.2);
+  --text:#e9ecf0;--muted:#98a0ab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(194,58,94,.16);--glow2:rgba(194,58,94,.12);
+  --bg:var(--ink);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eef0f2;--text:#111214;--muted:#5a6270;--line:rgba(12,12,14,.14);--line2:rgba(12,12,14,.22);--card:#ffffff;--raised:#f4f5f6;--glow1:rgba(194,58,94,.08);--glow2:rgba(194,58,94,.06)}
+}
+:root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(194,58,94,.16);--glow2:rgba(194,58,94,.12)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;color:var(--text);font:400 15px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:inherit}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 25%,var(--coral) 75%,transparent)}
+.topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:14px;flex:none;padding:2px 0}
+.brand svg{height:34px;width:auto;display:block;position:relative}
+.brand .seal{height:42px;width:42px;flex:none;filter:drop-shadow(0 0 8px rgba(127,208,247,.35)) drop-shadow(0 0 16px rgba(194,58,94,.22));animation:sealbreathe 5s ease-in-out infinite}
+.brand .wordwrap{position:relative;overflow:hidden;display:inline-block;line-height:0}
+.brand .wordwrap::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(75deg,transparent,rgba(255,255,255,.55) 45%,rgba(127,208,247,.5) 55%,transparent);
+  transform:skewX(-18deg);animation:shimmer 6s ease-in-out infinite;mix-blend-mode:overlay}
+@keyframes shimmer{0%,55%{left:-60%}75%{left:130%}100%{left:130%}}
+@keyframes sealbreathe{0%,100%{filter:drop-shadow(0 0 8px rgba(127,208,247,.35)) drop-shadow(0 0 16px rgba(194,58,94,.22))}50%{filter:drop-shadow(0 0 12px rgba(127,208,247,.55)) drop-shadow(0 0 22px rgba(194,58,94,.34))}}
+@media (prefers-reduced-motion:reduce){.brand .seal{animation:none}.brand .wordwrap::after{animation:none;display:none}}
+@media (max-width:520px){.brand svg{height:26px}.brand .seal{height:34px;width:34px}}
+nav.tabs{display:flex;gap:4px;background:var(--raised);border-radius:12px;padding:4px;margin-left:4px}
+nav.tabs button{border:0;background:transparent;color:var(--muted);font:600 14px "Instrument Sans",sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer}
+nav.tabs button.on{background:var(--card);color:var(--text);box-shadow:0 0 0 1px var(--coral-soft),0 0 14px -6px var(--coral-soft)}
+.spacer{flex:1}
+.net{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+.net i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+.net.ok i{background:var(--good)}
+.net.bad i{background:var(--ember)}
+button.wallet{border:0;background:var(--tide);color:#fff;font:600 14px "Instrument Sans",sans-serif;padding:10px 16px;border-radius:11px;cursor:pointer;white-space:nowrap}
+button.wallet.connected{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--coral-soft)}
+button.wallet:active{transform:translateY(1px)}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
+.panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-title h2{font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.01em;position:relative;padding-bottom:8px}
+.panel-title h2::after{content:"";position:absolute;left:0;bottom:0;width:26px;height:2px;border-radius:2px;background:var(--coral)}
+.settings-btn{border:0;background:var(--raised);color:var(--muted);width:34px;height:34px;border-radius:10px;cursor:pointer;display:grid;place-items:center}
+.field{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px}
+.field+.field{margin-top:8px}
+.field .row1{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+.field .row1 button{border:0;background:transparent;color:var(--polyp);font:600 12px "Instrument Sans",sans-serif;cursor:pointer;padding:0}
+.field .row2{display:flex;align-items:center;gap:10px}
+.field input[type=text]{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:700 26px "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.01em}
+.field input[type=text]::placeholder{color:var(--muted);font-weight:700}
+.tokbtn{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:6px 12px 6px 6px;font:600 14px "Instrument Sans",sans-serif;cursor:pointer;white-space:nowrap;color:var(--text)}
+.tokbtn .dot{width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 50% 22%,#dfe3e9,#6f7680 65%,#141518);flex:none}
+.tokbtn .dot.native{background:radial-gradient(circle at 50% 22%,#eaf6fd,#0a71a1 65%,#06274a)}
+.tokbtn .dot.empty{background:transparent;border:2px dashed var(--coral-soft);box-shadow:0 0 10px -2px var(--coral-soft)}
+.flip{display:grid;place-items:center;width:38px;height:38px;margin:-6px auto;position:relative;border-radius:12px;background:var(--card);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--line2);cursor:pointer;z-index:2;transition:box-shadow .2s}
+.flip:hover,.flip:focus-visible{box-shadow:0 0 0 1px var(--coral-soft),0 0 18px -3px var(--coral-soft)}
+.flip svg{width:16px;height:16px}
+.rows{margin:14px 2px 4px;font-size:13px;color:var(--muted)}
+.rows div{display:flex;justify-content:space-between;padding:4px 0}
+.rows b{color:var(--text);font-weight:500}
+.rows b.hot{color:var(--amber)}
+.rows b.warn{color:var(--ember)}
+.slip{display:flex;gap:6px;align-items:center;margin-top:2px}
+.slip button{border:1px solid var(--line2);background:var(--card);color:var(--muted);font:600 12px "Instrument Sans",sans-serif;padding:6px 10px;border-radius:9px;cursor:pointer}
+.slip button.on{background:var(--tide);border-color:var(--tide);color:#fff}
+.slip input{width:52px;background:var(--card);border:1px solid var(--line2);border-radius:9px;color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 6px;text-align:right}
+.cta{display:block;width:100%;margin-top:14px;padding:15px;border:1px solid transparent;border-radius:14px;background:var(--tide);color:#fff;font:600 16px "Instrument Sans",system-ui,sans-serif;cursor:pointer;transition:box-shadow .18s,border-color .18s}
+.cta:disabled{background:var(--raised);color:var(--muted);cursor:not-allowed}
+.cta.secondary{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.cta:hover:not(:disabled){border-color:var(--coral-soft);box-shadow:0 0 20px -6px var(--coral-soft)}
+.cta:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.msg{font-size:13px;padding:10px 12px;border-radius:12px;margin-top:10px;display:none}
+.msg.show{display:block}
+.msg.info{background:rgba(10,113,161,.14);color:#8fd0ef;border:1px solid rgba(10,113,161,.35)}
+.msg.err{background:rgba(229,98,74,.12);color:#ffb3a3;border:1px solid rgba(229,98,74,.35)}
+.msg.ok{background:rgba(63,191,131,.12);color:#8fe0bb;border:1px solid rgba(63,191,131,.35)}
+.linklike{color:var(--polyp);text-decoration:underline;cursor:pointer}
+.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.pooltoggle{display:flex;gap:6px;margin-bottom:14px}
+.pooltoggle button{flex:1;border:1px solid var(--line2);background:var(--raised);color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:9px 0;border-radius:11px;cursor:pointer}
+.pooltoggle button.on{background:var(--tide);border-color:var(--tide);color:#fff}
+.side h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 10px}
+.poollist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto}
+.poollist li{border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:13px}
+.poollist li:hover{border-color:var(--line2)}
+.poollist .pair{font-weight:600}
+.poollist .res{color:var(--muted);margin-top:2px}
+.empty{color:var(--muted);font-size:13px;padding:8px 2px}
+.footer{max-width:1080px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+.footer a{text-decoration:underline}
+dialog{border:0;border-radius:20px;padding:0;background:var(--card);color:var(--text);max-width:420px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dhead{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dhead h3{margin:0;font:700 17px "Bricolage Grotesque",system-ui,sans-serif}
+.dclose{border:0;background:var(--raised);width:30px;height:30px;border-radius:9px;color:var(--muted);cursor:pointer}
+.dbody{padding:16px 18px}
+.dbody input[type=text]{width:100%;background:var(--raised);border:1px solid var(--line2);border-radius:12px;padding:11px 12px;color:var(--text);font:500 14px "Instrument Sans",sans-serif;outline:0}
+.tokoption{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--text);padding:10px 6px;border-radius:12px;cursor:pointer;text-align:left;font:500 14px "Instrument Sans",sans-serif}
+.tokoption:hover{background:var(--raised)}
+.tokoption .dot{width:30px;height:30px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 22%,#dfe3e9,#6f7680 65%,#141518)}
+.tokoption .dot.native{background:radial-gradient(circle at 50% 22%,#eaf6fd,#0a71a1 65%,#06274a)}
+.tokoption small{display:block;color:var(--muted);font-weight:400}
+.spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* RPC status panel */
+.rpcbtn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer}
+.rpclist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto}
+.rpcrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.rpcrow.active{border-color:var(--tide)}
+.rpcdot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted)}
+.rpcdot.ok{background:var(--good)}
+.rpcdot.bad{background:var(--ember)}
+.rpcdot.chk{background:var(--muted);animation:sp 1s linear infinite}
+.rpcname{flex:1;font-size:13px;font-weight:600;min-width:0}
+.rpcname small{display:block;color:var(--muted);font-weight:400;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rpcstat{font-size:12px;color:var(--muted);white-space:nowrap}
+.rpcrow button.rpcpick{border:1px solid var(--line2);background:var(--raised);color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 12px;border-radius:9px;cursor:pointer}
+.rpcrow button.rpcpick:disabled{opacity:.4;cursor:not-allowed}
+.rpcnote{font-size:12px;color:var(--muted);margin:0 0 12px}
+
+/* Disclaimers */
+.risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.55}
+.lockbadge{margin-top:10px;background:var(--raised);border:1px solid var(--coral-soft);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px}
+.lockbadge .lockicon{flex:none;width:16px;height:16px;color:var(--coral)}
+.lockbadge b{color:var(--coral)}
+.risk b{color:var(--text)}
+.contracts{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12px}
+.contracts a{color:var(--polyp);text-decoration:none}
+.contracts a:hover{text-decoration:underline}
+.disclaimer{border-top:1px solid var(--line);margin-top:26px;padding-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
+.disclaimer h4{color:var(--text);font:700 13px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px}
+.disclaimer ul{margin:6px 0 16px;padding-left:18px}
+.disclaimer li{margin:4px 0}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topwrap">
+    <div class="brand">
+      <svg class="seal" viewBox="0 0 120 120" role="img" aria-label="Reef"><defs><linearGradient id="hseal-sv" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="118"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#dfe3e9"/><stop offset=".7" stop-color="#9aa1ab"/><stop offset="1" stop-color="#6f7680"/></linearGradient>
+<linearGradient id="hseal-rm" x1=".15" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="#f7f9fb"/><stop offset=".45" stop-color="#6d747e"/><stop offset=".7" stop-color="#c9ced5"/><stop offset="1" stop-color="#5c626b"/></linearGradient>
+<radialGradient id="hseal-dk" cx=".4" cy=".22" r=".95"><stop offset="0" stop-color="#2c2e34"/><stop offset=".55" stop-color="#141518"/><stop offset="1" stop-color="#070708"/></radialGradient>
+<radialGradient id="hseal-gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="hseal-bh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5cc0f2" stop-opacity=".55"/><stop offset="1" stop-color="#5cc0f2" stop-opacity="0"/></radialGradient><clipPath id="hseal-cp"><circle cx="60" cy="60" r="53"/></clipPath></defs>
+<circle cx="60" cy="60" r="58" fill="url(#hseal-rm)"/><circle cx="60" cy="60" r="54.5" fill="url(#hseal-dk)"/>
+<g clip-path="url(#hseal-cp)"><circle cx="60" cy="16" r="32" fill="url(#hseal-gl)" opacity=".8"/><g fill="#fff" opacity=".09"><path d="M60 20 L38 120 L52 120Z"/><path d="M60 20 L54 120 L66 120Z"/><path d="M60 20 L68 120 L82 120Z"/></g>
+<g fill="none" stroke="url(#hseal-sv)" stroke-width="7.5" stroke-linecap="round"><path d="M28 118 C25 100 17 90 13 70"/><path d="M 92 118 C 95 100 103 90 107 70"/><path d="M28 118 C33 96 30 78 35 56"/><path d="M 92 118 C 87 96 90 78 85 56"/><path d="M28 118 C39 104 47 96 50 76"/><path d="M 92 118 C 81 104 73 96 70 76"/><path d="M31 90 C24 82 26 72 23 62"/><path d="M 89 90 C 96 82 94 72 97 62"/></g></g><circle cx="35" cy="56" r="8.84" fill="url(#hseal-bh)"/><circle cx="35" cy="56" r="3.4" fill="#7fd0f7"/><circle cx="85" cy="56" r="8.84" fill="url(#hseal-bh)"/><circle cx="85" cy="56" r="3.4" fill="#7fd0f7"/></svg>
+      <span class="wordwrap"><svg viewBox="0 0 982 295" role="img" aria-label="reef dex"><defs>
+<linearGradient id="hwm-wg" gradientUnits="userSpaceOnUse" x1="0" y1="717.0" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".42" stop-color="#dfe3e9"/><stop offset="1" stop-color="#8d949e"/></linearGradient>
+<radialGradient id="hwm-wh"><stop offset="0" stop-color="#5cc0f2" stop-opacity="0.6"/><stop offset="1" stop-color="#5cc0f2" stop-opacity="0"/></radialGradient></defs>
+<g fill="url(#hwm-wg)" transform="translate(90.0,223.4) scale(0.20000,-0.20000)"><path transform="translate(0.0,0)" d="M49 0V267V528H185L186 333H200Q207 410 225.5 455.0Q244 500 275.0 520.0Q306 540 350 540Q363 540 377.5 537.0Q392 534 408 528L401 352Q382 362 362.5 366.5Q343 371 326 371Q291 371 265.5 354.5Q240 338 226.5 305.0Q213 272 210 224V0Z"/><path transform="translate(386.0,0)" d="M300 -14Q229 -14 178.0 5.5Q127 25 93.0 61.0Q59 97 43.0 146.0Q27 195 27 253Q27 313 43.5 365.5Q60 418 92.5 457.5Q125 497 174.5 519.5Q224 542 289 542Q355 542 403.5 520.0Q452 498 482.5 457.0Q513 416 524.5 359.5Q536 303 528 235L130 230V316L420 320L381 275Q387 323 377.0 354.5Q367 386 344.5 401.5Q322 417 290 417Q254 417 230.0 398.0Q206 379 194.0 343.5Q182 308 182 259Q182 178 213.0 141.0Q244 104 300 104Q325 104 342.0 110.5Q359 117 370.0 128.5Q381 140 386.0 155.5Q391 171 392 188L537 169Q534 134 520.5 101.5Q507 69 479.5 43.0Q452 17 408.0 1.5Q364 -14 300 -14Z"/><path transform="translate(920.0,0)" d="M300 -14Q229 -14 178.0 5.5Q127 25 93.0 61.0Q59 97 43.0 146.0Q27 195 27 253Q27 313 43.5 365.5Q60 418 92.5 457.5Q125 497 174.5 519.5Q224 542 289 542Q355 542 403.5 520.0Q452 498 482.5 457.0Q513 416 524.5 359.5Q536 303 528 235L130 230V316L420 320L381 275Q387 323 377.0 354.5Q367 386 344.5 401.5Q322 417 290 417Q254 417 230.0 398.0Q206 379 194.0 343.5Q182 308 182 259Q182 178 213.0 141.0Q244 104 300 104Q325 104 342.0 110.5Q359 117 370.0 128.5Q381 140 386.0 155.5Q391 171 392 188L537 169Q534 134 520.5 101.5Q507 69 479.5 43.0Q452 17 408.0 1.5Q364 -14 300 -14Z"/><path transform="translate(1451.0,0)" d="M93 0V325H16V441L169 433V446Q119 453 91.0 473.5Q63 494 52.5 520.5Q42 547 42 573Q42 617 65.5 649.5Q89 682 132.0 699.5Q175 717 230 717Q277 717 315.0 705.5Q353 694 379 674L368 527Q342 545 314.0 555.5Q286 566 259 566Q230 566 211.0 552.0Q192 538 192 508Q192 488 201.5 475.0Q211 462 228.5 455.5Q246 449 269 449H377V325H251V0Z"/></g><circle cx="524.6" cy="170.6" r="76.0" fill="url(#hwm-wh)"/><circle cx="524.6" cy="170.6" r="20.0" fill="#7fd0f7"/>
+<g fill="#a4acb7" transform="translate(596.6,223.4) scale(0.20000,-0.20000)"><path transform="translate(0.0,0)" d="M251 -13Q191 -13 144.5 18.5Q98 50 72.0 110.0Q46 170 46 257Q46 340 71.0 400.5Q96 461 142.0 494.0Q188 527 250 527Q305 527 342.0 502.5Q379 478 400.5 435.5Q422 393 432 338H444Q439 378 435.0 413.0Q431 448 428.5 479.0Q426 510 426 535V685H501L500 246L502 0H431L441 158H429Q416 104 393.0 66.0Q370 28 335.0 7.5Q300 -13 251 -13ZM262 54Q304 54 334.5 74.0Q365 94 385.0 125.0Q405 156 415.0 189.5Q425 223 425 250V259Q425 276 420.0 301.0Q415 326 403.5 353.0Q392 380 373.5 404.5Q355 429 328.5 444.0Q302 459 266 459Q221 459 188.5 433.5Q156 408 138.5 362.0Q121 316 121 254Q121 193 137.5 148.0Q154 103 185.5 78.5Q217 54 262 54Z"/><path transform="translate(537.0,0)" d="M287 -13Q229 -13 183.5 6.0Q138 25 107.5 59.5Q77 94 61.0 142.5Q45 191 45 251Q45 309 60.0 359.5Q75 410 105.0 447.5Q135 485 179.0 506.0Q223 527 280 527Q330 527 370.0 510.0Q410 493 438.5 459.5Q467 426 481.5 375.5Q496 325 493 259L90 254V310L443 314L421 277Q424 335 408.0 376.0Q392 417 359.5 439.0Q327 461 280 461Q229 461 192.5 435.0Q156 409 137.0 362.5Q118 316 118 252Q118 156 161.5 103.5Q205 51 290 51Q328 51 355.0 62.0Q382 73 399.0 91.0Q416 109 424.5 130.5Q433 152 435 173L503 162Q498 122 481.5 89.5Q465 57 437.0 34.5Q409 12 371.5 -0.5Q334 -13 287 -13Z"/><path transform="translate(1028.0,0)" d="M19 0 197 257 17 514H104L239 304H246L378 514H465L287 257L469 0H381L245 210H239L106 0Z"/></g></svg></span>
+    </div>
+    <nav class="tabs">
+      <button data-tab="swap" class="on" onclick="setMode('swap')">Swap</button>
+      <button data-tab="pool" onclick="setMode('pool')">Pool</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="rpcbtn" id="rpcBadge" onclick="openRpcPanel()">RPC status</button>
+    <div class="net" id="netBadge"><i></i>Not connected</div>
+    <button class="wallet" id="walletBtn" onclick="connect()">Connect wallet</button>
+  </div>
+</header>
+
+<main>
+  <div class="col">
+
+    <section class="card" id="swapCard">
+      <div class="panel-title"><h2>Swap</h2>
+        <button class="settings-btn" title="Slippage settings" onclick="document.getElementById('slipRow').classList.toggle('show')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+        </button>
+      </div>
+
+      <div id="slipRow" style="display:none;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Slippage tolerance</div>
+        <div class="slip">
+          <button data-bp="50" class="on" onclick="setSlip(50)">0.5%</button>
+          <button data-bp="100" onclick="setSlip(100)">1%</button>
+          <button data-bp="300" onclick="setSlip(300)">3%</button>
+          <input id="slipCustom" type="text" inputmode="decimal" placeholder="Custom %">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="row1"><span>You pay</span><span id="fromBal"></span></div>
+        <div class="row2">
+          <input id="fromAmt" type="text" inputmode="decimal" placeholder="0.0">
+          <button class="tokbtn" id="fromTokBtn" onclick="openPicker('from')"></button>
+        </div>
+      </div>
+      <button class="flip" onclick="flipTokens()" title="Reverse" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v16M8 20l-4-4M8 20l4-4M16 20V4M16 4l-4 4M16 4l4 4"/></svg>
+      </button>
+      <div class="field">
+        <div class="row1"><span>You receive</span><span></span></div>
+        <div class="row2">
+          <input id="toAmt" type="text" placeholder="0.0" readonly>
+          <button class="tokbtn" id="toTokBtn" onclick="openPicker('to')"></button>
+        </div>
+      </div>
+
+      <div class="rows" id="swapInfo"></div>
+      <div class="lockbadge" id="lockBadge" style="display:none"></div>
+      <div class="chartbox" id="chartBox" style="display:none;margin-top:10px"></div>
+      <div style="text-align:right;margin-top:2px"><button class="linklike" style="font-size:12px" onclick="setMax()">Use max</button></div>
+
+      <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
+      <div class="msg" id="swapMsg"></div>
+
+      <div class="risk" style="margin-top:16px">
+        <b>Reef is new, unaudited software.</b> Pools can have little or no liquidity, and quotes can move between the time you type an amount and the time you confirm. Only trade what you can afford to lose, and check the receiving amount before you sign.
+      </div>
+    </section>
+
+    <section class="card" id="poolCard" style="display:none">
+      <div class="panel-title"><h2>Pool</h2>
+        <button class="settings-btn" title="Slippage settings" onclick="document.getElementById('slipRow2').classList.toggle('show')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+        </button>
+      </div>
+      <div id="slipRow2" style="display:none;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Slippage tolerance</div>
+        <div class="slip">
+          <button data-bp="50" class="on" onclick="setSlip(50)">0.5%</button>
+          <button data-bp="100" onclick="setSlip(100)">1%</button>
+          <button data-bp="300" onclick="setSlip(300)">3%</button>
+          <input type="text" inputmode="decimal" placeholder="Custom %" oninput="setSlip(Math.round(parseFloat(this.value||0)*100))">
+        </div>
+      </div>
+
+      <div class="pooltoggle">
+        <button data-sub="add" class="on" onclick="setPoolSub('add')">Add liquidity</button>
+        <button data-sub="remove" onclick="setPoolSub('remove')">Remove liquidity</button>
+      </div>
+
+      <div id="poolAdd">
+        <div class="field">
+          <div class="row1"><span>Pool</span><span id="liqABal"></span></div>
+          <div class="row2">
+            <input id="liqAAmt" type="text" inputmode="decimal" placeholder="0.0">
+            <button class="tokbtn" id="liqABtn" onclick="openPicker('liqA')"></button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="row1"><span>And</span><span id="liqBBal"></span></div>
+          <div class="row2">
+            <input id="liqBAmt" type="text" inputmode="decimal" placeholder="0.0">
+            <button class="tokbtn" id="liqBBtn" onclick="openPicker('liqB')"></button>
+          </div>
+        </div>
+        <div class="empty" id="poolNewNote" style="display:none">No pool exists yet for this pair &mdash; you would create it and set the starting price.</div>
+        <div id="poolShareBox"></div>
+        <button class="cta" id="addBtn" disabled onclick="doAddLiquidity()">Select tokens</button>
+      </div>
+
+      <div id="poolRemove" style="display:none">
+        <div class="field">
+          <div class="row1"><span>Pool</span></div>
+          <div class="row2">
+            <button class="tokbtn" id="liqABtn2" onclick="openPicker('liqA')" style="flex:1"></button>
+            <span style="color:var(--muted)">/</span>
+            <button class="tokbtn" id="liqBBtn2" onclick="openPicker('liqB')" style="flex:1"></button>
+          </div>
+        </div>
+        <div id="removeBox" style="display:none">
+          <div class="rows"><div><span>Removing</span><b id="removeAmtLbl">0%</b></div></div>
+          <div class="slip" data-role="removepct">
+            <button data-pct="25" onclick="updateRemovePct(25)">25%</button>
+            <button data-pct="50" onclick="updateRemovePct(50)">50%</button>
+            <button data-pct="75" onclick="updateRemovePct(75)">75%</button>
+            <button data-pct="100" class="on" onclick="updateRemovePct(100)">Max</button>
+          </div>
+        </div>
+        <button class="cta" id="removeBtn" disabled onclick="doRemoveLiquidity()">Select a pool</button>
+      </div>
+
+      <div class="msg" id="poolMsg"></div>
+      <div class="risk" style="margin-top:16px">
+        <b>Providing liquidity carries risk.</b> If the price of the two tokens moves apart, you can end up with less value than if you had just held them (impermanent loss). Fees earned may not offset this. Reef takes no cut beyond the pool fee unless the protocol fee switch is later turned on by governance.
+      </div>
+    </section>
+
+  </div>
+
+  <div class="col side">
+    <div class="card">
+      <h3>Pools</h3>
+      <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
+    </div>
+    <div class="card">
+      <h3>Contracts</h3>
+      <div class="contracts">
+        <a href="https://explorer.bdagexplorer.com/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener">Router &middot; 0xbd6fbA&hellip;Cc76</a>
+        <a href="https://explorer.bdagexplorer.com/address/0x9603042044b6B1A1637c508F731ba01219142239" target="_blank" rel="noopener">Factory &middot; 0x960304&hellip;2239</a>
+        <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
+      </div>
+      <p class="hint">Always check these against the source you trust before approving a large amount.</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-lockbadge</p>
+    </div>
+  </div>
+</main>
+
+<div class="footer-wrap" style="max-width:1080px;margin:0 auto;padding:0 16px 48px">
+  <div class="disclaimer">
+    <h4>Risk disclosure</h4>
+    <ul>
+      <li>Reef is decentralized exchange software deployed on BlockDAG (chain 1404). It is unaudited. Use it at your own risk.</li>
+      <li>This interface only submits transactions that you review and sign yourself. Nothing is custodial &mdash; Reef never holds your funds or your private keys.</li>
+      <li>Smart contracts can contain bugs. Even well-tested code can behave unexpectedly, and losses from contract risk are not recoverable.</li>
+      <li>Prices, rates and quotes shown here are estimates at the time of loading and can change before your transaction confirms. Set a slippage tolerance you're comfortable with.</li>
+      <li>Providing liquidity can result in a loss compared to holding the underlying tokens (impermanent loss), and pool fees are not guaranteed to offset it.</li>
+      <li>Anyone can create a pool for any token. The existence of a pool or a token on this page is not an endorsement, and tokens can be worthless, mislabeled, or malicious. Verify the token contract address yourself before trading.</li>
+      <li>This app reads public blockchain data through third-party RPC endpoints (see RPC status). Availability and accuracy are outside Reef's control &mdash; if an endpoint misbehaves, switch to another before transacting.</li>
+    </ul>
+    <h4>No advice, no warranty</h4>
+    <ul>
+      <li>Nothing on this page is financial, investment, legal, or tax advice. It is provided for informational purposes only.</li>
+      <li>This software is provided "as is", without warranty of any kind, express or implied. To the fullest extent permitted by law, its authors and contributors accept no liability for any loss arising from its use.</li>
+      <li>You are solely responsible for complying with the laws that apply to you, including in your own jurisdiction. Do not use this app where doing so would be unlawful.</li>
+      <li>Reef is independent software and is not issued, endorsed, or operated by BlockDAG.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Token picker -->
+<dialog id="tokDialog">
+  <div class="dhead"><h3>Select a token</h3><button class="dclose" onclick="document.getElementById('tokDialog').close()">&times;</button></div>
+  <div class="dbody">
+    <input id="tokSearch" type="text" placeholder="Paste a token contract address">
+    <div id="tokList" style="margin-top:10px"></div>
+    <p class="hint">Reef has no built-in token list yet. Paste the exact contract address, and double-check it against the project's own source before trading.</p>
+  </div>
+</dialog>
+
+<!-- RPC status -->
+<dialog id="rpcDialog">
+  <div class="dhead"><h3>RPC status</h3><button class="dclose" onclick="document.getElementById('rpcDialog').close()">&times;</button></div>
+  <div class="dbody">
+    <p class="rpcnote">This app reads pool and balance data from these public BlockDAG endpoints. Your wallet uses its own connection for anything you sign. Pick a faster one if quotes feel slow.</p>
+    <ul class="rpclist" id="rpcList"></ul>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.17.0/ethers.umd.min.js"></script>
+<script>
+// ---------- Config ----------
+const CHAIN_ID = 1404;
+const CHAIN_ID_HEX = "0x57c";
+const RPC_ENDPOINTS = [
+  { name: "BDAG-US (west)",    url: "https://rpc.west.bdag-us.org" },
+  { name: "BDAG-US (england)", url: "https://rpc.england.bdag-us.org" },
+  { name: "BDAG-US (brazil)",  url: "https://rpc.brazil.bdag-us.org" },
+  { name: "CapeDAG",           url: "https://rpc.capedag.com" },
+  { name: "RMS",               url: "https://rms-bdag-rpc.de/api/rpc-live" },
+  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering" },
+  { name: "DVD Mining",        url: "https://rpc.dvdmining.com" },
+];
+const RPC_URLS = RPC_ENDPOINTS.map((e) => e.url);
+let activeRpc = RPC_URLS[0];
+const EXPLORER = "https://explorer.bdagexplorer.com";
+const ADDR = {
+  WBDAG:   "0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA",
+  FACTORY: "0x9603042044b6B1A1637c508F731ba01219142239",
+  ROUTER:  "0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76",
+};
+const NATIVE = { symbol: "BDAG", name: "BlockDAG", decimals: 18, address: null, native: true };
+const DEADLINE_SECS = 1200;
+
+// ---------- ABIs (only what this app calls) ----------
+const ERC20_ABI = [
+  "function name() view returns (string)",
+  "function symbol() view returns (string)",
+  "function decimals() view returns (uint8)",
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address,address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+];
+const FACTORY_ABI = [
+  "function getPair(address,address) view returns (address)",
+  "function allPairsLength() view returns (uint256)",
+  "function allPairs(uint256) view returns (address)",
+];
+const PAIR_ABI = [
+  "function token0() view returns (address)",
+  "function token1() view returns (address)",
+  "function getReserves() view returns (uint112,uint112,uint32)",
+  "function totalSupply() view returns (uint256)",
+  "function balanceOf(address) view returns (uint256)",
+  "event Sync(uint112 reserve0, uint112 reserve1)",
+];
+const SYNC_IFACE = new ethers.Interface(["event Sync(uint112 reserve0, uint112 reserve1)"]);
+const SYNC_TOPIC = SYNC_IFACE.getEvent("Sync").topicHash;
+const CHART_LOOKBACK_BLOCKS = 20000;
+const CHART_CHUNK_BLOCKS = 2000;
+const LOCK_ABI = [
+  "function unlockTime() view returns (uint256)",
+];
+// Optional, non-gatekeeping annotation layer: pair address -> its known LP-lock contract.
+// This never restricts which pairs are tradeable — it only adds a badge when a lock is known.
+const KNOWN_LOCKS = {
+  "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1", // NOCAP/BDAG
+};
+const ROUTER_ABI = [
+  "function getAmountsOut(uint256,address[]) view returns (uint256[])",
+  "function getAmountsIn(uint256,address[]) view returns (uint256[])",
+  "function addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256) returns (uint256,uint256,uint256)",
+  "function addLiquidityBDAG(address,uint256,uint256,uint256,address,uint256) payable returns (uint256,uint256,uint256)",
+  "function removeLiquidity(address,address,uint256,uint256,uint256,address,uint256) returns (uint256,uint256)",
+  "function removeLiquidityBDAG(address,uint256,uint256,uint256,address,uint256) returns (uint256,uint256)",
+  "function swapExactTokensForTokens(uint256,uint256,address[],address,uint256) returns (uint256[])",
+  "function swapExactBDAGForTokens(uint256,address[],address,uint256) payable returns (uint256[])",
+  "function swapExactTokensForBDAG(uint256,uint256,address[],address,uint256) returns (uint256[])",
+];
+
+// ---------- State ----------
+let provider = null, signer = null, account = null, isReef1404 = false;
+let ro = null; // read-only provider, always live regardless of wallet state
+let tokenCache = {}; // address(lower) -> {symbol,name,decimals}
+let tokFrom = { ...NATIVE };
+let tokTo = null;
+let liqTokA = { ...NATIVE };
+let liqTokB = null;
+let mode = "swap"; // swap | pool
+let poolSub = "add"; // add | remove
+let slippageBp = 50; // 0.5%
+let pickerFor = null; // 'from' | 'to' | 'liqA' | 'liqB'
+let quoteAbort = 0;
+
+function $(s, r) { return (r || document).querySelector(s); }
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function short(a) { return a ? a.slice(0, 6) + "…" + a.slice(-4) : ""; }
+function fmt(n, max) {
+  const x = Number(n);
+  if (!isFinite(x)) return "0";
+  if (x === 0) return "0";
+  const d = max === undefined ? (x < 1 ? 6 : x < 1000 ? 4 : 2) : max;
+  return x.toLocaleString(undefined, { maximumFractionDigits: d });
+}
+function initReadOnly(url) {
+  activeRpc = url || activeRpc;
+  ro = new ethers.JsonRpcProvider(activeRpc, { chainId: CHAIN_ID, name: "blockdag" }, { staticNetwork: true });
+}
+
+// ---------- RPC status panel ----------
+async function probeRpc(url) {
+  const started = performance.now();
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 6000);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_chainId", params: [] }),
+      signal: ctl.signal,
+    });
+    clearTimeout(t);
+    const j = await res.json();
+    const ms = Math.round(performance.now() - started);
+    const ok = j && j.result && parseInt(j.result, 16) === CHAIN_ID;
+    return { ok, ms, note: ok ? "" : "wrong chain" };
+  } catch (e) {
+    return { ok: false, ms: null, note: "unreachable" };
+  }
+}
+async function openRpcPanel() {
+  $("#rpcDialog").showModal();
+  const list = $("#rpcList");
+  list.innerHTML = RPC_ENDPOINTS.map((e) => rpcRow(e, null)).join("");
+  const results = await Promise.all(RPC_ENDPOINTS.map((e) => probeRpc(e.url)));
+  list.innerHTML = RPC_ENDPOINTS.map((e, i) => rpcRow(e, results[i])).join("");
+  list.querySelectorAll("button.rpcpick").forEach((b) => {
+    b.onclick = () => {
+      const url = b.dataset.url;
+      initReadOnly(url);
+      $("#rpcDialog").close();
+      $("#rpcBadge").textContent = "RPC: " + (RPC_ENDPOINTS.find((e) => e.url === url) || {}).name;
+      refreshAll(); loadPoolList();
+    };
+  });
+}
+function rpcRow(e, r) {
+  const active = e.url === activeRpc;
+  const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
+  const status = r === null ? "checking…" : r.ok ? r.ms + " ms" : r.note;
+  return `<li class="rpcrow${active ? " active" : ""}">
+    <span class="rpcdot ${dot}"></span>
+    <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small></span>
+    <span class="rpcstat">${status}</span>
+    <button class="rpcpick" data-url="${e.url}" ${r && !r.ok ? "disabled" : ""}>Use</button>
+  </li>`;
+}
+
+// ---------- Wallet ----------
+async function connect() {
+  if (!window.ethereum) { showMsg("swap", "No wallet found. Install MetaMask or a similar wallet, then reload.", "err"); return; }
+  try {
+    const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    account = accs[0];
+    window.ethereum.removeListener && window.ethereum.removeListener("accountsChanged", onAccountsChanged);
+    window.ethereum.removeListener && window.ethereum.removeListener("chainChanged", onChainChanged);
+    window.ethereum.on && window.ethereum.on("accountsChanged", onAccountsChanged);
+    window.ethereum.on && window.ethereum.on("chainChanged", onChainChanged);
+    await checkNetwork();
+    renderWallet();
+    refreshAll();
+  } catch (e) {
+    showMsg("swap", walletErr(e), "err");
+  }
+}
+function onAccountsChanged(accs) {
+  if (!accs || !accs.length) { account = null; signer = null; renderWallet(); return; }
+  account = accs[0]; refreshAll(); renderWallet();
+}
+function onChainChanged() { checkNetwork().then(() => { renderWallet(); refreshAll(); }); }
+
+async function checkNetwork() {
+  try {
+    const net = await provider.getNetwork();
+    isReef1404 = Number(net.chainId) === CHAIN_ID;
+  } catch (e) { isReef1404 = false; }
+  renderNet();
+  return isReef1404;
+}
+async function switchNetwork() {
+  if (!window.ethereum) return;
+  try {
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID_HEX }] });
+  } catch (e) {
+    if (e && (e.code === 4902 || (e.data && e.data.originalError && e.data.originalError.code === 4902))) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: CHAIN_ID_HEX,
+            chainName: "BlockDAG",
+            nativeCurrency: { name: "BlockDAG", symbol: "BDAG", decimals: 18 },
+            rpcUrls: RPC_URLS,
+            blockExplorerUrls: [EXPLORER],
+          }],
+        });
+      } catch (e2) { showMsg("swap", walletErr(e2), "err"); return; }
+    } else { showMsg("swap", walletErr(e), "err"); return; }
+  }
+  provider = new ethers.BrowserProvider(window.ethereum);
+  signer = await provider.getSigner();
+  await checkNetwork();
+  renderWallet(); refreshAll();
+}
+function walletErr(e) {
+  const m = (e && (e.shortMessage || e.reason || e.message)) || "Something went wrong.";
+  if (/user rejected/i.test(m)) return "Request cancelled.";
+  return m;
+}
+
+// ---------- Token helpers ----------
+async function tokenInfo(address) {
+  if (!address) return { ...NATIVE };
+  const key = address.toLowerCase();
+  if (tokenCache[key]) return tokenCache[key];
+  const c = new ethers.Contract(address, ERC20_ABI, ro);
+  const [symbol, name, decimals] = await Promise.all([
+    c.symbol().catch(() => "???"),
+    c.name().catch(() => "Unknown token"),
+    c.decimals().catch(() => 18),
+  ]);
+  const info = { symbol, name, decimals: Number(decimals), address, native: false };
+  tokenCache[key] = info;
+  return info;
+}
+function sameToken(a, b) {
+  if (!a || !b) return a === b;
+  const ax = a.native ? "native" : a.address.toLowerCase();
+  const bx = b.native ? "native" : b.address.toLowerCase();
+  return ax === bx;
+}
+function wrapped(t) { return t.native ? ADDR.WBDAG : t.address; }
+
+async function balanceOf(token, who) {
+  if (!who) return 0n;
+  if (token.native) return ro.getBalance(who);
+  const c = new ethers.Contract(token.address, ERC20_ABI, ro);
+  return c.balanceOf(who);
+}
+
+// ---------- Path finding (direct pair, else via WBDAG) ----------
+async function findPath(a, b) {
+  const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+  const wa = wrapped(a), wb = wrapped(b);
+  if (wa.toLowerCase() === wb.toLowerCase()) return null;
+  const direct = await factory.getPair(wa, wb);
+  if (direct !== ethers.ZeroAddress) return [wa, wb];
+  if (wa.toLowerCase() === ADDR.WBDAG.toLowerCase() || wb.toLowerCase() === ADDR.WBDAG.toLowerCase()) return null;
+  const [p1, p2] = await Promise.all([factory.getPair(wa, ADDR.WBDAG), factory.getPair(ADDR.WBDAG, wb)]);
+  if (p1 !== ethers.ZeroAddress && p2 !== ethers.ZeroAddress) return [wa, ADDR.WBDAG, wb];
+  return null;
+}
+
+// ---------- Rendering: header / wallet ----------
+function renderWallet() {
+  const btn = $("#walletBtn");
+  if (account) { btn.textContent = short(account); btn.classList.add("connected"); }
+  else { btn.textContent = "Connect wallet"; btn.classList.remove("connected"); }
+}
+function renderNet() {
+  const n = $("#netBadge");
+  if (!provider) { n.className = "net"; n.innerHTML = "<i></i>Not connected"; return; }
+  if (isReef1404) { n.className = "net ok"; n.innerHTML = "<i></i>BlockDAG"; n.onclick = null; n.style.cursor = "default"; }
+  else { n.className = "net bad"; n.innerHTML = "<i></i>Wrong network — switch"; n.style.cursor = "pointer"; n.onclick = switchNetwork; }
+}
+
+// ---------- Token picker dialog ----------
+const COMMON = [{ ...NATIVE }];
+function openPicker(which) {
+  pickerFor = which;
+  $("#tokSearch").value = "";
+  renderPickerList("");
+  $("#tokDialog").showModal();
+  $("#tokSearch").focus();
+}
+function oppositeToken() {
+  if (pickerFor === "from") return tokTo;
+  if (pickerFor === "to") return tokFrom;
+  if (pickerFor === "liqA") return liqTokB;
+  if (pickerFor === "liqB") return liqTokA;
+  return null;
+}
+async function renderPickerList(q) {
+  const list = $("#tokList");
+  list.innerHTML = "";
+  const query = q.trim();
+  const opp = oppositeToken();
+  const addOption = (t) => {
+    if (opp && sameToken(t, opp)) return;
+    const b = el("button", "tokoption");
+    b.innerHTML = `<span class="dot${t.native ? " native" : ""}"></span><span>${t.symbol}<small>${t.name}</small></span>`;
+    b.onclick = () => choosePicked(t);
+    list.appendChild(b);
+  };
+  if (!query) {
+    COMMON.forEach(addOption);
+    if (!list.children.length) list.innerHTML = '<div class="empty">Paste a token contract address &mdash; that\'s already selected on the other side.</div>';
+    return;
+  }
+  if (ethers.isAddress(query)) {
+    const info = await tokenInfo(query).catch(() => null);
+    if (!info) { list.innerHTML = '<div class="empty">Not an ERC-20 token at that address.</div>'; return; }
+    if (opp && sameToken(info, opp)) { list.innerHTML = '<div class="empty">That\'s already selected on the other side.</div>'; return; }
+    addOption(info);
+    return;
+  }
+  list.innerHTML = '<div class="empty">Paste a token contract address.</div>';
+}
+function choosePicked(t) {
+  let clearedOpposite = false;
+  if (pickerFor === "from") { tokFrom = t; if (sameToken(tokTo, t)) { tokTo = null; clearedOpposite = true; } }
+  if (pickerFor === "to") { tokTo = t; if (sameToken(tokFrom, t)) { tokFrom = { ...NATIVE }; clearedOpposite = true; } }
+  if (pickerFor === "liqA") { liqTokA = t; if (sameToken(liqTokB, t)) { liqTokB = null; clearedOpposite = true; } }
+  if (pickerFor === "liqB") { liqTokB = t; if (sameToken(liqTokA, t)) { liqTokA = null; clearedOpposite = true; } }
+  $("#tokDialog").close();
+  renderTokButtons();
+  clearAmounts();
+  refreshSwapQuote();
+  refreshPool();
+  refreshBalances();
+  if (clearedOpposite) showMsg(mode, "That token was already selected on the other side, so it was cleared there.", "info");
+}
+$("#tokSearch") && $("#tokSearch").addEventListener("input", (e) => renderPickerList(e.target.value));
+
+function renderTokButtons() {
+  const set = (id, t, placeholder) => {
+    const b = $(id);
+    if (!b) return;
+    if (!t) { b.innerHTML = `<span class="dot empty"></span><span>${placeholder}</span>`; return; }
+    b.innerHTML = `<span class="dot${t.native ? " native" : ""}"></span><span>${t.symbol}</span>`;
+  };
+  set("#fromTokBtn", tokFrom, "Select");
+  set("#toTokBtn", tokTo, "Select token");
+  set("#liqABtn", liqTokA, "Select");
+  set("#liqBBtn", liqTokB, "Select token");
+  set("#liqABtn2", liqTokA, "Select");
+  set("#liqBBtn2", liqTokB, "Select token");
+}
+
+// ---------- Tabs ----------
+function setMode(m) {
+  mode = m;
+  $("#swapCard").style.display = m === "swap" ? "" : "none";
+  $("#poolCard").style.display = m === "pool" ? "" : "none";
+  $$tabs().forEach((b) => b.classList.toggle("on", b.dataset.tab === m));
+  if (m === "pool") refreshPool();
+}
+function $$tabs() { return Array.from(document.querySelectorAll("nav.tabs button")); }
+function setPoolSub(s) {
+  poolSub = s;
+  $("#poolAdd").style.display = s === "add" ? "" : "none";
+  $("#poolRemove").style.display = s === "remove" ? "" : "none";
+  document.querySelectorAll(".pooltoggle button").forEach((b) => b.classList.toggle("on", b.dataset.sub === s));
+}
+
+// ---------- Slippage ----------
+function setSlip(bp) {
+  slippageBp = bp;
+  document.querySelectorAll(".slip button").forEach((b) => b.classList.toggle("on", Number(b.dataset.bp) === bp));
+  $("#slipCustom").value = "";
+}
+$("#slipCustom") && $("#slipCustom").addEventListener("input", (e) => {
+  const v = parseFloat(e.target.value);
+  document.querySelectorAll(".slip button").forEach((b) => b.classList.remove("on"));
+  if (isFinite(v) && v > 0 && v <= 50) slippageBp = Math.round(v * 100);
+});
+
+// ---------- Messages ----------
+function showMsg(scope, text, kind) {
+  const box = $(scope === "swap" ? "#swapMsg" : "#poolMsg");
+  box.textContent = text;
+  box.className = "msg show " + (kind || "info");
+}
+function clearMsg(scope) {
+  const box = $(scope === "swap" ? "#swapMsg" : "#poolMsg");
+  box.className = "msg";
+}
+function clearAmounts() {
+  $("#fromAmt").value = ""; $("#toAmt").value = "";
+  clearMsg("swap");
+}
+
+// ---------- Swap quoting ----------
+let fromEditTimer = null;
+$("#fromAmt") && $("#fromAmt").addEventListener("input", () => {
+  clearTimeout(fromEditTimer);
+  fromEditTimer = setTimeout(refreshSwapQuote, 350);
+});
+async function refreshSwapQuote() {
+  const my = ++quoteAbort;
+  clearMsg("swap");
+  const amtStr = $("#fromAmt").value.trim();
+  $("#swapBtn").disabled = true;
+  if (!tokFrom || !tokTo || !amtStr || Number(amtStr) <= 0) { $("#toAmt").value = ""; setSwapInfo(null); hideChart(); return; }
+  if (sameToken(tokFrom, tokTo)) { showMsg("swap", "Choose two different tokens.", "err"); hideChart(); return; }
+  let amountIn;
+  try { amountIn = ethers.parseUnits(amtStr, tokFrom.decimals); } catch (e) { return; }
+  const path = await findPath(tokFrom, tokTo);
+  if (my !== quoteAbort) return;
+  if (!path) { showMsg("swap", "No pool exists for this pair yet.", "err"); $("#toAmt").value = ""; setSwapInfo(null); hideChart(); return; }
+  try {
+    const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, ro);
+    const amounts = await router.getAmountsOut(amountIn, path);
+    if (my !== quoteAbort) return;
+    const out = amounts[amounts.length - 1];
+    $("#toAmt").value = fmt(ethers.formatUnits(out, tokTo.decimals), 8);
+    const rate = Number(ethers.formatUnits(out, tokTo.decimals)) / Number(amtStr);
+    setSwapInfo({ path, amountIn, amountOut: out, rate });
+    if (account && isReef1404) $("#swapBtn").disabled = false;
+    if (path.length === 2) loadChartForPair(path[0], path[1]); else hideChart();
+  } catch (e) {
+    if (my !== quoteAbort) return;
+    $("#toAmt").value = "";
+    setSwapInfo(null);
+    hideChart();
+    showMsg("swap", /INSUFFICIENT_LIQUIDITY|execution reverted/i.test(String(e && e.shortMessage || e)) ? "Not enough liquidity in this pool for that amount." : walletErr(e), "err");
+  }
+}
+// ---------- LP-lock badge (reads unlockTime()/balanceOf() live — no manually-entered claims) ----------
+function hideLockBadge() {
+  $("#lockBadge").style.display = "none";
+  $("#lockBadge").innerHTML = "";
+}
+async function loadLockBadge(pairAddr) {
+  const lockAddr = KNOWN_LOCKS[pairAddr.toLowerCase()];
+  if (!lockAddr) { hideLockBadge(); return; }
+  try {
+    const pair = new ethers.Contract(pairAddr, PAIR_ABI, ro);
+    const lock = new ethers.Contract(lockAddr, LOCK_ABI, ro);
+    const [locked, total, unlockTs] = await Promise.all([
+      pair.balanceOf(lockAddr),
+      pair.totalSupply(),
+      lock.unlockTime(),
+    ]);
+    const pct = total > 0n ? (Number(locked * 10000n / total) / 100) : 0;
+    const unlockDate = new Date(Number(unlockTs) * 1000);
+    const nowSec = Math.floor(Date.now() / 1000);
+    const isUnlocked = Number(unlockTs) <= nowSec;
+    const dateStr = unlockDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) + " UTC";
+    const box = $("#lockBadge");
+    box.style.display = "flex";
+    box.innerHTML = `
+      <svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span><b>${fmt(pct, 2)}%</b> of this pool's LP tokens are locked in <code>${lockAddr.slice(0,6)}…${lockAddr.slice(-4)}</code>
+      ${isUnlocked ? " — unlock time has passed" : ` until <b>${dateStr}</b>`}. Verify directly: <code>unlockTime()</code> / <code>balanceOf()</code> on the lock and pair contracts.</span>`;
+  } catch (e) {
+    hideLockBadge();
+  }
+}
+
+// ---------- Price chart (on-chain only — reads this pair's own Sync events, no third-party feed) ----------
+let chartAbort = 0;
+function hideChart() {
+  chartAbort++;
+  $("#chartBox").style.display = "none";
+  $("#chartBox").innerHTML = "";
+  hideLockBadge();
+}
+async function loadChartForPair(wa, wb) {
+  const my = ++chartAbort;
+  try {
+    const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+    const pairAddr = await factory.getPair(wa, wb);
+    if (my !== chartAbort) return;
+    if (pairAddr === ethers.ZeroAddress) { $("#chartBox").style.display = "none"; hideLockBadge(); return; }
+    const p = new ethers.Contract(pairAddr, PAIR_ABI, ro);
+    const t0 = await p.token0();
+    if (my !== chartAbort) return;
+    const isToken0From = t0.toLowerCase() === wa.toLowerCase();
+    loadLockBadge(pairAddr);
+    await loadPriceChart(pairAddr, isToken0From, my);
+  } catch (e) {
+    if (my !== chartAbort) return;
+    $("#chartBox").style.display = "none";
+  }
+}
+async function loadPriceChart(pairAddr, isToken0From, my) {
+  $("#chartBox").style.display = "";
+  $("#chartBox").innerHTML = '<div class="empty">Loading recent price history…</div>';
+  try {
+    const latest = await ro.getBlockNumber();
+    if (my !== chartAbort) return;
+    const earliest = Math.max(0, latest - CHART_LOOKBACK_BLOCKS);
+    const points = [];
+    let to = latest;
+    while (to > earliest) {
+      const from = Math.max(earliest, to - CHART_CHUNK_BLOCKS + 1);
+      let logs;
+      try {
+        logs = await ro.getLogs({ address: pairAddr, topics: [SYNC_TOPIC], fromBlock: from, toBlock: to });
+      } catch (e) { break; } // this endpoint likely rejects the range — keep whatever was gathered so far
+      if (my !== chartAbort) return;
+      for (const log of logs) {
+        const parsed = SYNC_IFACE.parseLog(log);
+        points.push({ block: log.blockNumber, r0: parsed.args.reserve0, r1: parsed.args.reserve1 });
+      }
+      to = from - 1;
+    }
+    if (my !== chartAbort) return;
+    points.sort((a, b) => a.block - b.block);
+    renderPriceChart(points, isToken0From);
+  } catch (e) {
+    if (my !== chartAbort) return;
+    $("#chartBox").innerHTML = '<div class="empty">Could not load price history from this RPC endpoint. Try a different one in RPC status.</div>';
+  }
+}
+function priceFromReserves(r0, r1, isToken0From, decFrom, decTo) {
+  const rFrom = isToken0From ? r0 : r1;
+  const rTo = isToken0From ? r1 : r0;
+  const fFrom = Number(ethers.formatUnits(rFrom, decFrom));
+  const fTo = Number(ethers.formatUnits(rTo, decTo));
+  return fFrom === 0 ? 0 : fTo / fFrom;
+}
+function renderPriceChart(points, isToken0From) {
+  const box = $("#chartBox");
+  if (!points.length) { box.innerHTML = '<div class="empty">No pool updates found for this pair in the queried block range.</div>'; return; }
+  const prices = points.map((p) => priceFromReserves(p.r0, p.r1, isToken0From, tokFrom.decimals, tokTo.decimals));
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const w = 320, h = 84, pad = 4;
+  const range = (max - min) || (max || 1) * 0.001 || 1;
+  const stepX = prices.length > 1 ? (w - pad * 2) / (prices.length - 1) : 0;
+  const pts = prices.map((p, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - ((p - min) / range) * (h - pad * 2);
+    return x.toFixed(1) + "," + y.toFixed(1);
+  }).join(" ");
+  const first = prices[0], last = prices[prices.length - 1];
+  const change = first ? ((last - first) / first) * 100 : 0;
+  const blockSpan = points.length > 1 ? points[points.length - 1].block - points[0].block : 0;
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <span style="font-size:12px;color:var(--muted)">Recent price &middot; ${tokTo.symbol} per ${tokFrom.symbol}</span>
+      <span style="font-size:12px;${change >= 0 ? "" : "color:var(--ember)"}">${change >= 0 ? "+" : ""}${fmt(change, 2)}% over shown range</span>
+    </div>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
+      <polyline points="${pts}" fill="none" stroke="var(--polyp)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px">
+      <span>${fmt(min, 6)}</span><span>${fmt(max, 6)}</span>
+    </div>
+    <p class="hint" style="margin-top:6px">From this pool's own reserve history over the last ${blockSpan.toLocaleString()} blocks &mdash; not a third-party price feed.</p>`;
+}
+
+let lastSwap = null;
+function setSwapInfo(info) {
+  lastSwap = info;
+  const box = $("#swapInfo");
+  if (!info) { box.innerHTML = ""; return; }
+  const hops = info.path.length > 2 ? " (via WBDAG)" : "";
+  box.innerHTML = `
+    <div><span>Rate</span><b>1 ${tokFrom.symbol} = ${fmt(info.rate, 6)} ${tokTo.symbol}</b></div>
+    <div><span>Route</span><b>${info.path.length - 1} hop${info.path.length > 2 ? "s" : ""}${hops}</b></div>
+    <div><span>Fee</span><b class="hot">0.30% per hop</b></div>
+    <div><span>Slippage</span><b>${(slippageBp / 100).toFixed(2)}%</b></div>`;
+}
+function flipTokens() {
+  const t = tokFrom; tokFrom = tokTo || { ...NATIVE }; tokTo = t && t.native === undefined ? null : t;
+  if (sameToken(tokFrom, tokTo)) tokTo = null;
+  renderTokButtons();
+  clearAmounts();
+  refreshSwapQuote();
+}
+function setMax() {
+  if (!account) return;
+  balanceOf(tokFrom, account).then((b) => {
+    let v = b;
+    if (tokFrom.native) { const fee = ethers.parseEther("0.002"); v = v > fee ? v - fee : 0n; }
+    $("#fromAmt").value = ethers.formatUnits(v, tokFrom.decimals);
+    refreshSwapQuote();
+  });
+}
+
+async function doSwap() {
+  if (!account || !isReef1404 || !lastSwap) return;
+  clearMsg("swap");
+  $("#swapBtn").disabled = true;
+  $("#swapBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
+  try {
+    const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, signer);
+    const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
+    const minOut = lastSwap.amountOut - (lastSwap.amountOut * BigInt(slippageBp)) / 10000n;
+    let tx;
+    if (tokFrom.native) {
+      tx = await router.swapExactBDAGForTokens(minOut, lastSwap.path, account, deadline, { value: lastSwap.amountIn });
+    } else {
+      await ensureAllowance(tokFrom, ADDR.ROUTER, lastSwap.amountIn, "swap");
+      if (tokTo.native) tx = await router.swapExactTokensForBDAG(lastSwap.amountIn, minOut, lastSwap.path, account, deadline);
+      else tx = await router.swapExactTokensForTokens(lastSwap.amountIn, minOut, lastSwap.path, account, deadline);
+    }
+    $("#swapBtn").innerHTML = '<span class="spin"></span>Confirming…';
+    showMsg("swap", "Transaction sent: " + short(tx.hash), "info");
+    await tx.wait();
+    showMsg("swap", "Swap complete.", "ok");
+    clearAmounts();
+    refreshBalances();
+  } catch (e) {
+    showMsg("swap", walletErr(e), "err");
+  } finally {
+    $("#swapBtn").textContent = "Swap";
+    refreshSwapQuote();
+  }
+}
+
+async function ensureAllowance(token, spender, amount, scope) {
+  const c = new ethers.Contract(token.address, ERC20_ABI, signer);
+  const cur = await c.allowance(account, spender);
+  if (cur >= amount) return;
+  showMsg(scope, "Approve " + token.symbol + " in your wallet…", "info");
+  const tx = await c.approve(spender, amount);
+  await tx.wait();
+}
+
+// ---------- Liquidity: add ----------
+let liqAEditTimer = null;
+function bindLiqInputs() {
+  $("#liqAAmt").addEventListener("input", () => { clearTimeout(liqAEditTimer); liqAEditTimer = setTimeout(() => quoteLiqFrom("A"), 350); });
+  $("#liqBAmt").addEventListener("input", () => { clearTimeout(liqAEditTimer); liqAEditTimer = setTimeout(() => quoteLiqFrom("B"), 350); });
+}
+async function pairFor(a, b) {
+  const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+  const addr = await factory.getPair(wrapped(a), wrapped(b));
+  return addr === ethers.ZeroAddress ? null : addr;
+}
+async function quoteLiqFrom(side) {
+  clearMsg("pool");
+  if (!liqTokA || !liqTokB) return;
+  const pair = await pairFor(liqTokA, liqTokB);
+  $("#addBtn").disabled = true;
+  if (!pair) { $("#poolNewNote").style.display = ""; $("#poolShareBox").innerHTML = ""; return; }
+  $("#poolNewNote").style.display = "none";
+  const p = new ethers.Contract(pair, PAIR_ABI, ro);
+  const [t0, r] = await Promise.all([p.token0(), p.getReserves()]);
+  const isA0 = t0.toLowerCase() === wrapped(liqTokA).toLowerCase();
+  const [rA, rB] = isA0 ? [r[0], r[1]] : [r[1], r[0]];
+  if (rA === 0n || rB === 0n) { $("#poolNewNote").style.display = ""; return; }
+  try {
+    if (side === "A") {
+      const vA = $("#liqAAmt").value.trim();
+      if (!vA || Number(vA) <= 0) { $("#liqBAmt").value = ""; return; }
+      const aIn = ethers.parseUnits(vA, liqTokA.decimals);
+      const bOut = (aIn * rB) / rA;
+      $("#liqBAmt").value = ethers.formatUnits(bOut, liqTokB.decimals);
+    } else {
+      const vB = $("#liqBAmt").value.trim();
+      if (!vB || Number(vB) <= 0) { $("#liqAAmt").value = ""; return; }
+      const bIn = ethers.parseUnits(vB, liqTokB.decimals);
+      const aOut = (bIn * rA) / rB;
+      $("#liqAAmt").value = ethers.formatUnits(aOut, liqTokA.decimals);
+    }
+  } catch (e) { return; }
+  if (account && isReef1404) $("#addBtn").disabled = false;
+}
+async function doAddLiquidity() {
+  if (!account || !isReef1404 || !liqTokA || !liqTokB) return;
+  clearMsg("pool");
+  const vA = $("#liqAAmt").value.trim(), vB = $("#liqBAmt").value.trim();
+  if (!vA || !vB || Number(vA) <= 0 || Number(vB) <= 0) { showMsg("pool", "Enter both amounts.", "err"); return; }
+  $("#addBtn").disabled = true; $("#addBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
+  try {
+    const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, signer);
+    const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
+    const slipMul = (x) => x - (x * BigInt(slippageBp)) / 10000n;
+    let tx;
+    if (liqTokA.native || liqTokB.native) {
+      const tok = liqTokA.native ? liqTokB : liqTokA;
+      const tokAmt = ethers.parseUnits(liqTokA.native ? vB : vA, tok.decimals);
+      const bdagAmt = ethers.parseUnits(liqTokA.native ? vA : vB, 18);
+      await ensureAllowance(tok, ADDR.ROUTER, tokAmt, "pool");
+      tx = await router.addLiquidityBDAG(tok.address, tokAmt, slipMul(tokAmt), slipMul(bdagAmt), account, deadline, { value: bdagAmt });
+    } else {
+      const aAmt = ethers.parseUnits(vA, liqTokA.decimals), bAmt = ethers.parseUnits(vB, liqTokB.decimals);
+      await ensureAllowance(liqTokA, ADDR.ROUTER, aAmt, "pool");
+      await ensureAllowance(liqTokB, ADDR.ROUTER, bAmt, "pool");
+      tx = await router.addLiquidity(liqTokA.address, liqTokB.address, aAmt, bAmt, slipMul(aAmt), slipMul(bAmt), account, deadline);
+    }
+    showMsg("pool", "Transaction sent: " + short(tx.hash), "info");
+    await tx.wait();
+    showMsg("pool", "Liquidity added.", "ok");
+    $("#liqAAmt").value = ""; $("#liqBAmt").value = "";
+    refreshPool(); refreshBalances();
+  } catch (e) {
+    showMsg("pool", walletErr(e), "err");
+  } finally {
+    $("#addBtn").textContent = "Add liquidity";
+    quoteLiqFrom("A");
+  }
+}
+
+// ---------- Liquidity: remove ----------
+let removePair = null, removeLpBal = 0n, removePct = 100;
+async function refreshRemove() {
+  if (!liqTokA || !liqTokB || !account) { $("#removeBox").style.display = "none"; return; }
+  const pair = await pairFor(liqTokA, liqTokB);
+  if (!pair) { $("#removeBox").style.display = "none"; showMsg("pool", "No pool for this pair yet.", "err"); return; }
+  removePair = pair;
+  const p = new ethers.Contract(pair, PAIR_ABI, ro);
+  removeLpBal = await p.balanceOf(account);
+  $("#removeBox").style.display = removeLpBal > 0n ? "" : "none";
+  if (removeLpBal === 0n) { showMsg("pool", "You have no liquidity in this pool.", "err"); return; }
+  clearMsg("pool");
+  updateRemovePct(removePct);
+}
+function updateRemovePct(p) {
+  removePct = p;
+  document.querySelectorAll(".slip[data-role=removepct] button").forEach((b) => b.classList.toggle("on", Number(b.dataset.pct) === p));
+  $("#removeAmtLbl").textContent = fmt(ethers.formatUnits((removeLpBal * BigInt(p)) / 100n, 18), 6) + " LP (" + p + "%)";
+  $("#removeBtn").disabled = !(account && isReef1404 && removeLpBal > 0n);
+}
+async function doRemoveLiquidity() {
+  if (!account || !isReef1404 || !removePair || removeLpBal === 0n) return;
+  clearMsg("pool");
+  $("#removeBtn").disabled = true; $("#removeBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
+  try {
+    const liquidity = (removeLpBal * BigInt(removePct)) / 100n;
+    await ensureAllowance({ address: removePair, symbol: "LP" }, ADDR.ROUTER, liquidity, "pool");
+    const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, signer);
+    const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
+    let tx;
+    if (liqTokA.native || liqTokB.native) {
+      const tok = liqTokA.native ? liqTokB : liqTokA;
+      tx = await router.removeLiquidityBDAG(tok.address, liquidity, 0, 0, account, deadline);
+    } else {
+      tx = await router.removeLiquidity(liqTokA.address, liqTokB.address, liquidity, 0, 0, account, deadline);
+    }
+    showMsg("pool", "Transaction sent: " + short(tx.hash), "info");
+    await tx.wait();
+    showMsg("pool", "Liquidity removed.", "ok");
+    refreshRemove(); refreshBalances();
+  } catch (e) {
+    showMsg("pool", walletErr(e), "err");
+  } finally {
+    $("#removeBtn").textContent = "Remove liquidity";
+  }
+}
+
+// ---------- Pool list (sidebar) ----------
+async function loadPoolList() {
+  const list = $("#poolList");
+  list.innerHTML = '<div class="empty">Loading pools…</div>';
+  try {
+    const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+    const n = await factory.allPairsLength();
+    const count = Number(n);
+    if (count === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
+    const addrs = await Promise.all(Array.from({ length: count }, (_, i) => factory.allPairs(i)));
+    list.innerHTML = "";
+    for (const addr of addrs) {
+      const p = new ethers.Contract(addr, PAIR_ABI, ro);
+      const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
+      const [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
+      const li = el("li");
+      li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}</div><div class="res">${fmt(ethers.formatUnits(r[0], t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r[1], t1.decimals), 2)} ${t1.symbol}</div>`;
+      li.onclick = () => selectPoolPair(t0, t1);
+      list.appendChild(li);
+    }
+  } catch (e) { list.innerHTML = '<div class="empty">Could not load pools right now.</div>'; }
+}
+async function tokenInfoWrapped(addr) {
+  if (addr.toLowerCase() === ADDR.WBDAG.toLowerCase()) return { ...NATIVE };
+  return tokenInfo(addr);
+}
+function selectPoolPair(a, b) {
+  tokFrom = a.native ? a : a; tokTo = b;
+  liqTokA = a; liqTokB = b;
+  renderTokButtons();
+  setMode("swap");
+  clearAmounts();
+  refreshSwapQuote();
+}
+
+// ---------- Refresh ----------
+async function refreshBalances() {
+  if (!account) { $("#fromBal").textContent = ""; $("#liqABal").textContent = ""; $("#liqBBal").textContent = ""; return; }
+  if (tokFrom) balanceOf(tokFrom, account).then((b) => $("#fromBal").textContent = "Balance: " + fmt(ethers.formatUnits(b, tokFrom.decimals), 6));
+  if (liqTokA) balanceOf(liqTokA, account).then((b) => $("#liqABal").textContent = "Balance: " + fmt(ethers.formatUnits(b, liqTokA.decimals), 6));
+  if (liqTokB) balanceOf(liqTokB, account).then((b) => $("#liqBBal").textContent = "Balance: " + fmt(ethers.formatUnits(b, liqTokB.decimals), 6));
+}
+function refreshPool() {
+  if (poolSub === "add") quoteLiqFrom("A"); else refreshRemove();
+}
+function refreshAll() { refreshSwapQuote(); refreshBalances(); if (mode === "pool") refreshPool(); }
+
+// ---------- Init ----------
+function init() {
+  initReadOnly(RPC_URLS[0]);
+  renderTokButtons();
+  renderNet();
+  loadPoolList();
+  if (window.ethereum) {
+    window.ethereum.request({ method: "eth_accounts" }).then((accs) => {
+      if (accs && accs.length) {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        provider.getSigner().then((s) => { signer = s; account = accs[0]; renderWallet(); checkNetwork().then(refreshAll); });
+        window.ethereum.on && window.ethereum.on("accountsChanged", onAccountsChanged);
+        window.ethereum.on && window.ethereum.on("chainChanged", onChainChanged);
+      }
+    }).catch(() => {});
+  }
+  bindLiqInputs();
+}
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
