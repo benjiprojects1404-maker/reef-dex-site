@@ -266,6 +266,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
       <div class="rows" id="swapInfo"></div>
       <div class="lockbadge" id="lockBadge" style="display:none"></div>
+      <div class="lockbadge" id="twapBadge" style="display:none"></div>
       <div class="chartbox" id="chartBox" style="display:none;margin-top:10px"></div>
       <div style="text-align:right;margin-top:2px"><button class="linklike" onclick="setMax()">Use max</button></div>
 
@@ -360,7 +361,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-consent-faq</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-twap-badge</p>
     </div>
   </div>
 </main>
@@ -488,6 +489,14 @@ const LOCK_ABI = [
 // This never restricts which pairs are tradeable — it only adds a badge when a lock is known.
 const KNOWN_LOCKS = {
   "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1", // NOCAP/BDAG
+};
+const TWAP_ABI = [
+  "function consult(address token, uint256 amountIn) view returns (uint256)",
+  "function secondsUntilNextUpdate() view returns (uint256)",
+];
+// pair address -> its known TWAP oracle contract. Same non-gatekeeping pattern as KNOWN_LOCKS.
+const KNOWN_ORACLES = {
+  "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b", // NOCAP/BDAG
 };
 const ROUTER_ABI = [
   "function getAmountsOut(uint256,address[]) view returns (uint256[])",
@@ -855,6 +864,40 @@ async function refreshSwapQuote() {
 function hideLockBadge() {
   $("#lockBadge").style.display = "none";
   $("#lockBadge").innerHTML = "";
+  hideTwapBadge();
+}
+function hideTwapBadge() {
+  $("#twapBadge").style.display = "none";
+  $("#twapBadge").innerHTML = "";
+}
+function fmtDuration(secs) {
+  secs = Number(secs);
+  if (secs <= 0) return "now";
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+async function loadTwapBadge(pairAddr) {
+  const oracleAddr = KNOWN_ORACLES[pairAddr.toLowerCase()];
+  if (!oracleAddr) { hideTwapBadge(); return; }
+  try {
+    const oracle = new ethers.Contract(oracleAddr, TWAP_ABI, ro);
+    const box = $("#twapBadge");
+    box.style.display = "flex";
+    try {
+      const oneUnit = ethers.parseUnits("1", tokFrom.decimals);
+      const out = await oracle.consult(wrapped(tokFrom), oneUnit);
+      const price = ethers.formatUnits(out, tokTo.decimals);
+      box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span><b>${fmt(price, 6)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average, read from an on-chain oracle (not a live quote).</span>`;
+    } catch (e) {
+      const secs = await oracle.secondsUntilNextUpdate();
+      box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <span>A 24h time-weighted average price oracle is deployed for this pair, but has no data yet &mdash; available in about <b>${fmtDuration(secs)}</b>, once its first update() is called.</span>`;
+    }
+  } catch (e) {
+    hideTwapBadge();
+  }
 }
 async function loadLockBadge(pairAddr) {
   const lockAddr = KNOWN_LOCKS[pairAddr.toLowerCase()];
@@ -903,6 +946,7 @@ async function loadChartForPair(wa, wb) {
     if (my !== chartAbort) return;
     const isToken0From = t0.toLowerCase() === wa.toLowerCase();
     loadLockBadge(pairAddr);
+    loadTwapBadge(pairAddr);
     await loadPriceChart(pairAddr, isToken0From, my);
   } catch (e) {
     if (my !== chartAbort) return;
