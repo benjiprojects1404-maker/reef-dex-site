@@ -9,13 +9,13 @@
 <style>
 :root{
   --ink:#0c0c0e;--raised:#1c1d21;--card:#18191d;--line:rgba(223,227,233,.12);--line2:rgba(223,227,233,.2);
-  --text:#e9ecf0;--muted:#98a0ab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --text:#e9ecf0;--muted:#98a0ab;--ctadis:#aeb5bf;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
   --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(194,58,94,.16);--glow2:rgba(194,58,94,.12);
   --bg:var(--ink);
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
 }
 @media (prefers-color-scheme:light){
-  :root:not([data-theme="dark"]){--bg:#eef0f2;--text:#111214;--muted:#5a6270;--line:rgba(12,12,14,.14);--line2:rgba(12,12,14,.22);--card:#ffffff;--raised:#f4f5f6;--glow1:rgba(194,58,94,.08);--glow2:rgba(194,58,94,.06)}
+  :root:not([data-theme="dark"]){--bg:#eef0f2;--text:#111214;--muted:#5a6270;--ctadis:#4b525c;--coral-text:#9c2f4a;--line:rgba(12,12,14,.14);--line2:rgba(12,12,14,.22);--card:#ffffff;--raised:#f4f5f6;--glow1:rgba(194,58,94,.08);--glow2:rgba(194,58,94,.06)}
 }
 :root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(194,58,94,.16);--glow2:rgba(194,58,94,.12)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -82,7 +82,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .slip button.on{background:var(--tide);border-color:var(--tide);color:#fff}
 .slip input{width:52px;background:var(--card);border:1px solid var(--line2);border-radius:9px;color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 6px;text-align:right}
 .cta{display:block;width:100%;margin-top:14px;padding:15px;border:1px solid transparent;border-radius:14px;background:var(--tide);color:#fff;font:600 16px "Instrument Sans",system-ui,sans-serif;cursor:pointer;transition:box-shadow .18s,border-color .18s}
-.cta:disabled{background:var(--raised);color:var(--muted);cursor:not-allowed}
+.cta:disabled{background:var(--raised);color:var(--coral-text);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--coral-soft)}
 .cta.secondary{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
 .cta:hover:not(:disabled){border-color:var(--coral-soft);box-shadow:0 0 20px -6px var(--coral-soft)}
 .cta:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
@@ -91,7 +91,8 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .msg.info{background:rgba(10,113,161,.14);color:#8fd0ef;border:1px solid rgba(10,113,161,.35)}
 .msg.err{background:rgba(229,98,74,.12);color:#ffb3a3;border:1px solid rgba(229,98,74,.35)}
 .msg.ok{background:rgba(63,191,131,.12);color:#8fe0bb;border:1px solid rgba(63,191,131,.35)}
-.linklike{color:var(--polyp);text-decoration:underline;cursor:pointer}
+.linklike{color:var(--coral);text-decoration:none;cursor:pointer;background:var(--raised);border:1px solid var(--coral-soft);border-radius:999px;padding:5px 12px;font:600 13px "Instrument Sans",sans-serif}
+.linklike:hover{box-shadow:0 0 14px -6px var(--coral-soft)}
 .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 .pooltoggle{display:flex;gap:6px;margin-bottom:14px}
 .pooltoggle button{flex:1;border:1px solid var(--line2);background:var(--raised);color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:9px 0;border-radius:11px;cursor:pointer}
@@ -223,7 +224,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <div class="rows" id="swapInfo"></div>
       <div class="lockbadge" id="lockBadge" style="display:none"></div>
       <div class="chartbox" id="chartBox" style="display:none;margin-top:10px"></div>
-      <div style="text-align:right;margin-top:2px"><button class="linklike" style="font-size:12px" onclick="setMax()">Use max</button></div>
+      <div style="text-align:right;margin-top:2px"><button class="linklike" onclick="setMax()">Use max</button></div>
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
       <div class="msg" id="swapMsg"></div>
@@ -316,7 +317,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-rpc-fallback</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-usemax-pill</p>
     </div>
   </div>
 </main>
