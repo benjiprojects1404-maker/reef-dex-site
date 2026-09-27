@@ -93,6 +93,27 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .msg.ok{background:rgba(63,191,131,.12);color:#8fe0bb;border:1px solid rgba(63,191,131,.35)}
 .linklike{color:var(--coral);text-decoration:none;cursor:pointer;background:var(--raised);border:1px solid var(--coral-soft);border-radius:999px;padding:5px 12px;font:600 13px "Instrument Sans",sans-serif}
 .linklike:hover{box-shadow:0 0 14px -6px var(--coral-soft)}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+.betabar a{color:var(--coral);text-decoration:underline}
+.gate-overlay{position:fixed;inset:0;background:rgba(6,6,7,.86);backdrop-filter:blur(3px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+.gate-box{max-width:480px;width:100%;max-height:86vh;overflow-y:auto;background:var(--card);border:1px solid var(--coral-soft);border-radius:20px;padding:24px;box-shadow:0 0 60px -20px var(--coral-soft)}
+.gate-box h3{font:700 20px "Bricolage Grotesque",sans-serif;margin:0 0 4px}
+.gate-box ol{padding-left:20px;font-size:13px;color:var(--muted);line-height:1.6;margin:14px 0}
+.gate-box ol li{margin-bottom:8px}
+.gate-box ol b{color:var(--text)}
+.gate-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text);margin-top:14px;cursor:pointer}
+.gate-check input{margin-top:3px;accent-color:var(--coral);flex:none}
+.gate-actions{display:flex;gap:10px;margin-top:18px}
+.gate-actions .cta{margin-top:0}
+.gate-actions .cta.secondary{flex:none;width:auto;padding:15px 20px}
+.faqsec{margin-top:28px}
+.faqsec h4{font:700 16px "Bricolage Grotesque",sans-serif;margin:0 0 10px}
+.faqsec details{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.faqsec summary{cursor:pointer;font:600 13px "Instrument Sans",sans-serif;color:var(--text);list-style:none}
+.faqsec summary::-webkit-details-marker{display:none}
+.faqsec summary::before{content:"+ ";color:var(--coral);font-weight:700}
+.faqsec details[open] summary::before{content:"− "}
+.faqsec p{font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 2px}
 .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
 .pooltoggle{display:flex;gap:6px;margin-bottom:14px}
 .pooltoggle button{flex:1;border:1px solid var(--line2);background:var(--raised);color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:9px 0;border-radius:11px;cursor:pointer}
@@ -154,6 +175,28 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 </style>
 </head>
 <body>
+
+<div class="betabar">BETA &mdash; unaudited smart contracts, deployed on an early-stage chain. <a href="#faq">Read more</a></div>
+
+<div class="gate-overlay" id="gateOverlay" style="display:none">
+  <div class="gate-box">
+    <h3>Before you connect a wallet</h3>
+    <p class="hint" style="margin-top:2px">Please read and accept the terms below. This only needs to happen once on this device.</p>
+    <ol>
+      <li><b>Experimental, unaudited software.</b> Reef is beta software running on an early-stage chain (BlockDAG, chain 1404) and has not been independently audited. It may contain bugs that cause loss of funds. Use amounts you're fully comfortable losing.</li>
+      <li><b>Non-custodial, but not risk-free.</b> Reef never holds your funds or keys &mdash; every transaction is one you review and sign yourself. That also means nothing here can reverse a mistake or a bug's effect once it's confirmed on-chain.</li>
+      <li><b>Anyone can list any token.</b> Pool creation is fully permissionless. The existence of a pool is not an endorsement or a safety check of any kind &mdash; verify a token's contract address yourself before trading it.</li>
+      <li><b>No guarantees.</b> Quotes, prices and pool depth can change between when you type an amount and when your transaction confirms. Nothing on this page is financial, legal or tax advice.</li>
+      <li><b>Your responsibility.</b> The software is provided as-is, without warranties. Operators are not liable for losses to the fullest extent permitted by law.</li>
+    </ol>
+    <label class="gate-check"><input type="checkbox" id="gateAgree1"> I have read and agree to the terms above.</label>
+    <label class="gate-check"><input type="checkbox" id="gateAgree2"> I am at least 18 years old, and I certify that I am not located in, a resident of, or accessing this from a jurisdiction where use of this software would be unlawful.</label>
+    <div class="gate-actions">
+      <button class="cta secondary" onclick="gateCancel()">Cancel</button>
+      <button class="cta" id="gateContinueBtn" disabled onclick="gateAccept()">Agree &amp; Continue</button>
+    </div>
+  </div>
+</div>
 
 <header class="top">
   <div class="topwrap">
@@ -317,7 +360,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-usemax-pill</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-consent-faq</p>
     </div>
   </div>
 </main>
@@ -341,6 +384,30 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <li>You are solely responsible for complying with the laws that apply to you, including in your own jurisdiction. Do not use this app where doing so would be unlawful.</li>
       <li>Reef is independent software and is not issued, endorsed, or operated by BlockDAG.</li>
     </ul>
+  </div>
+
+  <div class="faqsec" id="faq">
+    <h4>Read before you trade &mdash; FAQ</h4>
+    <details>
+      <summary>Has this been audited?</summary>
+      <p>No. Reef's contracts are experimental, beta software and have not been reviewed by an independent security auditor. Bugs could cause loss of funds. Only trade or provide liquidity with amounts you're fully comfortable losing.</p>
+    </details>
+    <details>
+      <summary>Who controls Reef, and what can they actually do?</summary>
+      <p>Reef's Router and Factory have no owner or admin at all &mdash; nobody can pause trading, block a wallet, freeze a pool, or take your funds. The one privileged role in the whole system is <b>feeToSetter</b>, which can turn on a protocol fee (directing a small share of trading fees to a treasury address) and can hand that role to a different address. It cannot touch liquidity that's already in a pool, and it cannot stop anyone from trading.</p>
+    </details>
+    <details>
+      <summary>Is any token on Reef vetted or verified?</summary>
+      <p>No. Pool creation is fully permissionless &mdash; anyone can list any token, including fake, mislabeled, or malicious ones. A pool showing up here is not an endorsement. Always verify a token's contract address against a source you trust before trading it.</p>
+    </details>
+    <details>
+      <summary>What is impermanent loss?</summary>
+      <p>When you provide liquidity to a pool, the ratio of the two tokens you hold shifts automatically as the price moves. If the price has moved a lot by the time you withdraw, you can end up with less total value than if you'd simply held the two tokens separately. Trading fees earned can offset this, but aren't guaranteed to.</p>
+    </details>
+    <details>
+      <summary>Why does the RPC status panel compare endpoints against each other?</summary>
+      <p>BlockDAG (chain 1404) is a young chain, and public RPC operators have not always agreed on its history &mdash; a node can report the correct chain ID while actually serving a different chain of blocks. Cross-checking endpoints against each other can tell you whether they currently agree; it can't tell you on its own which one is canonical. For anything beyond a small amount, verify independently before relying on a single endpoint.</p>
+    </details>
   </div>
 </div>
 
@@ -1168,8 +1235,34 @@ function refreshPool() {
 }
 function refreshAll() { refreshSwapQuote(); refreshBalances(); if (mode === "pool") refreshPool(); }
 
+// ---------- Consent gate ----------
+const GATE_KEY = "reef_consent_v1";
+function initGate() {
+  let agreed = false;
+  try { agreed = localStorage.getItem(GATE_KEY) === "1"; } catch (e) { agreed = false; }
+  if (!agreed) $("#gateOverlay").style.display = "flex";
+  const check = () => { $("#gateContinueBtn").disabled = !($("#gateAgree1").checked && $("#gateAgree2").checked); };
+  $("#gateAgree1").addEventListener("change", check);
+  $("#gateAgree2").addEventListener("change", check);
+}
+function gateAccept() {
+  try { localStorage.setItem(GATE_KEY, "1"); } catch (e) {}
+  $("#gateOverlay").style.display = "none";
+}
+function gateCancel() {
+  const box = document.querySelector(".gate-box");
+  if (box && !box.querySelector(".gate-declined")) {
+    const p = document.createElement("p");
+    p.className = "hint gate-declined";
+    p.style.marginTop = "10px";
+    p.textContent = "You'll need to accept these terms to use Reef.";
+    box.appendChild(p);
+  }
+}
+
 // ---------- Init ----------
 function init() {
+  initGate();
   initReadOnly(RPC_URLS[0]);
   renderTokButtons();
   renderNet();
