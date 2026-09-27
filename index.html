@@ -15,7 +15,7 @@
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
 }
 @media (prefers-color-scheme:light){
-  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#4a6b72;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08)}
 }
 :root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -50,6 +50,17 @@ nav.tabs button.on{background:var(--card);color:var(--text);box-shadow:0 0 0 1px
 button.wallet{border:0;background:var(--tide);color:#fff;font:600 14px "Instrument Sans",sans-serif;padding:10px 16px;border-radius:11px;cursor:pointer;white-space:nowrap}
 button.wallet.connected{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--coral-soft)}
 button.wallet:active{transform:translateY(1px)}
+@media (max-width:760px){
+  .topwrap{flex-wrap:wrap;row-gap:10px}
+  .spacer{flex-basis:100%;height:0;order:2}
+  nav.tabs{order:1}
+  .rpcbtn,.net{order:3;font-size:11px;padding:6px 8px;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  button.wallet{order:4;font-size:13px;padding:9px 12px;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media (max-width:400px){
+  nav.tabs button{padding:7px 10px;font-size:13px}
+  .brand{gap:8px}
+}
 main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
 @media (max-width:860px){main{grid-template-columns:1fr}}
 .col{display:flex;flex-direction:column;gap:16px}
@@ -361,7 +372,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-twap-badge</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-mobile-fix</p>
     </div>
   </div>
 </main>
