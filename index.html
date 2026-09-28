@@ -15,6 +15,7 @@
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
 }
 @media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .brand .wordwrap svg{filter:invert(1) hue-rotate(180deg)}
   :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08)}
 }
 :root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16)}
@@ -25,7 +26,7 @@ body{margin:0;min-height:100%;color:var(--text);font:400 15px/1.5 "Instrument Sa
   background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%), radial-gradient(70% 45% at 50% 40%, rgba(127,208,247,.05), transparent 70%);
   background-repeat:no-repeat;background-attachment:fixed}
 a{color:inherit}
-header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+header.top{position:static;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
 header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
 .topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:16px}
 .brand{display:flex;align-items:center;gap:14px;flex:none;padding:2px 0}
@@ -51,18 +52,19 @@ button.wallet{border:0;background:var(--tide);color:#fff;font:600 14px "Instrume
 button.wallet.connected{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--coral-soft)}
 button.wallet:active{transform:translateY(1px)}
 @media (max-width:760px){
-  .topwrap{flex-wrap:wrap;row-gap:10px}
+  .topwrap{flex-wrap:wrap;row-gap:8px;column-gap:8px;padding:10px 14px}
   .spacer{flex-basis:100%;height:0;order:2}
   nav.tabs{order:1}
-  .rpcbtn,.net{order:3;font-size:11px;padding:6px 8px;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  button.wallet{order:4;font-size:13px;padding:9px 12px;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  button.wallet{order:3;font-size:13px;padding:9px 12px;max-width:100%;white-space:nowrap}
+  .net{order:4;font-size:11px;padding:6px 8px;max-width:100%;white-space:nowrap}
+  .rpcbtn{order:5;font-size:11px;padding:6px 8px;max-width:100%;white-space:nowrap}
 }
 @media (max-width:400px){
   nav.tabs button{padding:7px 10px;font-size:13px}
   .brand{gap:8px}
 }
 main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
-@media (max-width:860px){main{grid-template-columns:1fr}}
+@media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}.col{min-width:0}}
 .col{display:flex;flex-direction:column;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
 .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -106,17 +108,28 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .linklike:hover{box-shadow:0 0 14px -6px var(--coral-soft)}
 .betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
 .betabar a{color:var(--coral);text-decoration:underline}
-.gate-overlay{position:fixed;inset:0;background:rgba(6,6,7,.86);backdrop-filter:blur(3px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
-.gate-box{max-width:480px;width:100%;max-height:86vh;overflow-y:auto;background:var(--card);border:1px solid var(--coral-soft);border-radius:20px;padding:24px;box-shadow:0 0 60px -20px var(--coral-soft)}
-.gate-box h3{font:700 20px "Bricolage Grotesque",sans-serif;margin:0 0 4px}
-.gate-box ol{padding-left:20px;font-size:13px;color:var(--muted);line-height:1.6;margin:14px 0}
-.gate-box ol li{margin-bottom:8px}
+.gate-overlay{position:fixed;inset:0;background:rgba(6,6,7,.86);backdrop-filter:blur(3px);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
+.gate-box{max-width:460px;width:100%;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;background:var(--card);border:1px solid var(--coral-soft);border-radius:20px;box-shadow:0 0 60px -20px var(--coral-soft);overflow:hidden}
+.gate-body{overflow-y:auto;padding:22px 22px 6px;-webkit-overflow-scrolling:touch}
+.gate-box h3{font:700 19px "Bricolage Grotesque",sans-serif;margin:0 0 10px}
+.gate-box ol{padding-left:18px;font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 6px}
+.gate-box ol li{margin-bottom:7px}
 .gate-box ol b{color:var(--text)}
-.gate-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text);margin-top:14px;cursor:pointer}
-.gate-check input{margin-top:3px;accent-color:var(--coral);flex:none}
-.gate-actions{display:flex;gap:10px;margin-top:18px}
-.gate-actions .cta{margin-top:0}
-.gate-actions .cta.secondary{flex:none;width:auto;padding:15px 20px}
+.gate-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--text);margin-top:10px;cursor:pointer}
+.gate-check input{margin-top:2px;accent-color:var(--coral);flex:none}
+.gate-actions{display:flex;gap:10px;padding:12px 22px 18px;border-top:1px solid var(--line);background:var(--card)}
+.gate-actions .cta{margin-top:0;padding:13px;font-size:15px}
+.gate-actions .cta.secondary{flex:none;width:auto;padding:13px 18px}
+@media (max-width:520px){
+  .gate-overlay{padding:10px}
+  .gate-box{max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);border-radius:16px}
+  .gate-body{padding:16px 16px 4px}
+  .gate-box h3{font-size:17px;margin-bottom:8px}
+  .gate-box ol{font-size:12px;line-height:1.45}
+  .gate-box ol li{margin-bottom:5px}
+  .gate-check{font-size:12px;margin-top:8px}
+  .gate-actions{padding:10px 16px 14px}
+}
 .faqsec{margin-top:28px}
 .faqsec h4{font:700 16px "Bricolage Grotesque",sans-serif;margin:0 0 10px}
 .faqsec details{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
@@ -191,17 +204,17 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
 <div class="gate-overlay" id="gateOverlay" style="display:none">
   <div class="gate-box">
-    <h3>Before you connect a wallet</h3>
-    <p class="hint" style="margin-top:2px">Please read and accept the terms below. This only needs to happen once on this device.</p>
-    <ol>
-      <li><b>Experimental, unaudited software.</b> Reef is beta software running on an early-stage chain (BlockDAG, chain 1404) and has not been independently audited. It may contain bugs that cause loss of funds. Use amounts you're fully comfortable losing.</li>
-      <li><b>Non-custodial, but not risk-free.</b> Reef never holds your funds or keys &mdash; every transaction is one you review and sign yourself. That also means nothing here can reverse a mistake or a bug's effect once it's confirmed on-chain.</li>
-      <li><b>Anyone can list any token.</b> Pool creation is fully permissionless. The existence of a pool is not an endorsement or a safety check of any kind &mdash; verify a token's contract address yourself before trading it.</li>
-      <li><b>No guarantees.</b> Quotes, prices and pool depth can change between when you type an amount and when your transaction confirms. Nothing on this page is financial, legal or tax advice.</li>
-      <li><b>Your responsibility.</b> The software is provided as-is, without warranties. Operators are not liable for losses to the fullest extent permitted by law.</li>
-    </ol>
-    <label class="gate-check"><input type="checkbox" id="gateAgree1"> I have read and agree to the terms above.</label>
-    <label class="gate-check"><input type="checkbox" id="gateAgree2"> I am at least 18 years old, and I certify that I am not located in, a resident of, or accessing this from a jurisdiction where use of this software would be unlawful.</label>
+    <div class="gate-body">
+      <h3>Before you connect a wallet</h3>
+      <ol>
+        <li><b>Unaudited beta.</b> Reef runs on an early-stage chain and has not been independently audited. Bugs can cause loss of funds &mdash; only use what you can afford to lose.</li>
+        <li><b>You sign everything.</b> Reef never holds your funds or keys, and nothing can be reversed once it confirms on-chain.</li>
+        <li><b>Anyone can list any token.</b> A pool is not an endorsement &mdash; verify token addresses yourself.</li>
+        <li><b>No advice, no warranty.</b> Prices can move before you confirm. This is not financial, legal or tax advice, and the software is provided as-is.</li>
+      </ol>
+      <label class="gate-check"><input type="checkbox" id="gateAgree1"> I have read and agree to the above.</label>
+      <label class="gate-check"><input type="checkbox" id="gateAgree2"> I am 18 or older, and using Reef is lawful where I am.</label>
+    </div>
     <div class="gate-actions">
       <button class="cta secondary" onclick="gateCancel()">Cancel</button>
       <button class="cta" id="gateContinueBtn" disabled onclick="gateAccept()">Agree &amp; Continue</button>
@@ -372,7 +385,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-27-mobile-fix</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3</p>
     </div>
   </div>
 </main>
@@ -1305,13 +1318,13 @@ function gateAccept() {
   $("#gateOverlay").style.display = "none";
 }
 function gateCancel() {
-  const box = document.querySelector(".gate-box");
-  if (box && !box.querySelector(".gate-declined")) {
+  const body = document.querySelector(".gate-body");
+  if (body && !body.querySelector(".gate-declined")) {
     const p = document.createElement("p");
     p.className = "hint gate-declined";
-    p.style.marginTop = "10px";
+    p.style.cssText = "margin:10px 0 0;padding:0";
     p.textContent = "You'll need to accept these terms to use Reef.";
-    box.appendChild(p);
+    body.appendChild(p);
   }
 }
 
