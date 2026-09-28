@@ -385,7 +385,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3b</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3c</p>
     </div>
   </div>
 </main>
@@ -515,6 +515,7 @@ const KNOWN_LOCKS = {
   "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1", // NOCAP/BDAG
 };
 const TWAP_ABI = [
+  "function blockTimestampLast() view returns (uint32)",
   "function consult(address token, uint256 amountIn) view returns (uint256)",
   "function secondsUntilNextUpdate() view returns (uint256)",
 ];
@@ -557,6 +558,14 @@ function fmt(n, max) {
   if (x === 0) return "0";
   const d = max === undefined ? (x < 1 ? 6 : x < 1000 ? 4 : 2) : max;
   return x.toLocaleString(undefined, { maximumFractionDigits: d });
+}
+// Prices can be tiny (e.g. 0.0000108739) - keep 4 significant digits instead of a fixed decimal count.
+function fmtPrice(n) {
+  const x = Number(n);
+  if (!isFinite(x) || x === 0) return "0";
+  if (Math.abs(x) >= 1) return fmt(x);
+  const digits = Math.min(20, Math.max(2, 3 - Math.floor(Math.log10(Math.abs(x)))));
+  return x.toLocaleString(undefined, { maximumFractionDigits: digits });
 }
 function initReadOnly(url) {
   activeRpc = url || activeRpc;
@@ -912,8 +921,14 @@ async function loadTwapBadge(pairAddr) {
       const oneUnit = ethers.parseUnits("1", tokFrom.decimals);
       const out = await oracle.consult(wrapped(tokFrom), oneUnit);
       const price = ethers.formatUnits(out, tokTo.decimals);
+      let ageNote = "";
+      try {
+        const last = Number(await oracle.blockTimestampLast());
+        const age = Math.max(0, Math.floor(Date.now() / 1000) - last);
+        ageNote = ` Last refreshed ${fmtDuration(age)} ago.` + (age > 172800 ? " <b>This average is stale &mdash; nobody has refreshed it recently.</b>" : "");
+      } catch (e) {}
       box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-        <span><b>${fmt(price, 6)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average, read from an on-chain oracle (not a live quote).</span>`;
+        <span><b>${fmtPrice(price)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average from an on-chain oracle, not a live quote.${ageNote}</span>`;
     } catch (e) {
       const secs = await oracle.secondsUntilNextUpdate();
       const msg = Number(secs) <= 0
@@ -1042,7 +1057,7 @@ function renderPriceChart(points, isToken0From) {
       <polyline points="${pts}" fill="none" stroke="var(--polyp)" stroke-width="2" vector-effect="non-scaling-stroke"/>
     </svg>
     <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px">
-      <span>${fmt(min, 6)}</span><span>${fmt(max, 6)}</span>
+      <span>${fmtPrice(min)}</span><span>${fmtPrice(max)}</span>
     </div>
     <p class="hint" style="margin-top:6px">From this pool's own reserve history over the last ${blockSpan.toLocaleString()} blocks &mdash; not a third-party price feed.</p>`;
 }
@@ -1054,7 +1069,7 @@ function setSwapInfo(info) {
   if (!info) { box.innerHTML = ""; return; }
   const hops = info.path.length > 2 ? " (via WBDAG)" : "";
   box.innerHTML = `
-    <div><span>Rate</span><b>1 ${tokFrom.symbol} = ${fmt(info.rate, 6)} ${tokTo.symbol}</b></div>
+    <div><span>Rate</span><b>1 ${tokFrom.symbol} = ${fmtPrice(info.rate)} ${tokTo.symbol}</b></div>
     <div><span>Route</span><b>${info.path.length - 1} hop${info.path.length > 2 ? "s" : ""}${hops}</b></div>
     <div><span>Fee</span><b class="hot">0.30% per hop</b></div>
     <div><span>Slippage</span><b>${(slippageBp / 100).toFixed(2)}%</b></div>`;
