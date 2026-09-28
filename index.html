@@ -385,7 +385,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3b</p>
     </div>
   </div>
 </main>
@@ -916,8 +916,11 @@ async function loadTwapBadge(pairAddr) {
         <span><b>${fmt(price, 6)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average, read from an on-chain oracle (not a live quote).</span>`;
     } catch (e) {
       const secs = await oracle.secondsUntilNextUpdate();
+      const msg = Number(secs) <= 0
+        ? `A 24h time-weighted average price oracle is deployed for this pair and is <b>ready for its first update()</b> &mdash; the average appears as soon as anyone triggers it.`
+        : `A 24h time-weighted average price oracle is deployed for this pair, but has no data yet &mdash; its first update() can be called in about <b>${fmtDuration(secs)}</b>.`;
       box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-        <span>A 24h time-weighted average price oracle is deployed for this pair, but has no data yet &mdash; available in about <b>${fmtDuration(secs)}</b>, once its first update() is called.</span>`;
+        <span>${msg}</span>`;
     }
   } catch (e) {
     hideTwapBadge();
