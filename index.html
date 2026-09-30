@@ -726,10 +726,10 @@ function rpcRow(e, r) {
   }
   const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
   const status = r === null ? "checking…"
-    : r.ok ? r.ms + " ms" + (e.feed === "behind" ? " · behind" : "")
+    : e.feed === "behind" ? "behind the chain head &mdash; not used"
+    : r.ok ? r.ms + " ms"
     : e.feed === "ok" ? "online, but not from browsers"
     : e.feed === "offline" ? "offline"
-    : e.feed === "behind" ? "behind the chain head"
     : r.note;
   return `<li class="rpcrow${active ? " active" : ""}">
     <span class="rpcdot ${dot}"></span>
