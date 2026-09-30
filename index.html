@@ -195,6 +195,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .rpcstat{font-size:12px;color:var(--muted);white-space:nowrap}
 .rpcrow button.rpcpick{border:1px solid var(--line2);background:var(--raised);color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 12px;border-radius:9px;cursor:pointer}
 .rpcrow button.rpcpick:disabled{opacity:.4;cursor:not-allowed}
+.rpcrow.fork{border-color:var(--ember);background:color-mix(in srgb, var(--ember) 8%, transparent)}
+.rpcstat.fork{color:var(--ember);font-weight:600}
+.rpcflaky{color:var(--ember);font-size:11px;font-weight:600;margin-top:2px}
 .rpcnote{font-size:12px;color:var(--muted);margin:0 0 12px}
 
 /* Disclaimers */
@@ -479,15 +482,26 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 const CHAIN_ID = 1404;
 const CHAIN_ID_HEX = "0x57c";
 const RPC_ENDPOINTS = [
+  // Known to be intermittent — passes the live probe when it's up, but sometimes doesn't respond at all.
+  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering", flaky: true },
+  { name: "BDAG-US (east)",    url: "https://rpc.east.bdag-us.org" },
   { name: "BDAG-US (west)",    url: "https://rpc.west.bdag-us.org" },
-  { name: "BDAG-US (england)", url: "https://rpc.england.bdag-us.org" },
   { name: "BDAG-US (brazil)",  url: "https://rpc.brazil.bdag-us.org" },
+  { name: "BDAG-US (england)", url: "https://rpc.england.bdag-us.org" },
+  { name: "CMS Mining Pool",   url: "https://rpc.cms-mining-pool.net" },
+  { name: "DVD Mining",        url: "https://rpc.dvdmining.com" },
   { name: "CapeDAG",           url: "https://rpc.capedag.com" },
   { name: "RMS",               url: "https://rms-bdag-rpc.de/api/rpc-live" },
-  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering" },
-  { name: "DVD Mining",        url: "https://rpc.dvdmining.com" },
+  { name: "BDAG Explorer",     url: "https://rpc.bdagexplorer.com" },
+  { name: "DagCore",           url: "https://rpc.dagcore.net" },
+  // Known fork: answers eth_chainId with 1404 like a real node, but serves a diverged chain
+  // (thousands of blocks behind, 0/2 block-hash matches against the agreed head). A plain
+  // chain-ID probe can't tell it apart from a real endpoint, so it's hardcoded as unusable
+  // below rather than relying on the live check. rpc.blockdag.works (the other known fork,
+  // a retired legacy endpoint) is deliberately left off this list entirely.
+  { name: "bdagscan.com",      url: "https://rpc.bdagscan.com", fork: true },
 ];
-const RPC_URLS = RPC_ENDPOINTS.map((e) => e.url);
+const RPC_URLS = RPC_ENDPOINTS.filter((e) => !e.fork).map((e) => e.url);
 let activeRpc = RPC_URLS[0];
 const EXPLORER = "https://explorer.bdagexplorer.com";
 const ADDR = {
@@ -623,7 +637,9 @@ async function openRpcPanel() {
   $("#rpcDialog").showModal();
   const list = $("#rpcList");
   list.innerHTML = RPC_ENDPOINTS.map((e) => rpcRow(e, null)).join("");
-  const results = await Promise.all(RPC_ENDPOINTS.map((e) => probeRpc(e.url)));
+  // Fork-flagged endpoints answer eth_chainId correctly and would pass this client-side probe —
+  // don't even bother probing them, just render the hardcoded warning state.
+  const results = await Promise.all(RPC_ENDPOINTS.map((e) => (e.fork ? Promise.resolve(null) : probeRpc(e.url))));
   list.innerHTML = RPC_ENDPOINTS.map((e, i) => rpcRow(e, results[i])).join("");
   list.querySelectorAll("button.rpcpick").forEach((b) => {
     b.onclick = () => {
@@ -637,11 +653,20 @@ async function openRpcPanel() {
 }
 function rpcRow(e, r) {
   const active = e.url === activeRpc;
+  if (e.fork) {
+    return `<li class="rpcrow fork">
+      <span class="rpcdot bad"></span>
+      <span class="rpcname">${e.name}<small>${e.url}</small></span>
+      <span class="rpcstat fork">Fork — diverged chain, do not use</span>
+      <button class="rpcpick" disabled>Use</button>
+    </li>`;
+  }
   const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
   const status = r === null ? "checking…" : r.ok ? r.ms + " ms" : r.note;
+  const flaky = e.flaky ? `<div class="rpcflaky">Known to be intermittent</div>` : "";
   return `<li class="rpcrow${active ? " active" : ""}">
     <span class="rpcdot ${dot}"></span>
-    <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small></span>
+    <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small>${flaky}</span>
     <span class="rpcstat">${status}</span>
     <button class="rpcpick" data-url="${e.url}" ${r && !r.ok ? "disabled" : ""}>Use</button>
   </li>`;
