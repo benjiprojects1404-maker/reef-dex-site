@@ -487,12 +487,12 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 // ---------- Config ----------
 const CHAIN_ID = 1404;
 const CHAIN_ID_HEX = "0x57c";
-// RPC endpoints. The live list comes from https://nodaldex.fyi/api/rpcs, which follows the community
+// RPC endpoints. The live list comes from https://www.nodaldex.fyi/api/rpcs, which follows the community
 // node board (bdag.community/chain#nodes): nodes that shut down drop off and new ones appear without
 // a site update. Only nodes the board finds on chain 1404, near the head and with matching block
 // hashes are used for reads. The built-in list below is used until the live list loads, if it
 // can't be loaded, and for the wallet's "add network" prompt. Last reviewed 1 Oct 2026.
-const RPC_LIST_URL = "https://nodaldex.fyi/api/rpcs";
+const RPC_LIST_URL = "https://www.nodaldex.fyi/api/rpcs";
 const RPC_NAMES = {
   "rpc.bdagexplorer.com": "BDAG Explorer",
   "rpc.blockdag.engineering": "blockdag.engineering",
