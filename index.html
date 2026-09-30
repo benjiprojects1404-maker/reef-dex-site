@@ -493,7 +493,7 @@ const RPC_ENDPOINTS = [
   { name: "CapeDAG",           url: "https://rpc.capedag.com" },
   { name: "RMS",               url: "https://rms-bdag-rpc.de/api/rpc-live" },
   { name: "DagCore",           url: "https://rpc.dagcore.net" },
-  // Known fork: answers eth_chainId with 1404 like a real node, but serves a diverged chain
+  // Other chain-1404 network: answers eth_chainId with 1404, but serves a different chain history
   // (thousands of blocks behind, 0/2 block-hash matches against the agreed head). A plain
   // chain-ID probe can't tell it apart from a real endpoint, so it's hardcoded as unusable
   // below rather than relying on the live check. rpc.blockdag.works (the other known fork,
@@ -656,7 +656,7 @@ function rpcRow(e, r) {
     return `<li class="rpcrow fork">
       <span class="rpcdot bad"></span>
       <span class="rpcname">${e.name}<small>${e.url}</small></span>
-      <span class="rpcstat fork">Fork — diverged chain, do not use</span>
+      <span class="rpcstat fork">Other chain-1404 network — Reef isn&rsquo;t deployed there</span>
       <button class="rpcpick" disabled>Use</button>
     </li>`;
   }
