@@ -197,7 +197,6 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .rpcrow button.rpcpick:disabled{opacity:.4;cursor:not-allowed}
 .rpcrow.fork{border-color:var(--ember);background:color-mix(in srgb, var(--ember) 8%, transparent)}
 .rpcstat.fork{color:var(--ember);font-weight:600}
-.rpcflaky{color:var(--ember);font-size:11px;font-weight:600;margin-top:2px}
 .rpcnote{font-size:12px;color:var(--muted);margin:0 0 12px}
 
 /* Disclaimers */
@@ -482,8 +481,8 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 const CHAIN_ID = 1404;
 const CHAIN_ID_HEX = "0x57c";
 const RPC_ENDPOINTS = [
-  // Known to be intermittent — passes the live probe when it's up, but sometimes doesn't respond at all.
-  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering", flaky: true },
+  { name: "BDAG Explorer",     url: "https://rpc.bdagexplorer.com" },
+  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering" },
   { name: "BDAG-US (east)",    url: "https://rpc.east.bdag-us.org" },
   { name: "BDAG-US (west)",    url: "https://rpc.west.bdag-us.org" },
   { name: "BDAG-US (brazil)",  url: "https://rpc.brazil.bdag-us.org" },
@@ -492,7 +491,6 @@ const RPC_ENDPOINTS = [
   { name: "DVD Mining",        url: "https://rpc.dvdmining.com" },
   { name: "CapeDAG",           url: "https://rpc.capedag.com" },
   { name: "RMS",               url: "https://rms-bdag-rpc.de/api/rpc-live" },
-  { name: "BDAG Explorer",     url: "https://rpc.bdagexplorer.com" },
   { name: "DagCore",           url: "https://rpc.dagcore.net" },
   // Known fork: answers eth_chainId with 1404 like a real node, but serves a diverged chain
   // (thousands of blocks behind, 0/2 block-hash matches against the agreed head). A plain
@@ -663,10 +661,9 @@ function rpcRow(e, r) {
   }
   const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
   const status = r === null ? "checking…" : r.ok ? r.ms + " ms" : r.note;
-  const flaky = e.flaky ? `<div class="rpcflaky">Known to be intermittent</div>` : "";
   return `<li class="rpcrow${active ? " active" : ""}">
     <span class="rpcdot ${dot}"></span>
-    <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small>${flaky}</span>
+    <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small></span>
     <span class="rpcstat">${status}</span>
     <button class="rpcpick" data-url="${e.url}" ${r && !r.ok ? "disabled" : ""}>Use</button>
   </li>`;
