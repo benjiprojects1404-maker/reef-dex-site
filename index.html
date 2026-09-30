@@ -37,7 +37,7 @@
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
 }
 @media (prefers-color-scheme:light){
-  :root:not([data-theme="dark"]) .brand .wordwrap svg{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]) .brand .logo-mark{filter:invert(1) hue-rotate(180deg)}
   :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08)}
 }
 :root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16)}
@@ -52,16 +52,8 @@ header.top{position:static;background:color-mix(in srgb, var(--bg) 88%, transpar
 header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
 .topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:16px}
 .brand{display:flex;align-items:center;gap:14px;flex:none;padding:2px 0}
-.brand svg{height:34px;width:auto;display:block;position:relative}
-.brand .seal{height:42px;width:42px;flex:none;filter:drop-shadow(0 0 8px rgba(127,208,247,.35)) drop-shadow(0 0 16px rgba(194,58,94,.22));animation:sealbreathe 5s ease-in-out infinite}
-.brand .wordwrap{position:relative;overflow:hidden;display:inline-block;line-height:0}
-.brand .wordwrap::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
-  background:linear-gradient(75deg,transparent,rgba(255,255,255,.55) 45%,rgba(127,208,247,.5) 55%,transparent);
-  transform:skewX(-18deg);animation:shimmer 6s ease-in-out infinite;mix-blend-mode:overlay}
-@keyframes shimmer{0%,55%{left:-60%}75%{left:130%}100%{left:130%}}
-@keyframes sealbreathe{0%,100%{filter:drop-shadow(0 0 8px rgba(127,208,247,.35)) drop-shadow(0 0 16px rgba(194,58,94,.22))}50%{filter:drop-shadow(0 0 12px rgba(127,208,247,.55)) drop-shadow(0 0 22px rgba(194,58,94,.34))}}
-@media (prefers-reduced-motion:reduce){.brand .seal{animation:none}.brand .wordwrap::after{animation:none;display:none}}
-@media (max-width:520px){.brand svg{height:26px}.brand .seal{height:34px;width:34px}}
+.brand .logo-mark{height:34px;width:auto;display:block}
+@media (max-width:520px){.brand .logo-mark{height:26px}}
 nav.tabs{display:flex;gap:4px;background:var(--raised);border-radius:12px;padding:4px;margin-left:4px}
 nav.tabs button{border:0;background:transparent;color:var(--muted);font:600 14px "Instrument Sans",sans-serif;padding:8px 14px;border-radius:9px;cursor:pointer}
 nav.tabs button.on{background:var(--card);color:var(--text);box-shadow:0 0 0 1px var(--coral-soft),0 0 14px -6px var(--coral-soft)}
@@ -89,9 +81,6 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 @media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}.col{min-width:0}}
 .col{display:flex;flex-direction:column;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
-.hero-wrap{max-width:1080px;margin:0 auto;padding:20px 16px 0}
-.hero-banner{display:block;width:100%;height:auto;border-radius:20px;border:1px solid var(--line);box-shadow:0 0 44px -28px var(--coral-soft)}
-@media (max-width:520px){.hero-wrap{padding-top:12px}}
 .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .panel-title h2{font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.01em;position:relative;padding-bottom:8px}
 .panel-title h2::after{content:"";position:absolute;left:0;bottom:0;width:26px;height:2px;border-radius:2px;background:var(--coral)}
@@ -262,19 +251,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <header class="top">
   <div class="topwrap">
     <div class="brand">
-      <svg class="seal" viewBox="0 0 120 120" role="img" aria-label="Reef"><defs><linearGradient id="hseal-sv" gradientUnits="userSpaceOnUse" x1="0" y1="14" x2="0" y2="118"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#dfe3e9"/><stop offset=".7" stop-color="#9aa1ab"/><stop offset="1" stop-color="#6f7680"/></linearGradient>
-<linearGradient id="hseal-rm" x1=".15" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="#f7f9fb"/><stop offset=".45" stop-color="#6d747e"/><stop offset=".7" stop-color="#c9ced5"/><stop offset="1" stop-color="#5c626b"/></linearGradient>
-<radialGradient id="hseal-dk" cx=".4" cy=".22" r=".95"><stop offset="0" stop-color="#2c2e34"/><stop offset=".55" stop-color="#141518"/><stop offset="1" stop-color="#070708"/></radialGradient>
-<radialGradient id="hseal-gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-<radialGradient id="hseal-bh" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5cc0f2" stop-opacity=".55"/><stop offset="1" stop-color="#5cc0f2" stop-opacity="0"/></radialGradient><clipPath id="hseal-cp"><circle cx="60" cy="60" r="53"/></clipPath></defs>
-<circle cx="60" cy="60" r="58" fill="url(#hseal-rm)"/><circle cx="60" cy="60" r="54.5" fill="url(#hseal-dk)"/>
-<g clip-path="url(#hseal-cp)"><circle cx="60" cy="16" r="32" fill="url(#hseal-gl)" opacity=".8"/><g fill="#fff" opacity=".09"><path d="M60 20 L38 120 L52 120Z"/><path d="M60 20 L54 120 L66 120Z"/><path d="M60 20 L68 120 L82 120Z"/></g>
-<g fill="none" stroke="url(#hseal-sv)" stroke-width="7.5" stroke-linecap="round"><path d="M28 118 C25 100 17 90 13 70"/><path d="M 92 118 C 95 100 103 90 107 70"/><path d="M28 118 C33 96 30 78 35 56"/><path d="M 92 118 C 87 96 90 78 85 56"/><path d="M28 118 C39 104 47 96 50 76"/><path d="M 92 118 C 81 104 73 96 70 76"/><path d="M31 90 C24 82 26 72 23 62"/><path d="M 89 90 C 96 82 94 72 97 62"/></g></g><circle cx="35" cy="56" r="8.84" fill="url(#hseal-bh)"/><circle cx="35" cy="56" r="3.4" fill="#7fd0f7"/><circle cx="85" cy="56" r="8.84" fill="url(#hseal-bh)"/><circle cx="85" cy="56" r="3.4" fill="#7fd0f7"/></svg>
-      <span class="wordwrap"><svg viewBox="0 0 982 295" role="img" aria-label="reef dex"><defs>
-<linearGradient id="hwm-wg" gradientUnits="userSpaceOnUse" x1="0" y1="717.0" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".42" stop-color="#dfe3e9"/><stop offset="1" stop-color="#8d949e"/></linearGradient>
-<radialGradient id="hwm-wh"><stop offset="0" stop-color="#5cc0f2" stop-opacity="0.6"/><stop offset="1" stop-color="#5cc0f2" stop-opacity="0"/></radialGradient></defs>
-<g fill="url(#hwm-wg)" transform="translate(90.0,223.4) scale(0.20000,-0.20000)"><path transform="translate(0.0,0)" d="M49 0V267V528H185L186 333H200Q207 410 225.5 455.0Q244 500 275.0 520.0Q306 540 350 540Q363 540 377.5 537.0Q392 534 408 528L401 352Q382 362 362.5 366.5Q343 371 326 371Q291 371 265.5 354.5Q240 338 226.5 305.0Q213 272 210 224V0Z"/><path transform="translate(386.0,0)" d="M300 -14Q229 -14 178.0 5.5Q127 25 93.0 61.0Q59 97 43.0 146.0Q27 195 27 253Q27 313 43.5 365.5Q60 418 92.5 457.5Q125 497 174.5 519.5Q224 542 289 542Q355 542 403.5 520.0Q452 498 482.5 457.0Q513 416 524.5 359.5Q536 303 528 235L130 230V316L420 320L381 275Q387 323 377.0 354.5Q367 386 344.5 401.5Q322 417 290 417Q254 417 230.0 398.0Q206 379 194.0 343.5Q182 308 182 259Q182 178 213.0 141.0Q244 104 300 104Q325 104 342.0 110.5Q359 117 370.0 128.5Q381 140 386.0 155.5Q391 171 392 188L537 169Q534 134 520.5 101.5Q507 69 479.5 43.0Q452 17 408.0 1.5Q364 -14 300 -14Z"/><path transform="translate(920.0,0)" d="M300 -14Q229 -14 178.0 5.5Q127 25 93.0 61.0Q59 97 43.0 146.0Q27 195 27 253Q27 313 43.5 365.5Q60 418 92.5 457.5Q125 497 174.5 519.5Q224 542 289 542Q355 542 403.5 520.0Q452 498 482.5 457.0Q513 416 524.5 359.5Q536 303 528 235L130 230V316L420 320L381 275Q387 323 377.0 354.5Q367 386 344.5 401.5Q322 417 290 417Q254 417 230.0 398.0Q206 379 194.0 343.5Q182 308 182 259Q182 178 213.0 141.0Q244 104 300 104Q325 104 342.0 110.5Q359 117 370.0 128.5Q381 140 386.0 155.5Q391 171 392 188L537 169Q534 134 520.5 101.5Q507 69 479.5 43.0Q452 17 408.0 1.5Q364 -14 300 -14Z"/><path transform="translate(1451.0,0)" d="M93 0V325H16V441L169 433V446Q119 453 91.0 473.5Q63 494 52.5 520.5Q42 547 42 573Q42 617 65.5 649.5Q89 682 132.0 699.5Q175 717 230 717Q277 717 315.0 705.5Q353 694 379 674L368 527Q342 545 314.0 555.5Q286 566 259 566Q230 566 211.0 552.0Q192 538 192 508Q192 488 201.5 475.0Q211 462 228.5 455.5Q246 449 269 449H377V325H251V0Z"/></g><circle cx="524.6" cy="170.6" r="76.0" fill="url(#hwm-wh)"/><circle cx="524.6" cy="170.6" r="20.0" fill="#7fd0f7"/>
-<g fill="#a4acb7" transform="translate(596.6,223.4) scale(0.20000,-0.20000)"><path transform="translate(0.0,0)" d="M251 -13Q191 -13 144.5 18.5Q98 50 72.0 110.0Q46 170 46 257Q46 340 71.0 400.5Q96 461 142.0 494.0Q188 527 250 527Q305 527 342.0 502.5Q379 478 400.5 435.5Q422 393 432 338H444Q439 378 435.0 413.0Q431 448 428.5 479.0Q426 510 426 535V685H501L500 246L502 0H431L441 158H429Q416 104 393.0 66.0Q370 28 335.0 7.5Q300 -13 251 -13ZM262 54Q304 54 334.5 74.0Q365 94 385.0 125.0Q405 156 415.0 189.5Q425 223 425 250V259Q425 276 420.0 301.0Q415 326 403.5 353.0Q392 380 373.5 404.5Q355 429 328.5 444.0Q302 459 266 459Q221 459 188.5 433.5Q156 408 138.5 362.0Q121 316 121 254Q121 193 137.5 148.0Q154 103 185.5 78.5Q217 54 262 54Z"/><path transform="translate(537.0,0)" d="M287 -13Q229 -13 183.5 6.0Q138 25 107.5 59.5Q77 94 61.0 142.5Q45 191 45 251Q45 309 60.0 359.5Q75 410 105.0 447.5Q135 485 179.0 506.0Q223 527 280 527Q330 527 370.0 510.0Q410 493 438.5 459.5Q467 426 481.5 375.5Q496 325 493 259L90 254V310L443 314L421 277Q424 335 408.0 376.0Q392 417 359.5 439.0Q327 461 280 461Q229 461 192.5 435.0Q156 409 137.0 362.5Q118 316 118 252Q118 156 161.5 103.5Q205 51 290 51Q328 51 355.0 62.0Q382 73 399.0 91.0Q416 109 424.5 130.5Q433 152 435 173L503 162Q498 122 481.5 89.5Q465 57 437.0 34.5Q409 12 371.5 -0.5Q334 -13 287 -13Z"/><path transform="translate(1028.0,0)" d="M19 0 197 257 17 514H104L239 304H246L378 514H465L287 257L469 0H381L245 210H239L106 0Z"/></g></svg></span>
+      <img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="reef.dex" width="846" height="175">
     </div>
     <nav class="tabs">
       <button data-tab="swap" class="on" onclick="setMode('swap')">Swap</button>
@@ -286,13 +263,6 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <button class="wallet" id="walletBtn" onclick="connect()">Connect wallet</button>
   </div>
 </header>
-
-<div class="hero-wrap">
-  <picture>
-    <source srcset="/assets/reef-dex-logo.webp" type="image/webp">
-    <img class="hero-banner" src="/assets/reef-dex-logo.png" alt="reef.dex" width="1408" height="768" loading="eager">
-  </picture>
-</div>
 
 <main>
   <div class="col">
