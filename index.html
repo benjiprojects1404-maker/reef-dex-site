@@ -477,6 +477,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   <div class="dhead"><h3>RPC status</h3><button class="dclose" onclick="document.getElementById('rpcDialog').close()">&times;</button></div>
   <div class="dbody">
     <p class="rpcnote">This app reads pool and balance data from these public BlockDAG endpoints. Your wallet uses its own connection for anything you sign. Pick a faster one if quotes feel slow.</p>
+    <p class="rpcnote" id="rpcSource">Loading the endpoint list…</p>
     <ul class="rpclist" id="rpcList"></ul>
   </div>
 </dialog>
@@ -486,26 +487,78 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 // ---------- Config ----------
 const CHAIN_ID = 1404;
 const CHAIN_ID_HEX = "0x57c";
-const RPC_ENDPOINTS = [
-  { name: "BDAG Explorer",     url: "https://rpc.bdagexplorer.com" },
-  { name: "blockdag.engineering", url: "https://rpc.blockdag.engineering" },
-  { name: "BDAG-US (east)",    url: "https://rpc.east.bdag-us.org" },
-  { name: "BDAG-US (west)",    url: "https://rpc.west.bdag-us.org" },
-  { name: "BDAG-US (brazil)",  url: "https://rpc.brazil.bdag-us.org" },
-  { name: "BDAG-US (england)", url: "https://rpc.england.bdag-us.org" },
-  { name: "CMS Mining Pool",   url: "https://rpc.cms-mining-pool.net" },
-  { name: "DVD Mining",        url: "https://rpc.dvdmining.com" },
-  { name: "CapeDAG",           url: "https://rpc.capedag.com" },
-  { name: "RMS",               url: "https://rms-bdag-rpc.de/api/rpc-live" },
-  { name: "DagCore",           url: "https://rpc.dagcore.net" },
-  // Other chain-1404 network: answers eth_chainId with 1404, but serves a different chain history
-  // (thousands of blocks behind, 0/2 block-hash matches against the agreed head). A plain
-  // chain-ID probe can't tell it apart from a real endpoint, so it's hardcoded as unusable
-  // below rather than relying on the live check. rpc.blockdag.works (the other known fork,
-  // a retired legacy endpoint) is deliberately left off this list entirely.
-  { name: "bdagscan.com",      url: "https://rpc.bdagscan.com", fork: true },
+// RPC endpoints. The live list comes from https://nodaldex.fyi/api/rpcs, which follows the community
+// node board (bdag.community/chain#nodes): nodes that shut down drop off and new ones appear without
+// a site update. Only nodes the board finds on chain 1404, near the head and with matching block
+// hashes are used for reads. The built-in list below is used until the live list loads, if it
+// can't be loaded, and for the wallet's "add network" prompt. Last reviewed 1 Oct 2026.
+const RPC_LIST_URL = "https://nodaldex.fyi/api/rpcs";
+const RPC_NAMES = {
+  "rpc.bdagexplorer.com": "BDAG Explorer",
+  "rpc.blockdag.engineering": "blockdag.engineering",
+  "rpc.east.bdag-us.org": "BDAG-US (east)",
+  "rpc.west.bdag-us.org": "BDAG-US (west)",
+  "rpc.brazil.bdag-us.org": "BDAG-US (brazil)",
+  "rpc.england.bdag-us.org": "BDAG-US (england)",
+  "rpc.cms-mining-pool.net": "CMS Mining Pool",
+  "rpc.dvdmining.com": "DVD Mining",
+  "rpc.capedag.com": "CapeDAG",
+  "rms-bdag-rpc.de": "RMS",
+  "rpc.dagcore.net": "DagCore",
+  "rpc.escrowhubs.io": "EscrowHubs",
+  "rpc.blockdag.solutions": "blockdag.solutions",
+  "rpc.bdagscan.com": "bdagscan.com",
+  "rpc.blockdag.works": "blockdag.works",
+};
+const SAFE_RPC_URL = /^https:\/\/[a-z0-9.-]+(\/[A-Za-z0-9\/_-]*)?$/i;
+function rpcName(url) { const h = url.replace(/^https:\/\//, "").split("/")[0]; return RPC_NAMES[h] || h; }
+// Other chain-1404 network: answers eth_chainId with 1404, but serves a different chain history
+// (millions of blocks behind, 0/2 block-hash matches against the agreed head). A plain chain-ID
+// probe can't tell it apart from a real endpoint, so it's always shown as unusable.
+const FORK_ENDPOINT = { name: "bdagscan.com", url: "https://rpc.bdagscan.com", fork: true };
+const FALLBACK_RPC_URLS = [
+  "https://rpc.blockdag.engineering",
+  "https://rpc.capedag.com",
+  "https://rms-bdag-rpc.de/api/rpc-live",
+  "https://rpc.dvdmining.com",
+  "https://rpc.cms-mining-pool.net",
+  "https://rpc.england.bdag-us.org",
+  "https://rpc.dagcore.net",
+  "https://rpc.escrowhubs.io",
+  "https://rpc.brazil.bdag-us.org",
+  "https://rpc.bdagexplorer.com",
 ];
-const RPC_URLS = RPC_ENDPOINTS.filter((e) => !e.fork).map((e) => e.url);
+let RPC_ENDPOINTS = [...FALLBACK_RPC_URLS.map((url) => ({ name: rpcName(url), url })), FORK_ENDPOINT];
+let RPC_URLS = FALLBACK_RPC_URLS.slice();
+let rpcFeed = null; // { checkedAt, excluded } from the last live list
+let rpcFeedPromise = null;
+function loadRpcFeed(refresh = false) {
+  if (rpcFeedPromise && !refresh) return rpcFeedPromise;
+  rpcFeedPromise = (async () => {
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), 5000);
+      const res = await fetch(RPC_LIST_URL, { headers: { accept: "application/json" }, signal: ctl.signal });
+      clearTimeout(t);
+      if (!res.ok) return rpcFeed;
+      const j = await res.json();
+      if (!j || !Array.isArray(j.rpcs)) return rpcFeed;
+      const rpcs = j.rpcs.filter((r) => r && typeof r.url === "string" && SAFE_RPC_URL.test(r.url));
+      const usable = rpcs.filter((r) => r.usable).map((r) => r.url);
+      if (!usable.length) return rpcFeed;
+      const forks = (Array.isArray(j.excluded) ? j.excluded : [])
+        .filter((x) => x && x.reason === "fork" && SAFE_RPC_URL.test("https://" + x.name))
+        .map((x) => ({ name: rpcName("https://" + x.name), url: "https://" + x.name, fork: true }));
+      RPC_ENDPOINTS = [...rpcs.map((r) => ({ name: rpcName(r.url), url: r.url, feed: r.status, usable: !!r.usable })), ...forks];
+      RPC_URLS = usable;
+      rpcFeed = { checkedAt: j.checkedAt || null, excluded: j.excluded || [] };
+      return rpcFeed;
+    } catch (e) {
+      return rpcFeed;
+    }
+  })();
+  return rpcFeedPromise;
+}
 let activeRpc = RPC_URLS[0];
 const EXPLORER = "https://explorer.bdagexplorer.com";
 const ADDR = {
@@ -641,9 +694,15 @@ async function openRpcPanel() {
   $("#rpcDialog").showModal();
   const list = $("#rpcList");
   list.innerHTML = RPC_ENDPOINTS.map((e) => rpcRow(e, null)).join("");
+  const feed = await loadRpcFeed(true);
+  const checked = feed && feed.checkedAt ? new Date(feed.checkedAt) : null;
+  $("#rpcSource").textContent = feed
+    ? "Endpoint list: live from the community node board at bdag.community" + (checked && !isNaN(checked) ? " (checked " + checked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + ")" : "") + ", so closed nodes drop off and new ones appear automatically."
+    : "Couldn't load the live endpoint list just now, so this shows Reef's built-in list.";
+  list.innerHTML = RPC_ENDPOINTS.map((e) => rpcRow(e, null)).join("");
   // Fork-flagged endpoints answer eth_chainId correctly and would pass this client-side probe —
   // don't even bother probing them, just render the hardcoded warning state.
-  const results = await Promise.all(RPC_ENDPOINTS.map((e) => (e.fork ? Promise.resolve(null) : probeRpc(e.url))));
+  const results = await Promise.all(RPC_ENDPOINTS.map((e) => (e.fork || e.feed === "fork" || e.feed === "mismatch" ? Promise.resolve(null) : probeRpc(e.url))));
   list.innerHTML = RPC_ENDPOINTS.map((e, i) => rpcRow(e, results[i])).join("");
   list.querySelectorAll("button.rpcpick").forEach((b) => {
     b.onclick = () => {
@@ -657,21 +716,26 @@ async function openRpcPanel() {
 }
 function rpcRow(e, r) {
   const active = e.url === activeRpc;
-  if (e.fork) {
+  if (e.fork || e.feed === "fork" || e.feed === "mismatch") {
     return `<li class="rpcrow fork">
       <span class="rpcdot bad"></span>
       <span class="rpcname">${e.name}<small>${e.url}</small></span>
-      <span class="rpcstat fork">Other chain-1404 network — Reef isn&rsquo;t deployed there</span>
+      <span class="rpcstat fork">${e.feed === "mismatch" ? "Block hashes don&rsquo;t match the chain &mdash; not used" : "Other chain-1404 network &mdash; Reef isn&rsquo;t deployed there"}</span>
       <button class="rpcpick" disabled>Use</button>
     </li>`;
   }
   const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
-  const status = r === null ? "checking…" : r.ok ? r.ms + " ms" : r.note;
+  const status = r === null ? "checking…"
+    : r.ok ? r.ms + " ms" + (e.feed === "behind" ? " · behind" : "")
+    : e.feed === "ok" ? "online, but not from browsers"
+    : e.feed === "offline" ? "offline"
+    : e.feed === "behind" ? "behind the chain head"
+    : r.note;
   return `<li class="rpcrow${active ? " active" : ""}">
     <span class="rpcdot ${dot}"></span>
     <span class="rpcname">${e.name}${active ? " (in use)" : ""}<small>${e.url}</small></span>
     <span class="rpcstat">${status}</span>
-    <button class="rpcpick" data-url="${e.url}" ${r && !r.ok ? "disabled" : ""}>Use</button>
+    <button class="rpcpick" data-url="${e.url}" ${(r && !r.ok) || e.usable === false ? "disabled" : ""}>Use</button>
   </li>`;
 }
 
@@ -721,7 +785,7 @@ async function switchNetwork() {
             chainId: CHAIN_ID_HEX,
             chainName: "BlockDAG",
             nativeCurrency: { name: "BlockDAG", symbol: "BDAG", decimals: 18 },
-            rpcUrls: RPC_URLS,
+            rpcUrls: FALLBACK_RPC_URLS,
             blockExplorerUrls: [EXPLORER],
           }],
         });
@@ -1573,6 +1637,9 @@ function init() {
   window.addEventListener("resize", fitAllAmts);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAllAmts);
   initReadOnly(RPC_URLS[0]);
+  loadRpcFeed().then((feed) => {
+    if (feed && !RPC_URLS.includes(activeRpc)) initReadOnly(RPC_URLS[0]);
+  });
   renderTokButtons();
   renderNet();
   loadPoolList();
