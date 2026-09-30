@@ -118,6 +118,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .msg.info{background:rgba(10,113,161,.14);color:#8fd0ef;border:1px solid rgba(10,113,161,.35)}
 .msg.err{background:rgba(229,98,74,.12);color:#ffb3a3;border:1px solid rgba(229,98,74,.35)}
 .msg.ok{background:rgba(63,191,131,.12);color:#8fe0bb;border:1px solid rgba(63,191,131,.35)}
+.msg a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 .linklike{color:var(--coral);text-decoration:none;cursor:pointer;background:var(--raised);border:1px solid var(--coral-soft);border-radius:999px;padding:5px 12px;font:600 13px "Instrument Sans",sans-serif}
 .linklike:hover{box-shadow:0 0 14px -6px var(--coral-soft)}
 .betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
@@ -439,7 +440,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     </details>
     <details>
       <summary>Who controls Reef, and what can they actually do?</summary>
-      <p>Reef's Router and Factory have no owner or admin at all &mdash; nobody can pause trading, block a wallet, freeze a pool, or take your funds. The one privileged role in the whole system is <b>feeToSetter</b>, which can turn on a protocol fee (directing a small share of trading fees to a treasury address) and can hand that role to a different address. It cannot touch liquidity that's already in a pool, and it cannot stop anyone from trading.</p>
+      <p>Reef's Router and Factory have no owner or admin at all &mdash; nobody can pause trading, block a wallet, freeze a pool, or take your funds. The one privileged role in the whole system is <b>feeToSetter</b>, which can turn on a protocol fee (directing a small share of trading fees to a treasury address) and can hand that role to a different address. It cannot touch liquidity that's already in a pool, and it cannot stop anyone from trading. <b>feeToSetter</b> is held by a 2-of-2 hardware-wallet multisig (separate Trezor and Ledger signers) rather than a single key, so no one person can exercise it alone.</p>
     </details>
     <details>
       <summary>Is any token on Reef vetted or verified?</summary>
@@ -899,6 +900,12 @@ function showMsg(scope, text, kind) {
   box.textContent = text;
   box.className = "msg show " + (kind || "info");
 }
+function showTxMsg(scope, text, hash, kind) {
+  const box = $(scope === "swap" ? "#swapMsg" : "#poolMsg");
+  const link = `<a href="${EXPLORER}/tx/${hash}" target="_blank" rel="noopener">${short(hash)}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:3px;vertical-align:-1px"><path d="M7 17 17 7M9 7h8v8"/></svg></a>`;
+  box.innerHTML = text + " " + link;
+  box.className = "msg show " + (kind || "info");
+}
 function clearMsg(scope) {
   const box = $(scope === "swap" ? "#swapMsg" : "#poolMsg");
   box.className = "msg";
@@ -1305,7 +1312,7 @@ async function doSwap() {
       else tx = await router.swapExactTokensForTokens(lastSwap.amountIn, minOut, lastSwap.path, account, deadline);
     }
     $("#swapBtn").innerHTML = '<span class="spin"></span>Confirming…';
-    showMsg("swap", "Transaction sent: " + short(tx.hash), "info");
+    showTxMsg("swap", "Transaction sent:", tx.hash, "info");
     await tx.wait();
     showMsg("swap", "Swap complete.", "ok");
     clearAmounts();
@@ -1391,7 +1398,7 @@ async function doAddLiquidity() {
       await ensureAllowance(liqTokB, ADDR.ROUTER, bAmt, "pool");
       tx = await router.addLiquidity(liqTokA.address, liqTokB.address, aAmt, bAmt, slipMul(aAmt), slipMul(bAmt), account, deadline);
     }
-    showMsg("pool", "Transaction sent: " + short(tx.hash), "info");
+    showTxMsg("pool", "Transaction sent:", tx.hash, "info");
     await tx.wait();
     showMsg("pool", "Liquidity added.", "ok");
     $("#liqAAmt").value = ""; $("#liqBAmt").value = "";
@@ -1432,15 +1439,26 @@ async function doRemoveLiquidity() {
     const liquidity = (removeLpBal * BigInt(removePct)) / 100n;
     await ensureAllowance({ address: removePair, symbol: "LP" }, ADDR.ROUTER, liquidity, "pool");
     const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, signer);
+    const pair = new ethers.Contract(removePair, PAIR_ABI, ro);
     const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
+    // Slippage protection: estimate what this share of the pool is worth right now from reserves,
+    // then require at least (1 - slippage) of that — same protection swaps and add-liquidity get,
+    // instead of the 0/0 "accept anything" minimums this used to send.
+    const slipMul = (x) => x - (x * BigInt(slippageBp)) / 10000n;
+    const [reserves, totalSupply, token0] = await Promise.all([pair.getReserves(), pair.totalSupply(), pair.token0()]);
+    const expect0 = (reserves[0] * liquidity) / totalSupply;
+    const expect1 = (reserves[1] * liquidity) / totalSupply;
+    const aIsToken0 = token0.toLowerCase() === wrapped(liqTokA).toLowerCase();
+    const [minA, minB] = aIsToken0 ? [slipMul(expect0), slipMul(expect1)] : [slipMul(expect1), slipMul(expect0)];
     let tx;
     if (liqTokA.native || liqTokB.native) {
       const tok = liqTokA.native ? liqTokB : liqTokA;
-      tx = await router.removeLiquidityBDAG(tok.address, liquidity, 0, 0, account, deadline);
+      const [minToken, minBdag] = liqTokA.native ? [minB, minA] : [minA, minB];
+      tx = await router.removeLiquidityBDAG(tok.address, liquidity, minToken, minBdag, account, deadline);
     } else {
-      tx = await router.removeLiquidity(liqTokA.address, liqTokB.address, liquidity, 0, 0, account, deadline);
+      tx = await router.removeLiquidity(liqTokA.address, liqTokB.address, liquidity, minA, minB, account, deadline);
     }
-    showMsg("pool", "Transaction sent: " + short(tx.hash), "info");
+    showTxMsg("pool", "Transaction sent:", tx.hash, "info");
     await tx.wait();
     showMsg("pool", "Liquidity removed.", "ok");
     refreshRemove(); refreshBalances();
