@@ -387,7 +387,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
       <div class="msg" id="poolMsg"></div>
       <div class="risk" style="margin-top:16px">
-        <b>Providing liquidity carries risk.</b> If the price of the two tokens moves apart, you can end up with less value than if you had just held them (impermanent loss). Fees earned may not offset this. Reef takes no cut beyond the pool fee unless the protocol fee switch is later turned on by governance.
+        <b>Providing liquidity carries risk.</b> If the price of the two tokens moves apart, you can end up with less value than if you had just held them (impermanent loss). Fees earned may not offset this. Of the 0.30% swap fee, 0.25% goes to liquidity providers and 0.05% to Reef&rsquo;s treasury (the protocol fee, on since launch; controlled by a 2-of-2 multisig).
       </div>
     </section>
 
@@ -440,7 +440,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     </details>
     <details>
       <summary>Who controls Reef, and what can they actually do?</summary>
-      <p>Reef's Router and Factory have no owner or admin at all &mdash; nobody can pause trading, block a wallet, freeze a pool, or take your funds. The one privileged role in the whole system is <b>feeToSetter</b>, which can turn on a protocol fee (directing a small share of trading fees to a treasury address) and can hand that role to a different address. It cannot touch liquidity that's already in a pool, and it cannot stop anyone from trading. <b>feeToSetter</b> is held by a 2-of-2 hardware-wallet multisig (separate Trezor and Ledger signers) rather than a single key, so no one person can exercise it alone.</p>
+      <p>Reef's Router and Factory have no owner or admin at all &mdash; nobody can pause trading, block a wallet, freeze a pool, or take your funds. The one privileged role in the whole system is <b>feeToSetter</b>, which controls the protocol fee (currently <b>on</b>: 0.05% of every swap, out of the 0.30% total, goes to a treasury address) and can hand that role to a different address. It cannot touch liquidity that's already in a pool, and it cannot stop anyone from trading. <b>feeToSetter</b> is held by a 2-of-2 hardware-wallet multisig (separate Trezor and Ledger signers) rather than a single key, so no one person can exercise it alone.</p>
     </details>
     <details>
       <summary>Is any token on Reef vetted or verified?</summary>
