@@ -3,7 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Reef &middot; dex</title>
+<title>reef.dex</title>
+<meta name="description" content="Reef &mdash; a permissionless AMM DEX on BlockDAG (chain 1404). Swap, provide liquidity, create pools. Open-source, no gatekeeping.">
+
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reef.dex">
+<meta property="og:title" content="reef.dex">
+<meta property="og:description" content="A permissionless AMM DEX on BlockDAG (chain 1404). Swap, provide liquidity, create pools. Open-source, no gatekeeping.">
+<meta property="og:url" content="https://reefdex.pages.dev/">
+<meta property="og:image" content="https://reefdex.pages.dev/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="reef.dex">
+<meta name="twitter:description" content="A permissionless AMM DEX on BlockDAG (chain 1404). Swap, provide liquidity, create pools.">
+<meta name="twitter:image" content="https://reefdex.pages.dev/assets/og-image.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
@@ -67,6 +89,9 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 @media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}.col{min-width:0}}
 .col{display:flex;flex-direction:column;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
+.hero-wrap{max-width:1080px;margin:0 auto;padding:20px 16px 0}
+.hero-banner{display:block;width:100%;height:auto;border-radius:20px;border:1px solid var(--line);box-shadow:0 0 44px -28px var(--coral-soft)}
+@media (max-width:520px){.hero-wrap{padding-top:12px}}
 .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .panel-title h2{font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0;letter-spacing:-.01em;position:relative;padding-bottom:8px}
 .panel-title h2::after{content:"";position:absolute;left:0;bottom:0;width:26px;height:2px;border-radius:2px;background:var(--coral)}
@@ -184,7 +209,19 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .rpcnote{font-size:12px;color:var(--muted);margin:0 0 12px}
 
 /* Disclaimers */
+.impactwarn{margin-top:10px;font-size:12px;line-height:1.5;padding:10px 12px;border-radius:12px;border:1px solid var(--amber);background:rgba(197,150,108,.10);color:var(--text)}
+.impactwarn.severe{border-color:var(--ember);background:rgba(229,98,74,.12)}
+.impactwarn b{font-weight:700}
+.cta.danger:not(:disabled){background:var(--coral);color:#fff}
 .risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.55}
+.tradesbox{background:var(--raised);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tradesbox .th{font-size:12px;color:var(--muted);margin-bottom:8px}
+.tradesbox .trow{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;padding:5px 0;border-top:1px solid var(--line)}
+.tradesbox .trow:first-of-type{border-top:0}
+.tradesbox .trow b{font-weight:600}
+.tradesbox .trow .in{color:var(--good)}
+.tradesbox .trow .out{color:var(--ember)}
+.tradesbox .trow .blk{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .lockbadge{margin-top:10px;background:var(--raised);border:1px solid var(--coral-soft);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px}
 .lockbadge .lockicon{flex:none;width:16px;height:16px;color:var(--coral)}
 .lockbadge b{color:var(--coral)}
@@ -250,6 +287,13 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   </div>
 </header>
 
+<div class="hero-wrap">
+  <picture>
+    <source srcset="/assets/reef-dex-logo.webp" type="image/webp">
+    <img class="hero-banner" src="/assets/reef-dex-logo.png" alt="reef.dex" width="1408" height="768" loading="eager">
+  </picture>
+</div>
+
 <main>
   <div class="col">
 
@@ -288,14 +332,18 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         </div>
       </div>
 
-      <div class="rows" id="swapInfo"></div>
-      <div class="lockbadge" id="lockBadge" style="display:none"></div>
-      <div class="lockbadge" id="twapBadge" style="display:none"></div>
-      <div class="chartbox" id="chartBox" style="display:none;margin-top:10px"></div>
       <div style="text-align:right;margin-top:2px"><button class="linklike" onclick="setMax()">Use max</button></div>
+
+      <div class="rows" id="swapInfo"></div>
+      <div class="impactwarn" id="impactWarn" style="display:none"></div>
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
       <div class="msg" id="swapMsg"></div>
+
+      <div class="lockbadge" id="lockBadge" style="display:none"></div>
+      <div class="lockbadge" id="twapBadge" style="display:none"></div>
+      <div class="chartbox" id="chartBox" style="display:none;margin-top:10px"></div>
+      <div class="tradesbox" id="tradesBox" style="display:none;margin-top:10px"></div>
 
       <div class="risk" style="margin-top:16px">
         <b>Reef is new, unaudited software.</b> Pools can have little or no liquidity, and quotes can move between the time you type an amount and the time you confirm. Only trade what you can afford to lose, and check the receiving amount before you sign.
@@ -385,7 +433,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <a href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-28-mobile-v3c</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-29-recent-trades</p>
     </div>
   </div>
 </main>
@@ -504,8 +552,13 @@ const PAIR_ABI = [
 ];
 const SYNC_IFACE = new ethers.Interface(["event Sync(uint112 reserve0, uint112 reserve1)"]);
 const SYNC_TOPIC = SYNC_IFACE.getEvent("Sync").topicHash;
+const SWAP_IFACE = new ethers.Interface([
+  "event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)",
+]);
+const SWAP_TOPIC = SWAP_IFACE.getEvent("Swap").topicHash;
 const CHART_LOOKBACK_BLOCKS = 20000;
 const CHART_CHUNK_BLOCKS = 2000;
+const TRADES_MAX_SHOWN = 8;
 const LOCK_ABI = [
   "function unlockTime() view returns (uint256)",
 ];
@@ -546,6 +599,9 @@ let liqTokB = null;
 let mode = "swap"; // swap | pool
 let poolSub = "add"; // add | remove
 let slippageBp = 50; // 0.5%
+// Price-impact thresholds (percent). Impact = how much worse this trade's price is than a tiny trade's, fee excluded.
+const WARN_IMPACT_PCT = 3, HIGH_IMPACT_PCT = 10, EXTREME_IMPACT_PCT = 30;
+let impactArmed = false, impactTimer = null, swapInFlight = false;
 let pickerFor = null; // 'from' | 'to' | 'liqA' | 'liqB'
 let quoteAbort = 0;
 
@@ -730,11 +786,13 @@ async function findPath(a, b) {
 
 // ---------- Rendering: header / wallet ----------
 function renderWallet() {
+  syncSwapBtn();
   const btn = $("#walletBtn");
   if (account) { btn.textContent = short(account); btn.classList.add("connected"); }
   else { btn.textContent = "Connect wallet"; btn.classList.remove("connected"); }
 }
 function renderNet() {
+  syncSwapBtn();
   const n = $("#netBadge");
   if (!provider) { n.className = "net"; n.innerHTML = "<i></i>Not connected"; return; }
   if (isReef1404) { n.className = "net ok"; n.innerHTML = "<i></i>BlockDAG"; n.onclick = null; n.style.cursor = "default"; }
@@ -812,6 +870,7 @@ function renderTokButtons() {
   set("#liqBBtn", liqTokB, "Select token");
   set("#liqABtn2", liqTokA, "Select");
   set("#liqBBtn2", liqTokB, "Select token");
+  syncSwapBtn();
 }
 
 // ---------- Tabs ----------
@@ -865,13 +924,14 @@ $("#fromAmt") && $("#fromAmt").addEventListener("input", () => {
 });
 async function refreshSwapQuote() {
   const my = ++quoteAbort;
+  impactArmed = false; clearTimeout(impactTimer);
   clearMsg("swap");
   const amtStr = $("#fromAmt").value.trim();
   $("#swapBtn").disabled = true;
   if (!tokFrom || !tokTo || !amtStr || Number(amtStr) <= 0) { $("#toAmt").value = ""; setSwapInfo(null); hideChart(); return; }
-  if (sameToken(tokFrom, tokTo)) { showMsg("swap", "Choose two different tokens.", "err"); hideChart(); return; }
+  if (sameToken(tokFrom, tokTo)) { showMsg("swap", "Choose two different tokens.", "err"); setSwapInfo(null); hideChart(); return; }
   let amountIn;
-  try { amountIn = ethers.parseUnits(amtStr, tokFrom.decimals); } catch (e) { return; }
+  try { amountIn = ethers.parseUnits(amtStr, tokFrom.decimals); } catch (e) { setSwapInfo(null); return; }
   const path = await findPath(tokFrom, tokTo);
   if (my !== quoteAbort) return;
   if (!path) { showMsg("swap", "No pool exists for this pair yet.", "err"); $("#toAmt").value = ""; setSwapInfo(null); hideChart(); return; }
@@ -880,9 +940,29 @@ async function refreshSwapQuote() {
     const amounts = await router.getAmountsOut(amountIn, path);
     if (my !== quoteAbort) return;
     const out = amounts[amounts.length - 1];
-    $("#toAmt").value = fmt(ethers.formatUnits(out, tokTo.decimals), 8);
+    $("#toAmt").value = fmtAmount(ethers.formatUnits(out, tokTo.decimals));
     const rate = Number(ethers.formatUnits(out, tokTo.decimals)) / Number(amtStr);
-    setSwapInfo({ path, amountIn, amountOut: out, rate });
+    // Price impact: compare this trade's rate with the rate of a much smaller trade on the same route.
+    // Both quotes include the same LP fee, so the fee cancels out and only the size-driven slippage remains.
+    // The reference is 1/10,000 of the trade (falling back to 1/1,000 or 1/100 for very small amounts or low-decimal tokens).
+    let impactPct = null;
+    try {
+      let ref = 0n;
+      for (const d of [10000n, 1000n, 100n]) { const r = amountIn / d; if (r >= 1000n) { ref = r; break; } }
+      if (ref === 0n) {
+        impactPct = 0; // trade too small to measure meaningfully
+      } else {
+        const refAmounts = await router.getAmountsOut(ref, path);
+        if (my !== quoteAbort) return;
+        const refOut = refAmounts[refAmounts.length - 1];
+        if (refOut > 0n) {
+          const ratio = (out * ref * 1000000000n) / (refOut * amountIn);
+          const diff = 1000000000n - ratio;
+          impactPct = diff > 0n ? Number(diff) / 10000000 : 0;
+        }
+      }
+    } catch (e) { impactPct = null; }
+    setSwapInfo({ path, amountIn, amountOut: out, rate, impactPct });
     if (account && isReef1404) $("#swapBtn").disabled = false;
     if (path.length === 2) loadChartForPair(path[0], path[1]); else hideChart();
   } catch (e) {
@@ -974,7 +1054,12 @@ function hideChart() {
   chartAbort++;
   $("#chartBox").style.display = "none";
   $("#chartBox").innerHTML = "";
+  hideTradesBox();
   hideLockBadge();
+}
+function hideTradesBox() {
+  $("#tradesBox").style.display = "none";
+  $("#tradesBox").innerHTML = "";
 }
 async function loadChartForPair(wa, wb) {
   const my = ++chartAbort;
@@ -998,32 +1083,73 @@ async function loadChartForPair(wa, wb) {
 async function loadPriceChart(pairAddr, isToken0From, my) {
   $("#chartBox").style.display = "";
   $("#chartBox").innerHTML = '<div class="empty">Loading recent price history…</div>';
+  $("#tradesBox").style.display = "";
+  $("#tradesBox").innerHTML = '<div class="empty">Loading recent trades…</div>';
   try {
     const latest = await ro.getBlockNumber();
     if (my !== chartAbort) return;
     const earliest = Math.max(0, latest - CHART_LOOKBACK_BLOCKS);
     const points = [];
+    const trades = [];
     let to = latest;
+    let rejected = false;
     while (to > earliest) {
       const from = Math.max(earliest, to - CHART_CHUNK_BLOCKS + 1);
       let logs;
       try {
-        logs = await ro.getLogs({ address: pairAddr, topics: [SYNC_TOPIC], fromBlock: from, toBlock: to });
-      } catch (e) { break; } // this endpoint likely rejects the range — keep whatever was gathered so far
+        // One query covers both event types (topic0 can match either), so the chart and the
+        // trades feed share a single set of RPC calls instead of fetching the same range twice.
+        logs = await ro.getLogs({ address: pairAddr, topics: [[SYNC_TOPIC, SWAP_TOPIC]], fromBlock: from, toBlock: to });
+      } catch (e) { rejected = true; break; } // this endpoint likely rejects the range — keep whatever was gathered so far
       if (my !== chartAbort) return;
       for (const log of logs) {
-        const parsed = SYNC_IFACE.parseLog(log);
-        points.push({ block: log.blockNumber, r0: parsed.args.reserve0, r1: parsed.args.reserve1 });
+        if (log.topics[0] === SYNC_TOPIC) {
+          const parsed = SYNC_IFACE.parseLog(log);
+          points.push({ block: log.blockNumber, r0: parsed.args.reserve0, r1: parsed.args.reserve1 });
+        } else if (log.topics[0] === SWAP_TOPIC) {
+          const parsed = SWAP_IFACE.parseLog(log);
+          trades.push({ block: log.blockNumber, logIndex: log.index ?? log.logIndex ?? 0, args: parsed.args });
+        }
       }
       to = from - 1;
     }
     if (my !== chartAbort) return;
     points.sort((a, b) => a.block - b.block);
     renderPriceChart(points, isToken0From);
+    trades.sort((a, b) => (b.block - a.block) || (b.logIndex - a.logIndex));
+    renderRecentTrades(trades.slice(0, TRADES_MAX_SHOWN), isToken0From, latest, rejected);
   } catch (e) {
     if (my !== chartAbort) return;
     $("#chartBox").innerHTML = '<div class="empty">Could not load price history from this RPC endpoint. Try a different one in RPC status.</div>';
+    $("#tradesBox").innerHTML = '<div class="empty">Could not load recent trades from this RPC endpoint.</div>';
   }
+}
+function renderRecentTrades(trades, isToken0From, latestBlock, rangeMayBeIncomplete) {
+  const box = $("#tradesBox");
+  if (!trades.length) {
+    box.innerHTML = `<div class="th">Recent trades</div><div class="empty">No trades found for this pair in the queried block range.</div>`;
+    return;
+  }
+  const symIn0 = isToken0From ? tokFrom.symbol : tokTo.symbol; // token0's symbol
+  const symIn1 = isToken0From ? tokTo.symbol : tokFrom.symbol; // token1's symbol
+  const decIn0 = isToken0From ? tokFrom.decimals : tokTo.decimals;
+  const decIn1 = isToken0From ? tokTo.decimals : tokFrom.decimals;
+  const toSymbol = tokTo.symbol; // whichever token the user currently has selected as "You receive"
+  const rows = trades.map((t) => {
+    const { amount0In, amount1In, amount0Out, amount1Out } = t.args;
+    const sellingToken0 = amount0In > 0n;
+    const symSold = sellingToken0 ? symIn0 : symIn1;
+    const symBought = sellingToken0 ? symIn1 : symIn0;
+    const amtSold = ethers.formatUnits(sellingToken0 ? amount0In : amount1In, sellingToken0 ? decIn0 : decIn1);
+    const amtBought = ethers.formatUnits(sellingToken0 ? amount1Out : amount0Out, sellingToken0 ? decIn1 : decIn0);
+    const ago = Math.max(0, latestBlock - t.block);
+    const boughtIsToTok = symBought === toSymbol;
+    return `<div class="trow">
+      <span><b class="${boughtIsToTok ? "in" : "out"}">${fmtAmount(amtSold)} ${symSold}</b> &rarr; <b class="${boughtIsToTok ? "in" : "out"}">${fmtAmount(amtBought)} ${symBought}</b></span>
+      <span class="blk">${ago === 0 ? "this block" : ago + " blk ago"}</span>
+    </div>`;
+  }).join("");
+  box.innerHTML = `<div class="th">Recent trades${rangeMayBeIncomplete ? " (partial range — endpoint limit)" : ""}</div>${rows}`;
 }
 function priceFromReserves(r0, r1, isToken0From, decFrom, decTo) {
   const rFrom = isToken0From ? r0 : r1;
@@ -1063,16 +1189,84 @@ function renderPriceChart(points, isToken0From) {
 }
 
 let lastSwap = null;
+// Display precision for token amounts scales with size: 43,667,515.19 rather than 43,667,515.19472635.
+function fmtAmount(v) {
+  const x = Number(v);
+  if (!isFinite(x) || x === 0) return "0";
+  const ax = Math.abs(x);
+  if (ax < 1) return fmtPrice(x);
+  const d = ax >= 1e6 ? 2 : ax >= 1e3 ? 4 : 6;
+  return x.toLocaleString(undefined, { maximumFractionDigits: d });
+}
+// Shrink an amount box's text until the whole number is visible (never below 13px), instead of cutting digits off.
+function fitAmtFont(el) {
+  if (!el) return;
+  el.style.fontSize = "";
+  if (!el.value || !el.clientWidth) return;
+  let size = parseFloat(getComputedStyle(el).fontSize) || 26;
+  while (el.scrollWidth > el.clientWidth + 1 && size > 13) {
+    size -= 1;
+    el.style.fontSize = size + "px";
+  }
+}
+function fitAllAmts() { fitAmtFont($("#fromAmt")); fitAmtFont($("#toAmt")); }
+function fmtImpact(p) {
+  if (p < 0.01) return "<0.01%";
+  return (p >= 10 ? p.toFixed(1) : p.toFixed(2)) + "%";
+}
+function renderImpactWarn(info) {
+  const w = $("#impactWarn");
+  const p = info && info.impactPct;
+  if (p == null || p < WARN_IMPACT_PCT) { w.style.display = "none"; w.innerHTML = ""; w.classList.remove("severe"); return; }
+  const pct = fmtImpact(p);
+  let msg;
+  if (p >= EXTREME_IMPACT_PCT) {
+    msg = `<b>Extreme price impact: ${pct}.</b> This swap is very large compared with the pool, so you would get a far worse price than the pool's current rate. Reduce the amount.`;
+  } else if (p >= HIGH_IMPACT_PCT) {
+    msg = `<b>High price impact: ${pct}.</b> This swap moves the pool's price a lot, so you'd get much less than the current rate suggests. Consider a smaller amount, or splitting it into several swaps.`;
+  } else {
+    msg = `<b>Price impact: ${pct}.</b> This swap is large relative to the pool, so you'll get a noticeably worse price than a small trade would. A smaller amount would get you a better rate.`;
+  }
+  w.classList.toggle("severe", p >= HIGH_IMPACT_PCT);
+  w.innerHTML = msg;
+  w.style.display = "";
+}
+// Keeps the main button's label truthful for the current state (it used to say "Select tokens" even when a swap was ready).
+function syncSwapBtn() {
+  const b = $("#swapBtn");
+  if (!b || swapInFlight) return;
+  b.classList.remove("danger");
+  const amt = $("#fromAmt") ? $("#fromAmt").value.trim() : "";
+  if (!tokFrom || !tokTo) { b.textContent = "Select tokens"; return; }
+  if (!amt || Number(amt) <= 0) { b.textContent = "Enter an amount"; return; }
+  if (!lastSwap) { b.textContent = "Swap"; return; }
+  if (!account) { b.textContent = "Connect wallet to swap"; return; }
+  if (!isReef1404) { b.textContent = "Switch to BlockDAG to swap"; return; }
+  const p = lastSwap.impactPct;
+  if (p != null && p >= HIGH_IMPACT_PCT) {
+    b.classList.add("danger");
+    b.textContent = impactArmed ? `Tap again to confirm \u2014 ${fmtImpact(p)} impact` : "Swap anyway";
+    return;
+  }
+  b.textContent = "Swap";
+}
 function setSwapInfo(info) {
   lastSwap = info;
   const box = $("#swapInfo");
-  if (!info) { box.innerHTML = ""; return; }
+  fitAllAmts();
+  if (!info) { box.innerHTML = ""; renderImpactWarn(null); syncSwapBtn(); return; }
   const hops = info.path.length > 2 ? " (via WBDAG)" : "";
+  const ip = info.impactPct;
+  const impactRow = ip == null ? "" :
+    `<div><span>Price impact</span><b class="${ip >= HIGH_IMPACT_PCT ? "warn" : ip >= WARN_IMPACT_PCT ? "hot" : ""}">${fmtImpact(ip)}</b></div>`;
   box.innerHTML = `
     <div><span>Rate</span><b>1 ${tokFrom.symbol} = ${fmtPrice(info.rate)} ${tokTo.symbol}</b></div>
+    ${impactRow}
     <div><span>Route</span><b>${info.path.length - 1} hop${info.path.length > 2 ? "s" : ""}${hops}</b></div>
     <div><span>Fee</span><b class="hot">0.30% per hop</b></div>
     <div><span>Slippage</span><b>${(slippageBp / 100).toFixed(2)}%</b></div>`;
+  renderImpactWarn(info);
+  syncSwapBtn();
 }
 function flipTokens() {
   const t = tokFrom; tokFrom = tokTo || { ...NATIVE }; tokTo = t && t.native === undefined ? null : t;
@@ -1093,6 +1287,16 @@ function setMax() {
 
 async function doSwap() {
   if (!account || !isReef1404 || !lastSwap) return;
+  // High price impact: require a deliberate second tap within 8 seconds before anything goes to the wallet.
+  if (lastSwap.impactPct != null && lastSwap.impactPct >= HIGH_IMPACT_PCT && !impactArmed) {
+    impactArmed = true;
+    syncSwapBtn();
+    clearTimeout(impactTimer);
+    impactTimer = setTimeout(() => { impactArmed = false; syncSwapBtn(); }, 8000);
+    return;
+  }
+  impactArmed = false; clearTimeout(impactTimer);
+  swapInFlight = true;
   clearMsg("swap");
   $("#swapBtn").disabled = true;
   $("#swapBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
@@ -1117,7 +1321,8 @@ async function doSwap() {
   } catch (e) {
     showMsg("swap", walletErr(e), "err");
   } finally {
-    $("#swapBtn").textContent = "Swap";
+    swapInFlight = false;
+    syncSwapBtn();
     refreshSwapQuote();
   }
 }
@@ -1349,6 +1554,9 @@ function gateCancel() {
 // ---------- Init ----------
 function init() {
   initGate();
+  $("#fromAmt").addEventListener("input", () => fitAmtFont($("#fromAmt")));
+  window.addEventListener("resize", fitAllAmts);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAllAmts);
   initReadOnly(RPC_URLS[0]);
   renderTokButtons();
   renderNet();
