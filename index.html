@@ -1396,6 +1396,7 @@ function flipTokens() {
   renderTokButtons();
   clearAmounts();
   refreshSwapQuote();
+  refreshBalances();
 }
 function setMax() {
   if (!account) return;
@@ -1650,9 +1651,19 @@ function selectPoolPair(a, b) {
 // ---------- Refresh ----------
 async function refreshBalances() {
   if (!account) { $("#fromBal").textContent = ""; $("#liqABal").textContent = ""; $("#liqBBal").textContent = ""; return; }
-  if (tokFrom) balanceOf(tokFrom, account).then((b) => $("#fromBal").textContent = "Balance: " + fmt(ethers.formatUnits(b, tokFrom.decimals), 6));
-  if (liqTokA) balanceOf(liqTokA, account).then((b) => $("#liqABal").textContent = "Balance: " + fmt(ethers.formatUnits(b, liqTokA.decimals), 6));
-  if (liqTokB) balanceOf(liqTokB, account).then((b) => $("#liqBBal").textContent = "Balance: " + fmt(ethers.formatUnits(b, liqTokB.decimals), 6));
+  // Each label only shows a balance for the token that is still selected when the answer arrives,
+  // so a slow reply for a previously selected token can never overwrite the current one.
+  const show = (sel, getTok, tok) => {
+    $(sel).textContent = "";
+    if (!tok) return;
+    balanceOf(tok, account).then((b) => {
+      if (getTok() !== tok) return;
+      $(sel).textContent = "Balance: " + fmt(ethers.formatUnits(b, tok.decimals), 6);
+    }).catch(() => {});
+  };
+  show("#fromBal", () => tokFrom, tokFrom);
+  show("#liqABal", () => liqTokA, liqTokA);
+  show("#liqBBal", () => liqTokB, liqTokB);
 }
 function refreshPool() {
   if (poolSub === "add") quoteLiqFrom("A"); else refreshRemove();
