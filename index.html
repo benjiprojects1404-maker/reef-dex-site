@@ -183,6 +183,10 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .tokoption .dot{width:30px;height:30px;border-radius:50%;flex:none;background:radial-gradient(circle at 50% 22%,#dfe3e9,#6f7680 65%,#141518)}
 .tokoption .dot.native{background:radial-gradient(circle at 50% 22%,#eaf6fd,#0a71a1 65%,#06274a)}
 .tokoption small{display:block;color:var(--muted);font-weight:400}
+.tokoption .addr{display:block;color:var(--muted);font:400 11px "JetBrains Mono",ui-monospace,monospace;word-break:break-all;margin-top:2px}
+.pickwarn{font-size:12.5px;line-height:1.5;color:var(--muted);background:var(--raised);border:1px solid var(--line2);border-radius:12px;padding:9px 11px;margin:10px 0 0}
+.pickwarn b{color:var(--text)}
+.picksec{font-size:12px;color:var(--muted);margin:10px 2px 2px}
 .spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:8px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hint{font-size:12px;color:var(--muted);margin-top:8px}
@@ -467,9 +471,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <dialog id="tokDialog">
   <div class="dhead"><h3>Select a token</h3><button class="dclose" onclick="document.getElementById('tokDialog').close()">&times;</button></div>
   <div class="dbody">
-    <input id="tokSearch" type="text" placeholder="Paste a token contract address">
-    <div id="tokList" style="margin-top:10px"></div>
-    <p class="hint">Reef has no built-in token list yet. Paste the exact contract address, and double-check it against the project's own source before trading.</p>
+    <input id="tokSearch" type="text" placeholder="Search by name, or paste a contract address" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="pickwarn">These are the tokens that already have a pool on Reef. Anyone can create a pool, including for a fake token with a familiar name, so <b>always check the contract address</b> against the project's own website before trading.</p>
+    <div id="tokList" style="margin-top:6px"></div>
   </div>
 </dialog>
 
@@ -805,6 +809,10 @@ function walletErr(e) {
 }
 
 // ---------- Token helpers ----------
+function cleanLabel(v, max, fallback) {
+  const t = String(v == null ? "" : v).replace(/[^A-Za-z0-9 $._+\-()\/]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
+  return t || fallback;
+}
 async function tokenInfo(address) {
   if (!address) return { ...NATIVE };
   const key = address.toLowerCase();
@@ -815,7 +823,9 @@ async function tokenInfo(address) {
     c.name().catch(() => "Unknown token"),
     c.decimals().catch(() => 18),
   ]);
-  const info = { symbol, name, decimals: Number(decimals), address, native: false };
+  // Token names and symbols are chosen by whoever deployed the token, so treat them as untrusted:
+  // keep only plain characters before they are shown anywhere on the page.
+  const info = { symbol: cleanLabel(symbol, 16, "???"), name: cleanLabel(name, 48, "Unknown token"), decimals: Number(decimals), address, native: false };
   tokenCache[key] = info;
   return info;
 }
@@ -878,31 +888,74 @@ function oppositeToken() {
   if (pickerFor === "liqB") return liqTokA;
   return null;
 }
+// Tokens that already have a Reef pool, read from the factory (cached for the session).
+let poolTokensPromise = null;
+function loadPoolTokens() {
+  if (!poolTokensPromise) {
+    poolTokensPromise = tryRpcFallback(async (p) => {
+      const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, p);
+      const n = Number(await factory.allPairsLength());
+      const pairs = await Promise.all(Array.from({ length: Math.min(n, 300) }, (_, i) => factory.allPairs(i)));
+      const seen = new Set();
+      await Promise.all(pairs.map(async (pa) => {
+        const c = new ethers.Contract(pa, PAIR_ABI, p);
+        const [t0, t1] = await Promise.all([c.token0(), c.token1()]);
+        seen.add(t0.toLowerCase()); seen.add(t1.toLowerCase());
+      }));
+      seen.delete(ADDR.WBDAG.toLowerCase()); // shown as native BDAG
+      const infos = await Promise.all([...seen].map((a) => tokenInfo(ethers.getAddress(a)).catch(() => null)));
+      return infos.filter(Boolean).sort((x, y) => x.symbol.localeCompare(y.symbol));
+    }).catch((e) => { poolTokensPromise = null; throw e; });
+  }
+  return poolTokensPromise;
+}
+let pickerSeq = 0;
 async function renderPickerList(q) {
+  const my = ++pickerSeq;
   const list = $("#tokList");
-  list.innerHTML = "";
   const query = q.trim();
   const opp = oppositeToken();
-  const addOption = (t) => {
-    if (opp && sameToken(t, opp)) return;
+  const make = (t) => {
     const b = el("button", "tokoption");
-    b.innerHTML = `<span class="dot${t.native ? " native" : ""}"></span><span>${t.symbol}<small>${t.name}</small></span>`;
+    const addr = t.native ? "Native coin of chain 1404" : t.address;
+    b.innerHTML = `<span class="dot${t.native ? " native" : ""}"></span><span>${escHtml(t.symbol)}<small>${escHtml(t.name)}</small><span class="addr">${escHtml(addr)}</span></span>`;
     b.onclick = () => choosePicked(t);
-    list.appendChild(b);
+    return b;
   };
-  if (!query) {
-    COMMON.forEach(addOption);
-    if (!list.children.length) list.innerHTML = '<div class="empty">Paste a token contract address &mdash; that\'s already selected on the other side.</div>';
-    return;
-  }
-  if (ethers.isAddress(query)) {
+  const show = (items, emptyMsg) => {
+    if (my !== pickerSeq) return;
+    list.innerHTML = "";
+    const usable = items.filter((t) => !(opp && sameToken(t, opp)));
+    if (!usable.length) { list.innerHTML = `<div class="empty">${emptyMsg}</div>`; return; }
+    usable.forEach((t) => list.appendChild(make(t)));
+  };
+
+  if (query && ethers.isAddress(query)) {
+    list.innerHTML = '<div class="empty">Looking up that address…</div>';
     const info = await tokenInfo(query).catch(() => null);
+    if (my !== pickerSeq) return;
     if (!info) { list.innerHTML = '<div class="empty">Not an ERC-20 token at that address.</div>'; return; }
-    if (opp && sameToken(info, opp)) { list.innerHTML = '<div class="empty">That\'s already selected on the other side.</div>'; return; }
-    addOption(info);
+    show([info], "That token is already selected on the other side.");
     return;
   }
-  list.innerHTML = '<div class="empty">Paste a token contract address.</div>';
+
+  if (!list.children.length || !query) list.innerHTML = '<div class="empty">Loading tokens with a Reef pool…</div>';
+  let tokens;
+  try { tokens = await loadPoolTokens(); }
+  catch (e) { tokens = null; }
+  if (my !== pickerSeq) return;
+  const all = [{ ...NATIVE }, ...(tokens || [])];
+  if (!query) {
+    show(all, "Paste a token contract address.");
+    if (!tokens && my === pickerSeq) list.insertAdjacentHTML("beforeend", '<div class="empty">Couldn\'t load the pool list right now. You can still paste a contract address.</div>');
+    return;
+  }
+  const qq = query.toLowerCase();
+  const hits = all.filter((t) => t.symbol.toLowerCase().includes(qq) || t.name.toLowerCase().includes(qq));
+  show(hits, "No Reef pool for a token with that name. Paste its contract address instead.");
+}
+function escHtml(v) {
+  return String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 function choosePicked(t) {
   let clearedOpposite = false;
