@@ -18,6 +18,7 @@ Each address below was checked on 2 Oct 2026: the code on chain is byte-for-byte
 | NodalReefAdapter | `0x4b60D344eDA7E3D859739B5AbC1176d756E22d56` | `contracts/nodal/NodalReefAdapter.sol` |
 | Handshake OTCEscrow | `0xD907701A2D96f7D0E7596b02737C9F36446cf5CA` | `contracts/handshake/OTCEscrow.sol` |
 | $COOKED curve | `0xD8a25883dd2576cB7eE7803e23f0309F56bAbA2B` | `contracts/cooked/CookedCurve.sol` (also in the cooked-site repo) |
+| Reef TWAP oracle (NOCAP/BDAG) | `0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b` | `contracts/reef/ReefTWAPOracle.sol` |
 | $COOKED token | `0xd95C548B144682f4EF49728944505D8506861B1B` | `contracts/cooked/CookedToken.sol` |
 
 Read from chain the same day: Reef's `feeToSetter`, NodalRouter's `owner` and the escrow's `owner` are all the admin
@@ -25,7 +26,11 @@ multisig. Reef's `feeTo` (protocol-fee treasury) is `0xECc48Bca8c28Caa8e980E308D
 
 Reef pools (pairs) are created by the Factory from `contracts/reef/ReefPair.sol`.
 
-Not included: the NOCAP/BDAG TWAP oracle and the NOCAP LP lock.
+**NOCAP LP lock** `0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1`: source in `nocap/NoCapLPLock.sol` (Solidity 0.8.20,
+OpenZeppelin, kept outside the test build because it uses a different compiler). Its functions and settings match the
+chain, but its bytecode didn't rebuild exactly from this file with the recorded settings, so treat this source as
+"believed to match" rather than proven. Read on 2 Oct 2026: it holds 99.99% of the NOCAP/BDAG pool's LP tokens,
+beneficiary `0x134C6025C234D7E3847bDA9e4aD794df9a805510`, unlocks 25 Mar 2027 09:45 UTC.
 
 `contracts/reef/ReefAdminMultisigV2.sol` is **not deployed**. It's a proposed replacement that fixes finding M-1
 below, for use when the admin moves from 2-of-2 to 2-of-3.
@@ -40,7 +45,7 @@ default metadata hash; that only changes the metadata stamp at the end of the by
 
 ```bash
 npm install
-npx hardhat test      # 58 passing
+npx hardhat test      # 64 passing
 ```
 
 The tests run the real contracts together: Reef pools, Nodal routing through the adapter into Reef, the
@@ -49,7 +54,7 @@ contracts are `contracts/reef/mocks/`, `contracts/handshake/HandshakeTestTokens.
 
 ## Known findings (free pre-audit review, 2 Oct 2026)
 
-No critical or high findings. Every finding below has a test that reproduces it.
+No critical or high findings. Every finding below except L-5 (a design property) has a test that reproduces it.
 
 | ID | Contract | Severity | Finding |
 |---|---|---|---|
@@ -59,6 +64,7 @@ No critical or high findings. Every finding below has a test that reproduces it.
 | L-3 | Handshake | Low | A token that blocks or pauses the escrow freezes that token's offers until it unblocks. |
 | L-4 | Reef | Low | Transfer-tax tokens can be bought but not sold: the router has no fee-on-transfer swap functions. |
 | L-5 | Nodal | Low | The owner can point a source at any contract; users are protected by their minimum-output check. |
+| O-1 | TWAP oracle | Note | `consult()` returns 0 before the first `update()` (its comment says it reverts) and never says how old its average is. Anything reading it should check `blockTimestampLast`. |
 | L-6 | Admin multisig | Low | A transaction whose inner call failed stays executable by anyone until an owner revokes it. |
 
 Reef's contracts are Uniswap V2 ported to Solidity 0.8 and renamed (ETH → BDAG). The only logic differences: the
