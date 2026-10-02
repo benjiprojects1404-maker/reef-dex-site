@@ -312,9 +312,12 @@ footer p{margin:0 0 6px}
         <div class="arow"><div class="lbl">Factory<small>creates pools</small></div><div class="val">0x9603042044b6B1A1637c508F731ba01219142239</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x9603042044b6B1A1637c508F731ba01219142239">Explorer</a></div></div>
         <div class="arow"><div class="lbl">WBDAG<small>wrapped BDAG</small></div><div class="val">0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA">Explorer</a></div></div>
         <div class="arow"><div class="lbl">Admin multisig<small>2-of-2, holds feeToSetter</small></div><div class="val">0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">Treasury<small>receives the 0.05% protocol fee</small></div><div class="val">0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267">Explorer</a></div></div>
         <div class="arow"><div class="lbl">TWAP oracle<small>NOCAP/BDAG pool</small></div><div class="val">0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b">Explorer</a></div></div>
       </div>
       <p>Pool (pair) addresses are created by the Factory. Read any pool's address with <code>getPair(tokenA, tokenB)</code> on the Factory.</p>
+      <h3>Source code and tests</h3>
+      <p>The full source for these contracts, with the test suite, is on <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts" target="_blank" rel="noopener">GitHub</a>. On 2 October 2026 every address above was checked against it: the code on chain is exactly what the published files compile to. The same folder lists the known findings from a pre-audit review.</p>
     </section>
 
     <section id="beta">
@@ -352,6 +355,7 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
     <section id="reef-token">
       <h2>$REEF</h2>
       <p>$REEF is Reef's own token. The official contract address and presale details will be published here and on X when the presale opens. Until then, treat any "$REEF" you see elsewhere as fake.</p>
+      <div class="note"><b>REEF-LP is not $REEF.</b> When you provide liquidity on Reef, you receive pool-share tokens called REEF-LP, for any pool. They are not the $REEF token.</div>
       <h3>Does holding $REEF pay me anything?</h3>
       <p>No. $REEF does not pay holders any share of Reef's fees or revenue. If you want income from Reef, that comes from providing liquidity: LPs in the REEF/BDAG pool earn 0.25% of every trade in it, like any other pool. A time-limited reward for REEF/BDAG liquidity providers is being considered, but it isn't promised.</p>
       <h3>So what is it for?</h3>
