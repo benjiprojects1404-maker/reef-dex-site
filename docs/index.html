@@ -218,6 +218,8 @@ footer p{margin:0 0 6px}
       <p>If two tokens don't share a pool, but both have a pool with BDAG, Reef routes the trade through BDAG automatically (token A → BDAG → token B). You pay the 0.30% fee on each step.</p>
       <h3>Slippage and deadline</h3>
       <p>Prices can move between when you press swap and when your transaction lands. <b>Slippage tolerance</b> (default 0.5%, change it with the settings icon) is the most you'll let the price move against you. If it moves further, the swap cancels and nothing is spent except the network fee. Every swap also has a 20-minute deadline, so a transaction stuck in the queue can't fill hours later at a stale price.</p>
+      <h3>Tokens with a transfer tax</h3>
+      <p>Some tokens take a percentage every time they move. Reef can buy these, but selling them through Reef always fails. Check for a transfer tax before you buy.</p>
       <h3>Price impact warnings</h3>
       <p>A big trade in a small pool moves the price a lot. Reef shows a warning at 3% impact, a stronger one at 10%, and asks you to tap twice to confirm. At 30% or more it tells you to reduce the amount. Splitting a large trade into smaller ones usually gets a better average price.</p>
       <h3>Chart, trades and badges</h3>
@@ -380,7 +382,8 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
     <section id="faq">
       <h2>FAQ</h2>
       <details><summary>Has Reef been audited?</summary><p>Not yet. An independent audit is the first step to <a href="#beta">leaving beta</a>. Until then, only use amounts you're comfortable losing.</p></details>
-      <details><summary>Why did my swap fail?</summary><p>Usually the price moved more than your slippage tolerance before it landed, or the 20-minute deadline passed. Nothing is spent except the network fee. Try again, or raise slippage slightly for a fast-moving token. Some tokens also take a tax on transfers, which needs a higher slippage setting.</p></details>
+      <details><summary>Why did my swap fail?</summary><p>Usually the price moved more than your slippage tolerance before it landed, or the 20-minute deadline passed. Nothing is spent except the network fee. Try again, or raise slippage slightly for a fast-moving token. If you're selling a token that takes a tax on every transfer, see the next question.</p></details>
+      <details><summary>Can I trade tokens that take a tax on transfers?</summary><p>You can buy them, but you can't sell them through Reef: the sale always fails, whatever slippage you set. Reef's router doesn't include Uniswap's special functions for taxed tokens. Check whether a token has a transfer tax before you buy it on Reef.</p></details>
       <details><summary>Why is my approval for a specific amount?</summary><p>Reef asks for exactly what each trade needs, rather than unlimited spending. It means one extra click for repeat trades, but a token approval can never be used for more than you intended.</p></details>
       <details><summary>Can I lose money providing liquidity?</summary><p>Yes. If the two tokens' prices move apart, <a href="#impermanent-loss">impermanent loss</a> can outweigh the fees you earn. If one token goes to zero, you'll be left holding mostly that token.</p></details>
       <details><summary>A token I want isn't in the list.</summary><p>The list shows tokens that already have a Reef pool. Paste the token's contract address into the picker to find it. If it has no pool yet, you can <a href="#create-pool">create one</a>.</p></details>
