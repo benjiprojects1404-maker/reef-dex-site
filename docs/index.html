@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reef Docs</title>
+<meta name="description" content="How Reef works: swapping, providing liquidity, creating pools, fees, safety and contract addresses for the Reef DEX on BlockDAG (chain 1404).">
+<link rel="canonical" href="https://reefdex.fyi/docs/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://reefdex.fyi/docs/">
+<meta property="og:title" content="Reef Docs">
+<meta property="og:description" content="Swapping, liquidity, fees, safety and contract addresses for the Reef DEX on BlockDAG (chain 1404).">
+<meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reef Docs">
+<meta name="twitter:description" content="Swapping, liquidity, fees, safety and contract addresses for the Reef DEX on BlockDAG.">
+<meta name="twitter:image" content="https://reefdex.fyi/assets/og-image.jpg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#7fa3ab;--coral-text:#e79bab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--link:#7fd0f7;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--link:#0a5f88}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;color:var(--text);font:400 16px/1.65 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:var(--link)}
+header.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1160px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{height:30px;width:auto;display:block}
+.brand span{font:700 15px "Bricolage Grotesque",sans-serif;color:var(--muted);border-left:1px solid var(--line2);padding-left:10px}
+.topwrap .spacer{flex:1}
+.openapp{background:var(--tide);color:#fff;text-decoration:none;font:600 14px "Instrument Sans",sans-serif;padding:9px 15px;border-radius:11px;white-space:nowrap}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+
+.layout{max-width:1160px;margin:0 auto;padding:28px 16px 64px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px}
+nav.toc{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--text);background:var(--raised)}
+nav.toc a.on{color:var(--text);border-left-color:var(--coral);background:var(--raised)}
+nav.toc .grp{font:600 11px "Instrument Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.75;margin:14px 10px 4px}
+nav.toc .grp:first-child{margin-top:0}
+
+main{min-width:0;max-width:760px}
+h1{font:800 clamp(32px,5vw,46px)/1.08 "Bricolage Grotesque",sans-serif;letter-spacing:-.02em;margin:0 0 12px}
+.lede{font-size:18px;color:var(--muted);margin:0 0 22px;max-width:640px}
+section{padding-top:30px;margin-top:30px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+h2{font:700 26px/1.2 "Bricolage Grotesque",sans-serif;letter-spacing:-.01em;margin:0 0 12px}
+h3{font:600 17px/1.3 "Instrument Sans",sans-serif;margin:24px 0 8px}
+p{margin:0 0 14px}
+ul,ol.steps{margin:0 0 16px;padding-left:22px}
+li{margin:4px 0}
+code,.mono{font:400 13.5px "JetBrains Mono",ui-monospace,monospace}
+code{background:var(--raised);border:1px solid var(--line);padding:1px 6px;border-radius:6px;word-break:break-all}
+pre{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;font:400 13px/1.6 "JetBrains Mono",ui-monospace,monospace;margin:0 0 16px}
+pre code{background:none;border:0;padding:0;word-break:normal}
+.note,.warn{border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:15px;border:1px solid var(--line2);background:var(--raised)}
+.warn{border-color:var(--coral-soft)}
+.note b,.warn b{color:var(--text)}
+.warn b:first-child{color:var(--coral-text)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--text);display:block}
+.card:hover{border-color:var(--line2)}
+.card b{display:block;font:700 16px "Bricolage Grotesque",sans-serif;margin-bottom:2px}
+.card span{color:var(--muted);font-size:14px}
+
+.tbl{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:15px}
+.tbl th,.tbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-weight:600;color:var(--muted);font-size:13px}
+.tbl td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto;margin:0 0 16px}
+.scroll .tbl{margin:0}
+
+.addr{display:flex;flex-direction:column;gap:10px;margin:0 0 16px}
+.arow{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.arow .lbl{font-weight:600;font-size:14px}
+.arow .lbl small{font-weight:400;color:var(--muted);margin-left:6px}
+.arow .val{grid-column:1;font:400 13px "JetBrains Mono",ui-monospace,monospace;color:var(--muted);word-break:break-all}
+.arow .acts{grid-row:1 / span 2;grid-column:2;display:flex;gap:6px}
+.arow button,.arow a.btn{border:1px solid var(--line2);background:var(--raised);color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 10px;border-radius:8px;cursor:pointer;text-decoration:none;white-space:nowrap}
+
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:0 0 16px}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.sw i{display:block;height:46px}
+.sw div{padding:7px 10px;font-size:13px}
+.sw code{font-size:12px;border:0;background:none;padding:0}
+.brandbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;align-items:center;justify-content:center;margin:0 0 12px}
+.brandbox img{max-width:260px;width:100%;height:auto}
+
+details{border:1px solid var(--line);border-radius:12px;padding:0 14px;margin:0 0 10px;background:var(--card)}
+details summary{cursor:pointer;font-weight:600;padding:12px 0;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";float:right;color:var(--muted)}
+details[open] summary::after{content:"\2013"}
+details p{margin:0 0 12px;color:var(--text)}
+
+footer{max-width:1160px;margin:0 auto;padding:0 16px 48px;color:var(--muted);font-size:13px}
+footer p{margin:0 0 6px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:18px;padding-top:16px}
+  nav.toc{position:sticky;top:57px;z-index:5;max-height:none;overflow-x:auto;overflow-y:hidden;margin:0 -16px;padding:8px 16px;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav.toc ol{flex-direction:row;gap:6px;width:max-content}
+  nav.toc .grp{display:none}
+  nav.toc a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+  nav.toc a.on{border-color:var(--coral-soft)}
+  html{scroll-padding-top:116px}
+  .brand span{display:none}
+}
+@media (max-width:420px){
+  .arow{grid-template-columns:1fr}
+  .arow .acts{grid-row:auto;grid-column:1;margin-top:6px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topwrap">
+    <a class="brand" href="/"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="Reef"><span>Docs</span></a>
+    <div class="spacer"></div>
+    <a class="openapp" href="/">Open Reef</a>
+  </div>
+</header>
+<div class="betabar">BETA: unaudited smart contracts on an early-stage chain. Only use what you can afford to lose.</div>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li class="grp">Start</li>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#getting-started">Getting started</a></li>
+      <li class="grp">Using Reef</li>
+      <li><a href="#swap">Swapping</a></li>
+      <li><a href="#liquidity">Providing liquidity</a></li>
+      <li><a href="#create-pool">Creating a pool</a></li>
+      <li><a href="#impermanent-loss">Impermanent loss</a></li>
+      <li><a href="#fees">Fees</a></li>
+      <li class="grp">Trust</li>
+      <li><a href="#safety">Safety and control</a></li>
+      <li><a href="#rpc">RPC status</a></li>
+      <li><a href="#contracts">Contracts</a></li>
+      <li><a href="#beta">Leaving beta</a></li>
+      <li class="grp">More</li>
+      <li><a href="#builders">For builders</a></li>
+      <li><a href="#reef-token">$REEF</a></li>
+      <li><a href="#brand">Brand assets</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <h1>Reef docs</h1>
+      <p class="lede">Reef is a permissionless exchange on BlockDAG (chain 1404). Swap tokens, earn fees by providing liquidity, or open a pool for any token. No sign-up, no gatekeeping, and your funds never leave your wallet until you sign.</p>
+      <div class="cards">
+        <a class="card" href="#swap"><b>Swap</b><span>Trade one token for another from a shared pool.</span></a>
+        <a class="card" href="#liquidity"><b>Earn</b><span>Deposit two tokens and earn 0.25% of every trade.</span></a>
+        <a class="card" href="#contracts"><b>Verify</b><span>Every address, so you can check before you sign.</span></a>
+      </div>
+      <h3>How it works in one paragraph</h3>
+      <p>Reef is an automated market maker (AMM), built on the well-tested Uniswap V2 design. Each pool holds two tokens. The price comes from the ratio between them: when you buy one token, you add the other, and the price moves. People who deposit tokens into a pool are called liquidity providers (LPs). They earn a share of every trade, in return for taking on <a href="#impermanent-loss">impermanent loss</a> risk.</p>
+      <div class="warn"><b>Beta software.</b> Reef's contracts have not been independently audited, and BlockDAG is a young chain. Bugs can cause loss of funds. Only trade or provide liquidity with amounts you're comfortable losing.</div>
+    </section>
+
+    <section id="getting-started">
+      <h2>Getting started</h2>
+      <h3>What you need</h3>
+      <ul>
+        <li>A browser wallet such as MetaMask (on desktop or in the wallet's own browser on phone).</li>
+        <li>Some BDAG on BlockDAG (chain 1404) to pay network fees, and for whatever you want to trade.</li>
+      </ul>
+      <h3>Connect</h3>
+      <ol class="steps">
+        <li>Open <a href="/">reefdex.fyi</a> and press <b>Connect wallet</b>.</li>
+        <li>The first time, Reef shows a short risk notice. Read it, tick both boxes and continue.</li>
+        <li>If your wallet isn't on BlockDAG yet, Reef asks it to add or switch to the network. Approve that in your wallet.</li>
+      </ol>
+      <h3>Network details</h3>
+      <div class="scroll"><table class="tbl">
+        <tr><th>Setting</th><th>Value</th></tr>
+        <tr><td>Network name</td><td>BlockDAG</td></tr>
+        <tr><td>Chain ID</td><td class="num">1404</td></tr>
+        <tr><td>Currency symbol</td><td>BDAG (18 decimals)</td></tr>
+        <tr><td>RPC</td><td>Any working endpoint from Reef's <a href="#rpc">RPC status</a> panel, e.g. <code>https://rpc.blockdag.engineering</code></td></tr>
+        <tr><td>Explorer</td><td><a href="https://explorer.bdagexplorer.com" target="_blank" rel="noopener">explorer.bdagexplorer.com</a></td></tr>
+      </table></div>
+      <div class="note"><b>Reef never asks for your seed phrase</b> and nobody from Reef will message you first. Anyone who does is a scammer.</div>
+    </section>
+
+    <section id="swap">
+      <h2>Swapping</h2>
+      <ol class="steps">
+        <li>On the <b>Swap</b> tab, choose the token you're paying with and the token you want. The picker lists every token that has a Reef pool, or you can paste a contract address.</li>
+        <li>Type an amount. Reef shows how much you'll receive, the minimum you'll accept, and the price impact.</li>
+        <li>If you're paying with a token rather than BDAG, your wallet first asks you to <b>approve</b> it. Then confirm the swap.</li>
+      </ol>
+      <h3>Routing through BDAG</h3>
+      <p>If two tokens don't share a pool, but both have a pool with BDAG, Reef routes the trade through BDAG automatically (token A → BDAG → token B). You pay the 0.30% fee on each step.</p>
+      <h3>Slippage and deadline</h3>
+      <p>Prices can move between when you press swap and when your transaction lands. <b>Slippage tolerance</b> (default 0.5%, change it with the settings icon) is the most you'll let the price move against you. If it moves further, the swap cancels and nothing is spent except the network fee. Every swap also has a 20-minute deadline, so a transaction stuck in the queue can't fill hours later at a stale price.</p>
+      <h3>Price impact warnings</h3>
+      <p>A big trade in a small pool moves the price a lot. Reef shows a warning at 3% impact, a stronger one at 10%, and asks you to tap twice to confirm. At 30% or more it tells you to reduce the amount. Splitting a large trade into smaller ones usually gets a better average price.</p>
+      <h3>Chart, trades and badges</h3>
+      <p>For a direct pair, Reef shows a price chart and recent trades read straight from the pool's own on-chain events, with no third-party price feed. Some pools also show a <b>liquidity lock</b> badge (the LP tokens are held in a time-lock) or a <b>TWAP</b> badge (a time-averaged price oracle is running for that pool).</p>
+    </section>
+
+    <section id="liquidity">
+      <h2>Providing liquidity</h2>
+      <p>Liquidity providers deposit two tokens into a pool, in the pool's current ratio. In return they receive <b>LP tokens</b>, which represent their share of the pool. Every swap pays 0.25% into the pool, so the value of each LP token slowly grows with trading volume.</p>
+      <h3>Add liquidity</h3>
+      <ol class="steps">
+        <li>On the <b>Pool</b> tab, choose the two tokens.</li>
+        <li>Enter an amount for one. Reef fills in the other at the pool's current ratio.</li>
+        <li>Approve each token if asked, then confirm. The LP tokens arrive in your wallet.</li>
+      </ol>
+      <h3>Remove liquidity</h3>
+      <ol class="steps">
+        <li>On the <b>Pool</b> tab, select the pool and choose how much to withdraw (25%, 50%, 75% or Max).</li>
+        <li>Confirm. You get back your share of both tokens, including the fees earned while you were in.</li>
+      </ol>
+      <div class="note"><b>Your earnings aren't paid out separately.</b> They build up inside the pool and come back to you when you remove liquidity.</div>
+    </section>
+
+    <section id="create-pool">
+      <h2>Creating a pool</h2>
+      <p>Anyone can create a pool for any two tokens. If no pool exists yet, adding liquidity creates one.</p>
+      <div class="warn"><b>The first deposit sets the price.</b> Whatever ratio you put in becomes the starting price. If it's wrong, traders will buy the cheap side straight away and you'll lose the difference. Check the price elsewhere first, and start with a ratio you're sure of.</div>
+      <ul>
+        <li>A tiny amount of the first deposit (1,000 of the smallest LP units, far less than a cent) is locked forever. This is a standard protection against a pricing attack on new pools.</li>
+        <li>A pool on Reef is not an endorsement. Tokens can be fake, mislabelled or malicious. Traders should always check a token's contract address against a source they trust.</li>
+        <li>Launching a token? Consider locking your LP tokens in a time-lock contract and publishing the address. It's the easiest way to show buyers you can't pull the liquidity.</li>
+      </ul>
+    </section>
+
+    <section id="impermanent-loss">
+      <h2>Impermanent loss</h2>
+      <p>When the price of one token in a pool moves, traders rebalance the pool and your share of the two tokens shifts with it. You end up with more of the token that fell and less of the token that rose. Compared with simply holding the two tokens, that costs you something. This is called impermanent loss, because it disappears if the price returns to where it was when you deposited.</p>
+      <div class="scroll"><table class="tbl">
+        <tr><th>If one token's price changes by</th><th>Your position compared with just holding</th></tr>
+        <tr><td class="num">1.25× or 0.8×</td><td class="num">−0.6%</td></tr>
+        <tr><td class="num">1.5× or 0.67×</td><td class="num">−2.0%</td></tr>
+        <tr><td class="num">2× or 0.5×</td><td class="num">−5.7%</td></tr>
+        <tr><td class="num">3× or 0.33×</td><td class="num">−13.4%</td></tr>
+        <tr><td class="num">5× or 0.2×</td><td class="num">−25.5%</td></tr>
+      </table></div>
+      <p>These figures are before fees. Trading fees earned can make up for it, but on a quiet pool or a token that moves a lot, they may not. Pools of two tokens that tend to move together have the least impermanent loss.</p>
+    </section>
+
+    <section id="fees">
+      <h2>Fees</h2>
+      <div class="scroll"><table class="tbl">
+        <tr><th>Fee</th><th>Amount</th><th>Goes to</th></tr>
+        <tr><td>Swap fee</td><td class="num">0.30% of the amount in</td><td>Split below</td></tr>
+        <tr><td>Liquidity providers</td><td class="num">0.25%</td><td>Stays in the pool, shared by all LPs</td></tr>
+        <tr><td>Protocol fee</td><td class="num">0.05%</td><td>Reef treasury</td></tr>
+        <tr><td>Network fee</td><td>Varies</td><td>BlockDAG validators, paid in BDAG</td></tr>
+      </table></div>
+      <p>That's all of it. No deposit or withdrawal fees, no hidden spread, and no fee for creating a pool.</p>
+      <p>The protocol fee works the same way as in Uniswap V2: it isn't taken from each swap separately. Instead, when liquidity is next added or removed, the pool mints new LP tokens to the treasury equal to one-sixth of the fees earned since the last time. The protocol fee has been on since launch. It can only be switched on or off by the <a href="#safety">multisig</a>.</p>
+    </section>
+
+    <section id="safety">
+      <h2>Safety and control</h2>
+      <h3>What nobody can do</h3>
+      <p>Reef's Router and Factory have no owner or admin. Nobody, including the team, can pause trading, block a wallet, freeze a pool, change the 0.30% swap fee or move funds out of a pool.</p>
+      <h3>The one privileged role</h3>
+      <p>The Factory has a single setting, <code>feeToSetter</code>, which decides where the 0.05% protocol fee goes (or turns it off) and can hand that role to another address. It cannot touch liquidity already in pools or stop anyone trading. It's held by a 2-of-2 multisig with separate Trezor and Ledger hardware-wallet signers, so no single key can use it.</p>
+      <h3>Approvals</h3>
+      <p>When Reef asks you to approve a token, it asks for the exact amount of that trade or deposit, not unlimited spending. You can check and revoke approvals at any time on the explorer or with a tool like revoke.cash if it supports the chain.</p>
+      <h3>Good habits</h3>
+      <ul>
+        <li>Bookmark <b>reefdex.fyi</b> and only use that address. Check the <a href="#contracts">contract addresses</a> your wallet shows before you sign.</li>
+        <li>Check a token's contract address with its project before you buy. The token name and symbol can be copied by anyone.</li>
+        <li>Use a separate wallet for trying new tokens.</li>
+      </ul>
+    </section>
+
+    <section id="rpc">
+      <h2>RPC status</h2>
+      <p>Reef reads prices and balances through public BlockDAG endpoints (RPCs). The <b>RPC status</b> button in the app lists them, shows which are responding and lets you pick a faster one.</p>
+      <p>On a young chain, public endpoints don't always agree. An endpoint can report chain ID 1404 while serving a different history of blocks. Reef cross-checks endpoints against each other and flags any that don't match the others. That shows whether they agree; it can't prove on its own which one is correct. For larger amounts, double-check on the explorer before you rely on a quote.</p>
+      <p>Your wallet uses its own RPC for anything you sign, separate from the one Reef reads from.</p>
+    </section>
+
+    <section id="contracts">
+      <h2>Contracts</h2>
+      <p>Check these against the addresses your wallet shows before you approve or sign.</p>
+      <div class="addr">
+        <div class="arow"><div class="lbl">Router<small>swaps and liquidity</small></div><div class="val">0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">Factory<small>creates pools</small></div><div class="val">0x9603042044b6B1A1637c508F731ba01219142239</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x9603042044b6B1A1637c508F731ba01219142239">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">WBDAG<small>wrapped BDAG</small></div><div class="val">0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">Admin multisig<small>2-of-2, holds feeToSetter</small></div><div class="val">0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">TWAP oracle<small>NOCAP/BDAG pool</small></div><div class="val">0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b">Explorer</a></div></div>
+      </div>
+      <p>Pool (pair) addresses are created by the Factory. Read any pool's address with <code>getPair(tokenA, tokenB)</code> on the Factory.</p>
+    </section>
+
+    <section id="beta">
+      <h2>Leaving beta</h2>
+      <p>Reef is labelled beta and will stay that way until these are done. There are no fixed dates; each step happens when it's ready, and progress is posted on X.</p>
+      <ul>
+        <li>An independent security audit of the contracts.</li>
+        <li>Moving the admin multisig from 2-of-2 to 2-of-3, so a single lost key can't lock the fee setting.</li>
+        <li>A public bug bounty.</li>
+      </ul>
+    </section>
+
+    <section id="builders">
+      <h2>For builders</h2>
+      <p>Reef uses the Uniswap V2 interface, so most existing V2 tools and code work once you point them at Reef's Router and Factory. Native BDAG functions use <code>BDAG</code> where Uniswap uses <code>ETH</code>, for example <code>swapExactBDAGForTokens</code> and <code>addLiquidityBDAG</code>.</p>
+      <h3>Get a quote (ethers v6)</h3>
+<pre><code>const router = new ethers.Contract(
+  "0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76",
+  ["function getAmountsOut(uint256,address[]) view returns (uint256[])"],
+  provider
+);
+const WBDAG = "0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA";
+const amounts = await router.getAmountsOut(ethers.parseEther("1"), [WBDAG, TOKEN]);
+console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</code></pre>
+      <h3>Main Router functions</h3>
+      <ul>
+        <li><code>swapExactTokensForTokens</code>, <code>swapExactBDAGForTokens</code>, <code>swapExactTokensForBDAG</code></li>
+        <li><code>addLiquidity</code>, <code>addLiquidityBDAG</code>, <code>removeLiquidity</code>, <code>removeLiquidityBDAG</code></li>
+        <li><code>getAmountsOut</code> for quotes</li>
+      </ul>
+      <p>Reef is also a liquidity source for the <a href="https://nodaldex.fyi" target="_blank" rel="noopener">Nodal</a> aggregator, so a pool on Reef is reachable from there too.</p>
+      <p>Building on Reef or listing it somewhere? Get in touch on X: <a href="https://x.com/benji107" target="_blank" rel="noopener">@benji107</a>.</p>
+    </section>
+
+    <section id="reef-token">
+      <h2>$REEF</h2>
+      <p>$REEF is Reef's own token. The official contract address and presale details will be published here and on X when the presale opens. Until then, treat any "$REEF" you see elsewhere as fake.</p>
+      <h3>Does holding $REEF pay me anything?</h3>
+      <p>No. $REEF does not pay holders any share of Reef's fees or revenue. If you want income from Reef, that comes from providing liquidity: LPs in the REEF/BDAG pool earn 0.25% of every trade in it, like any other pool. A time-limited reward for REEF/BDAG liquidity providers is being considered, but it isn't promised.</p>
+      <h3>So what is it for?</h3>
+      <p>The plan is for $REEF to act as a trust bond across Reef, Nodal and Handshake, with uses added over time. That's a direction, not a promise, and none of it is live yet. Buy it only if you're comfortable with it being worth nothing.</p>
+    </section>
+
+    <section id="brand">
+      <h2>Brand assets</h2>
+      <p>Listing Reef on a tracker, wallet or article? Use these files. Please don't change the wordmark's shape or colours.</p>
+      <div class="brandbox"><img src="/assets/reef-dex-wordmark.png" alt="Reef wordmark" class="logo-mark"></div>
+      <ul>
+        <li><a href="/assets/reef-dex-wordmark.png" download>Wordmark (PNG)</a></li>
+        <li><a href="/assets/favicon-512.png" download>Icon, 512 × 512 (PNG)</a></li>
+        <li><a href="/assets/favicon-192.png" download>Icon, 192 × 192 (PNG)</a></li>
+        <li><a href="/assets/og-image.jpg" download>Social share image (JPG)</a></li>
+      </ul>
+      <h3>Colours</h3>
+      <div class="swatches">
+        <div class="sw"><i style="background:#050f14"></i><div>Ink <code>#050f14</code></div></div>
+        <div class="sw"><i style="background:#0a71a1"></i><div>Tide <code>#0a71a1</code></div></div>
+        <div class="sw"><i style="background:#7fd0f7"></i><div>Polyp <code>#7fd0f7</code></div></div>
+        <div class="sw"><i style="background:#c23a5e"></i><div>Coral <code>#c23a5e</code></div></div>
+        <div class="sw"><i style="background:#e7f3f5"></i><div>Foam <code>#e7f3f5</code></div></div>
+      </div>
+      <p>Fonts: <b>Bricolage Grotesque</b> for headings, <b>Instrument Sans</b> for text. Both are free on Google Fonts.</p>
+    </section>
+
+    <section id="faq">
+      <h2>FAQ</h2>
+      <details><summary>Has Reef been audited?</summary><p>Not yet. An independent audit is the first step to <a href="#beta">leaving beta</a>. Until then, only use amounts you're comfortable losing.</p></details>
+      <details><summary>Why did my swap fail?</summary><p>Usually the price moved more than your slippage tolerance before it landed, or the 20-minute deadline passed. Nothing is spent except the network fee. Try again, or raise slippage slightly for a fast-moving token. Some tokens also take a tax on transfers, which needs a higher slippage setting.</p></details>
+      <details><summary>Why is my approval for a specific amount?</summary><p>Reef asks for exactly what each trade needs, rather than unlimited spending. It means one extra click for repeat trades, but a token approval can never be used for more than you intended.</p></details>
+      <details><summary>Can I lose money providing liquidity?</summary><p>Yes. If the two tokens' prices move apart, <a href="#impermanent-loss">impermanent loss</a> can outweigh the fees you earn. If one token goes to zero, you'll be left holding mostly that token.</p></details>
+      <details><summary>A token I want isn't in the list.</summary><p>The list shows tokens that already have a Reef pool. Paste the token's contract address into the picker to find it. If it has no pool yet, you can <a href="#create-pool">create one</a>.</p></details>
+      <details><summary>Is Reef part of BlockDAG?</summary><p>No. Reef is independent software running on BlockDAG (chain 1404). It isn't issued, endorsed or run by BlockDAG.</p></details>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <p>Reef is unaudited beta software. Nothing here is financial, investment, legal or tax advice. The software is provided as-is, without warranty.</p>
+  <p><a href="/">reefdex.fyi</a> · <a href="/overview.pdf" target="_blank" rel="noopener">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">benjiprojects1404</a></p>
+</footer>
+
+<script>
+// Copy buttons
+document.querySelectorAll("[data-copy]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var v = b.closest(".arow").querySelector(".val").textContent.trim();
+    var done = function () { var t = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = t; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, function () {});
+  });
+});
+// Highlight the section in view
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+  if (!("IntersectionObserver" in window)) return;
+  var current = null;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        if (current) current.classList.remove("on");
+        current = map[e.target.id];
+        if (current) {
+          current.classList.add("on");
+          var nav = document.querySelector("nav.toc");
+          if (window.matchMedia("(max-width:860px)").matches) nav.scrollLeft = current.offsetLeft - nav.clientWidth / 2 + current.offsetWidth / 2;
+        }
+      }
+    });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
