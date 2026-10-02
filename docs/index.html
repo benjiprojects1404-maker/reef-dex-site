@@ -141,7 +141,7 @@ footer p{margin:0 0 6px}
     <a class="openapp" href="/">Open Reef</a>
   </div>
 </header>
-<div class="betabar">BETA: unaudited smart contracts on an early-stage chain. Only use what you can afford to lose.</div>
+<div class="betabar">BETA: not independently audited, on an early-stage chain. <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener" style="color:inherit">AI-assisted security review</a>. Only use what you can afford to lose.</div>
 
 <div class="layout">
   <nav class="toc" aria-label="Contents">
@@ -317,7 +317,7 @@ footer p{margin:0 0 6px}
       </div>
       <p>Pool (pair) addresses are created by the Factory. Read any pool's address with <code>getPair(tokenA, tokenB)</code> on the Factory.</p>
       <h3>Source code and tests</h3>
-      <p>The full source for these contracts, with the test suite, is on <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts" target="_blank" rel="noopener">GitHub</a>. On 2 October 2026 every address above was checked against it: the code on chain is exactly what the published files compile to. The same folder lists the known findings from a pre-audit review.</p>
+      <p>The full source for these contracts, with the test suite, is on <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts" target="_blank" rel="noopener">GitHub</a>. On 2 October 2026 every address above was checked against it: the code on chain is exactly what the published files compile to. The <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">security review</a> lists every finding and what was done about it.</p>
     </section>
 
     <section id="beta">
@@ -385,7 +385,7 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
 
     <section id="faq">
       <h2>FAQ</h2>
-      <details><summary>Has Reef been audited?</summary><p>Not yet. An independent audit is the first step to <a href="#beta">leaving beta</a>. Until then, only use amounts you're comfortable losing.</p></details>
+      <details><summary>Has Reef been audited?</summary><p>Not by an independent auditor yet; that's the first step to <a href="#beta">leaving beta</a>. On 2 October 2026 every contract had an AI-assisted security review, with no critical or high-severity findings: <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">read the review</a>. It isn't an audit, so only use amounts you're comfortable losing.</p></details>
       <details><summary>Why did my swap fail?</summary><p>Usually the price moved more than your slippage tolerance before it landed, or the 20-minute deadline passed. Nothing is spent except the network fee. Try again, or raise slippage slightly for a fast-moving token. If you're selling a token that takes a tax on every transfer, see the next question.</p></details>
       <details><summary>Can I trade tokens that take a tax on transfers?</summary><p>You can buy them, but you can't sell them through Reef: the sale always fails, whatever slippage you set. Reef's router doesn't include Uniswap's special functions for taxed tokens. Check whether a token has a transfer tax before you buy it on Reef.</p></details>
       <details><summary>Why is my approval for a specific amount?</summary><p>Reef asks for exactly what each trade needs, rather than unlimited spending. It means one extra click for repeat trades, but a token approval can never be used for more than you intended.</p></details>
