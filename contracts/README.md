@@ -32,6 +32,27 @@ chain, but its bytecode didn't rebuild exactly from this file with the recorded 
 "believed to match" rather than proven. Read on 2 Oct 2026: it holds 99.99% of the NOCAP/BDAG pool's LP tokens,
 beneficiary `0x134C6025C234D7E3847bDA9e4aD794df9a805510`, unlocks 25 Mar 2027 09:45 UTC.
 
+**$REEF presale** `0x030d2466f634022FB93fbdF475ea81faFf2525a0`: source in `reef-token/ReefPresale.sol`, kept outside the
+test build because it uses a different compiler: Solidity **0.8.20**, optimizer **on, 200 runs**, EVM **berlin**,
+OpenZeppelin Contracts **5.6.1**. `reef-token/ReefPresale.standard-input.json` is the exact compiler input.
+Checked 4 Oct 2026: it compiles to the code on chain byte for byte, apart from the compiler's metadata stamp.
+The constructor arguments on chain are the ReefToken, the Reef router, the liquidity wallet
+`0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418` (also the LP beneficiary), a start of 1791338400 (Wed 7 Oct 2026,
+02:00 UTC), an end of 1793930400 (Fri 6 Nov 2026, 02:00 UTC) and a 365-day LP lock. It held 1,050,000 REEF, and the
+liquidity wallet had approved it for 700,000 REEF.
+
+The explorer can't verify it yet: explorer.blockdag.engineering refuses uploads larger than about 8 KB, and this
+source with its OpenZeppelin imports is about 43 KB as a single file. The same limit is the likely reason the NOCAP LP
+lock never verified. To check it yourself:
+
+```
+npm i solc@0.8.20
+node -e "const s=require('solc');const i=require('./reef-token/ReefPresale.standard-input.json');console.log(JSON.parse(s.compile(JSON.stringify(i))).contracts['ReefPresale.sol'].ReefPresale.evm.deployedBytecode.object)"
+```
+
+and compare the output with the code at the address (everything except the last 53 bytes, which are the metadata
+stamp).
+
 `contracts/reef/ReefAdminMultisigV2.sol` is **not deployed**. It's a proposed replacement that fixes finding M-1
 below, for use when the admin moves from 2-of-2 to 2-of-3.
 
