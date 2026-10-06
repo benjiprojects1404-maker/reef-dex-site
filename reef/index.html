@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>$REEF · reef.dex</title>
+<meta name="description" content="$REEF is Reef's own token: a thank-you to people who use Reef, plus a small presale that seeds Reef's own pool. Fixed 21,000,000 supply on BlockDAG (chain 1404).">
+<meta name="theme-color" content="#050f14">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reef.dex">
+<meta property="og:title" content="$REEF · Reef's own token">
+<meta property="og:description" content="Fixed 21,000,000 supply. Presale Oct 7 – Nov 6, 2026 at 150 BDAG; every BDAG raised seeds the REEF/BDAG pool at 225. Airdrop for the first 1,000 Reef users.">
+<meta property="og:url" content="https://reefdex.fyi/reef/">
+<meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+/* Same design tokens as reefdex.pages.dev */
+:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#7fa3ab;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--accent:var(--polyp);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;color:var(--text);font:400 15px/1.6 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%), radial-gradient(70% 45% at 50% 40%, rgba(127,208,247,.05), transparent 70%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:inherit}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+.betabar a{color:var(--coral-text);text-decoration:underline}
+
+header.top{border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{height:30px;width:auto;display:block}
+.tokentag{font:800 15px "Bricolage Grotesque",sans-serif;color:var(--coral-text);border:1px solid var(--coral-soft);border-radius:999px;padding:3px 10px}
+nav.jump{display:flex;gap:4px;background:var(--raised);border-radius:12px;padding:4px;flex-wrap:wrap}
+nav.jump a{color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:7px 11px;border-radius:9px;text-decoration:none}
+nav.jump a:hover{background:var(--card);color:var(--text)}
+.spacer{flex:1}
+a.btn{display:inline-block;border:0;background:var(--tide);color:#fff;font:600 14px "Instrument Sans",sans-serif;padding:10px 16px;border-radius:11px;text-decoration:none;white-space:nowrap}
+a.btn.ghost{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+@media (max-width:760px){.hero h1 br{display:none}.topwrap{padding:10px 14px}.spacer{display:none}nav.jump{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}nav.jump a{flex:none}.logo-mark{height:24px}}
+
+.hero{padding:44px 0 18px}
+.eyebrow{color:var(--accent);font:600 12px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.hero h1{font-size:clamp(34px,6vw,58px);font-weight:800;line-height:1.02;margin:10px 0 14px}
+.hero h1 .c{color:var(--coral-text)}
+.lede{font-size:17px;color:var(--muted);max-width:680px;margin:0}
+.lede b{color:var(--text);font-weight:600}
+
+.status{margin-top:22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 0 44px -30px var(--coral-soft)}
+.status .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:none}
+.status.live .dot{background:var(--good);box-shadow:0 0 10px var(--good)}
+.status.closed .dot{background:var(--steel)}
+.status b{font-weight:600}
+.status .count{font:700 18px "Bricolage Grotesque",sans-serif;color:var(--accent);margin-left:auto;font-variant-numeric:tabular-nums}
+
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 0}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font:700 22px/1.2 "Bricolage Grotesque",sans-serif;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+
+section.block{padding:40px 0 0}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sechead h2{font-size:clamp(24px,3.6vw,32px);font-weight:700;position:relative;padding-bottom:10px}
+.sechead h2::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;border-radius:2px;background:var(--coral)}
+.sechead p{color:var(--muted);margin:0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 0 44px -30px var(--coral-soft)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.card h3{font-size:18px;margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* tokenomics */
+.bar{display:flex;height:22px;border-radius:999px;overflow:hidden;border:1px solid var(--line2);margin:4px 0 18px}
+.bar span{display:block;height:100%}
+.bar span+span{border-left:2px solid var(--bg)}
+.alloc{width:100%;border-collapse:collapse;font-size:14px}
+.alloc th{text-align:left;font:600 12px "Instrument Sans",sans-serif;color:var(--muted);padding:0 10px 8px 0;border-bottom:1px solid var(--line)}
+.alloc td{padding:12px 10px 12px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.alloc tr:last-child td{border-bottom:0}
+.alloc .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.alloc th.num{text-align:right}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.alloc .how{color:var(--muted);font-size:13px;margin-top:3px}
+@media (max-width:640px){.alloc .hide-s{display:none}}
+
+/* steps */
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+ol.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 50px;background:var(--raised);border:1px solid var(--line);border-radius:14px}
+ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--coral-soft);color:var(--coral-text);font:700 13px/22px "Bricolage Grotesque",sans-serif;text-align:center}
+ol.steps b{font-weight:600}
+ol.steps .muted{font-size:13px}
+
+dl.terms{display:grid;grid-template-columns:auto 1fr;gap:0;margin:0}
+dl.terms dt,dl.terms dd{padding:10px 0;border-bottom:1px solid var(--line);margin:0}
+dl.terms dt{color:var(--muted);font-size:13px;padding-right:16px}
+dl.terms dd{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+dl.terms dd small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+dl.terms dt:last-of-type,dl.terms dd:last-of-type{border-bottom:0}
+
+.risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.risk b{color:var(--text)}
+.note{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--polyp);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.note b{color:var(--text)}
+
+/* airdrop tiers */
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.tiers{grid-template-columns:minmax(0,1fr)}}
+.tier{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:16px}
+.tier .t{font:600 12px "Instrument Sans",sans-serif;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.tier .m{font:800 30px "Bricolage Grotesque",sans-serif;color:var(--accent);margin:4px 0}
+.tier .m small{font-size:14px;font-weight:600;color:var(--muted)}
+.tier p{margin:0;font-size:14px}
+
+/* not list */
+ul.nots{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:760px){ul.nots{grid-template-columns:minmax(0,1fr)}}
+ul.nots li{background:var(--raised);border:1px solid var(--line);border-radius:14px;padding:14px 14px 14px 44px;position:relative;font-size:14px}
+ul.nots li::before{content:"×";position:absolute;left:15px;top:9px;color:var(--coral-text);font:800 22px "Bricolage Grotesque",sans-serif}
+ul.nots b{display:block;font-weight:600;margin-bottom:2px}
+ul.nots span{color:var(--muted);font-size:13px}
+
+/* contracts */
+.addrs{display:grid;gap:8px}
+.addr{display:grid;grid-template-columns:190px minmax(0,1fr) auto;align-items:center;gap:12px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+@media (max-width:700px){.addr{grid-template-columns:minmax(0,1fr) auto}.addr .lbl{grid-column:1/-1}}
+.addr .lbl{font-size:13px;color:var(--muted)}
+.addr .lbl b{color:var(--text);font-weight:600;display:block;font-size:14px}
+.addr code{font:500 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.addr code a{text-decoration:none;border-bottom:1px dashed var(--line2)}
+.addr .pending{color:var(--amber);font:600 13px "Instrument Sans",sans-serif}
+.addr button{border:1px solid var(--line2);background:var(--card);color:var(--muted);font:600 12px "Instrument Sans",sans-serif;padding:6px 10px;border-radius:8px;cursor:pointer}
+.addr button:hover{color:var(--text)}
+.subh{font:600 13px "Instrument Sans",sans-serif;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:22px 0 10px}
+
+/* faq */
+details{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+summary{cursor:pointer;font:600 14px "Instrument Sans",sans-serif;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+ ";color:var(--coral-text);font-weight:700}
+details[open] summary::before{content:"− "}
+details p{font-size:14px;color:var(--muted);margin:10px 0 2px}
+
+footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+footer a{text-decoration:underline}
+.tz{color:var(--muted);font-size:12px;font-weight:400}
+
+/* ---------- buy & claim panel ---------- */
+.rf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+@media (max-width:860px){.rf-grid{grid-template-columns:minmax(0,1fr)}}
+.rf-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.rf-top h3{margin:0}
+.rf-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.rf-pill i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+.rf-pill.ok i{background:var(--good)}.rf-pill.bad i{background:var(--ember)}.rf-pill.wait i{background:var(--amber)}
+.rf-progress{height:12px;border-radius:999px;background:var(--raised);border:1px solid var(--line2);overflow:hidden;margin:8px 0 6px}
+.rf-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--tide),var(--polyp));transition:width .6s}
+.rf-big{font:700 24px/1.2 "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
+.rf-kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;margin-top:14px;font-size:14px}
+.rf-kv dt{color:var(--muted);margin:0}.rf-kv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.rf-field{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.rf-field .row1{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;gap:8px}
+.rf-field .row1 button{border:0;background:transparent;color:var(--accent);font:600 12px "Instrument Sans",sans-serif;cursor:pointer;padding:0}
+.rf-field .row2{display:flex;align-items:center;gap:10px}
+.rf-field input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:700 26px "Bricolage Grotesque",system-ui,sans-serif}
+.rf-field input::placeholder{color:var(--muted)}
+.rf-unit{font:600 14px "Instrument Sans",sans-serif;color:var(--muted)}
+.rf-get{font-size:13px;color:var(--muted);margin:2px 2px 12px}
+.rf-get b{color:var(--text)}
+.rf-ack{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin:4px 2px 12px;cursor:pointer}
+.rf-ack input{margin-top:3px;accent-color:var(--coral)}
+.rf-btn{width:100%;border:0;border-radius:14px;padding:14px;font:600 15px "Instrument Sans",sans-serif;cursor:pointer;background:var(--tide);color:#fff}
+.rf-btn.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.rf-btn:disabled{background:var(--raised);color:var(--muted);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--line)}
+.rf-btn+.rf-btn{margin-top:8px}
+.rf-msg{font-size:13px;margin-top:10px;min-height:1em;word-break:break-word}
+.rf-msg.err{color:var(--ember)}.rf-msg.ok{color:var(--good)}.rf-msg.info{color:var(--muted)}
+.rf-msg a{color:inherit}
+.rf-note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.55}
+.rf-hide{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="betabar">BETA &mdash; unaudited smart contracts on an early-stage chain. US and UK persons may not take part. <a href="#faq">Read the FAQ</a></div>
+
+<header class="top">
+  <div class="topwrap">
+    <a class="brand" href="/" title="reef.dex">
+      <img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="reef.dex" width="846" height="175">
+      <span class="tokentag">$REEF</span>
+    </a>
+    <div class="spacer"></div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#buy">Buy</a>
+      <a href="#tokenomics">Tokenomics</a>
+      <a href="#presale">Presale</a>
+      <a href="#airdrop">Airdrop</a>
+      <a href="#contracts">Contracts</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn ghost" href="/">Open Reef</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============================================================ HERO -->
+  <section class="hero">
+    <div class="eyebrow">Reef's own token · BlockDAG chain 1404</div>
+    <h1>A thank-you to the people<br>who use <span class="c">Reef</span>.</h1>
+    <p class="lede"><b>$REEF</b> rewards early Reef users with an airdrop, and a small presale seeds Reef's own pool: <b>every BDAG raised goes into the REEF/BDAG pool</b>, locked for 12 months. It is not a governance token, it pays no revenue share, and nobody promises it will be worth anything.</p>
+
+    <div class="status" id="status">
+      <span class="dot"></span>
+      <span id="statusText"><b>Presale opens Wed Oct 7, 2026, 09:00</b> <span class="tz">(UTC+7) · 02:00 UTC</span></span>
+      <span class="count" id="countdown"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Total supply</div><div class="v">21,000,000</div><div class="s">Fixed. No mint, no owner.</div></div>
+      <div class="stat"><div class="k">Presale price</div><div class="v">150 BDAG</div><div class="s">per REEF</div></div>
+      <div class="stat"><div class="k">Pool opens at</div><div class="v">225 BDAG</div><div class="s">per REEF (1.5×), locked 12 months</div></div>
+      <div class="stat"><div class="k">Sale window</div><div class="v">Oct 7 &ndash; Nov 6</div><div class="s">2026 · 30 days · 09:00 UTC+7</div></div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================== BUY & CLAIM -->
+  <section class="block" id="buy">
+    <div class="sechead"><h2>Buy &amp; claim</h2><p>Straight to the presale contract. Your wallet signs everything; nothing here holds your funds.</p></div>
+    <div class="rf-grid">
+      <div class="card">
+        <div class="rf-top"><h3>Sale progress</h3><span class="rf-pill wait" id="rfPhasePill"><i></i><span id="rfPhase">Loading&hellip;</span></span></div>
+        <div class="muted small">Raised</div>
+        <div class="rf-big"><span id="rfRaised">&ndash;</span> <span class="muted small">/ 157,500,000 BDAG</span></div>
+        <div class="rf-progress"><span id="rfBar"></span></div>
+        <div class="muted small"><span id="rfPct">&ndash;</span> of the maximum raise</div>
+        <dl class="rf-kv">
+          <dt>REEF sold</dt><dd id="rfSold">&ndash;</dd>
+          <dt>Pool opens at</dt><dd>225 BDAG per REEF</dd>
+          <dt>Your wallet</dt><dd id="rfAcct">Not connected</dd>
+          <dt>You've put in</dt><dd id="rfPaid">&ndash;</dd>
+          <dt>Your REEF</dt><dd id="rfReef">&ndash;</dd>
+          <dt>Your remaining cap</dt><dd id="rfCapLeft">&ndash;</dd>
+        </dl>
+        <p class="rf-note" id="rfPoolNote"></p>
+      </div>
+      <div class="card">
+        <div class="rf-top"><h3 id="rfActTitle">Buy REEF</h3><span class="rf-pill" id="rfNetPill"><i></i><span id="rfNet">Wallet not connected</span></span></div>
+
+        <div id="rfBuyBox">
+          <div class="rf-field">
+            <div class="row1"><span>You pay</span><span>Balance: <span id="rfBal">&ndash;</span> <button id="rfMax" type="button">Max</button></span></div>
+            <div class="row2"><input id="rfAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="rf-unit">BDAG</span></div>
+          </div>
+          <div class="rf-get" id="rfGet">You receive <b>0 REEF</b> to claim after the pool launches (price 150 BDAG each).</div>
+          <label class="rf-ack"><input type="checkbox" id="rfAck"> <span>I understand the contracts are unaudited and I could lose everything I put in. I am 18 or older and not a US or UK person.</span></label>
+        </div>
+
+        <button class="rf-btn" id="rfConnect" type="button">Connect wallet</button>
+        <button class="rf-btn rf-hide" id="rfSwitch" type="button">Switch to BlockDAG (chain 1404)</button>
+        <button class="rf-btn rf-hide" id="rfBuy" type="button" disabled>Buy</button>
+        <button class="rf-btn rf-hide" id="rfFinalize" type="button">Launch the pool (finalize)</button>
+        <button class="rf-btn rf-hide" id="rfClaim" type="button">Claim my REEF</button>
+        <button class="rf-btn alt rf-hide" id="rfRefund" type="button">Refund my BDAG</button>
+        <div class="rf-msg info" id="rfMsg"></div>
+        <p class="rf-note" id="rfHelp"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== TOKENOMICS -->
+  <section class="block" id="tokenomics">
+    <div class="sechead"><h2>Tokenomics</h2><p>All 21,000,000 REEF were minted once, at deployment, straight into these six places.</p></div>
+    <div class="card">
+      <div class="bar" role="img" aria-label="Allocation: liquidity 45%, treasury 25%, dev 10%, airdrop 10%, presale 5%, marketing 5%">
+        <span style="width:45%;background:var(--tide)"></span>
+        <span style="width:25%;background:var(--polyp)"></span>
+        <span style="width:10%;background:var(--amber)"></span>
+        <span style="width:10%;background:var(--good)"></span>
+        <span style="width:5%;background:var(--coral)"></span>
+        <span style="width:5%;background:var(--steel)"></span>
+      </div>
+      <table class="alloc">
+        <thead><tr><th>Bucket</th><th class="num">Share</th><th class="num">REEF</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:var(--tide)"></span><b>Liquidity</b><div class="how">Up to 700,000 is paired with every BDAG raised when the pool opens. The remainder (at least 8,750,000) is to be locked in its own vesting contract after launch; its address will be posted here.</div></td><td class="num">45%</td><td class="num">9,450,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--polyp)"></span><b>Treasury</b><div class="how">Held in a vesting contract: nothing for 6 months, then a straight line to 100% at 36 months.</div></td><td class="num">25%</td><td class="num">5,250,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--amber)"></span><b>Dev</b><div class="how">Held in a vesting contract: nothing for 12 months, then a straight line to 100% at 36 months.</div></td><td class="num">10%</td><td class="num">2,100,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--good)"></span><b>Airdrop</b><div class="how">For the first 1,000 wallets that use Reef during the sale window. Moves into the airdrop claim contract after the sale.</div></td><td class="num">10%</td><td class="num">2,100,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--coral)"></span><b>Presale</b><div class="how">Sold at 150 BDAG each. Anything unsold goes to the dead address, not to the team.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--steel)"></span><b>Marketing</b><div class="how">About 210,000 is set aside to thank the community testers. The remainder is to be locked in vesting after that round.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
+        </tbody>
+      </table>
+      <p class="muted small" style="margin:16px 0 0">Both vesting contracts release <b style="color:var(--text)">zero</b> when the cliff ends (no lump sum), then vest in a straight line. Their clocks started when each contract was deployed; anyone can read the exact times on-chain with <code>cliffEnd()</code> and <code>end()</code>. <b style="color:var(--text)">No REEF leaves any team wallet before the pool is live</b> &mdash; not for testers, the airdrop or marketing.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================= PRESALE -->
+  <section class="block" id="presale">
+    <div class="sechead"><h2>Presale</h2><p>One small contract. No owner, no admin, no way for anyone to withdraw the BDAG.</p></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Terms</h3>
+        <dl class="terms">
+          <dt>Price</dt><dd>150 BDAG per REEF</dd>
+          <dt>For sale</dt><dd>1,050,000 REEF</dd>
+          <dt>Maximum raise</dt><dd>157,500,000 BDAG</dd>
+          <dt>Per-wallet cap</dt><dd>2,500,000 BDAG<small>≈ 16,666.67 REEF</small></dd>
+          <dt>Opens</dt><dd>Wed Oct 7, 2026, 09:00<small>UTC+7 · 02:00 UTC</small></dd>
+          <dt>Closes</dt><dd>Fri Nov 6, 2026, 09:00<small>UTC+7 · 02:00 UTC · or earlier if it sells out</small></dd>
+          <dt>Pool opens at</dt><dd>225 BDAG per REEF</dd>
+          <dt>LP lock</dt><dd>365 days from launch<small>held inside the presale contract</small></dd>
+          <dt>Refund fallback</dt><dd>If not launched within 7 days of close<small>i.e. after Fri Nov 13, 2026, 09:00 UTC+7</small></dd>
+        </dl>
+        <p class="muted small" style="margin:14px 0 0">Your local time: <span id="localTimes">&hellip;</span></p>
+      </div>
+      <div class="card">
+        <h3>How it works</h3>
+        <ol class="steps">
+          <li><b>Buy with BDAG</b> during the window. You receive nothing yet &mdash; no presale REEF circulates before the pool exists.</li>
+          <li><b>Anyone launches the pool</b> by calling <code>finalize()</code> once the sale ends or sells out. <span class="muted">The contract pairs every BDAG raised with REEF at exactly 225 BDAG each and sends unsold presale REEF to the dead address.</span></li>
+          <li><b>Claim your REEF</b> from the presale contract. <span class="muted">You get what you paid ÷ 150.</span></li>
+          <li><b>LP stays locked</b> in the presale contract for 365 days, then can only go to Reef's liquidity wallet. <span class="muted">Check it any time with <code>lpUnlockTime()</code>.</span></li>
+          <li><b>If the pool can't be launched</b> within 7 days after the close, everyone can <code>refund()</code> their BDAG in full, and the launch is permanently cancelled.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="risk" style="margin-top:16px"><b>Read this before buying.</b> The pool opening at 225 is <b>not</b> a promise that REEF will trade at 225 or anywhere near 150. It opens thin, and the first people who sell will move the price, possibly a long way below what you paid. There is no established outside market for BDAG on this chain, so there is no dollar value here either. Only use BDAG you are fully prepared to lose. The contracts are not independently audited.</div>
+    <div class="note" style="margin-top:10px"><b>Where to buy:</b> only through the presale contract address listed under <a href="#contracts">Contracts</a> on this page: <code>0x030d2466f634022FB93fbdF475ea81faFf2525a0</code>. Anyone sending you a different address, a DM, or a &ldquo;whitelist&rdquo; link is not us.</div>
+  </section>
+
+  <!-- ========================================================= AIRDROP -->
+  <section class="block" id="airdrop">
+    <div class="sechead"><h2>Airdrop</h2><p>2,100,000 REEF for the first 1,000 wallets that use Reef during the sale window.</p></div>
+    <div class="tiers">
+      <div class="tier"><div class="t">Tier 1</div><div class="m">1 <small>share</small></div><p>A swap on Reef moving at least <b>1,000 BDAG</b>.</p></div>
+      <div class="tier"><div class="t">Tier 2</div><div class="m">3 <small>shares</small></div><p>Adding at least <b>5,000 BDAG</b> of liquidity to a Reef pool in one go.</p></div>
+      <div class="tier"><div class="t">Tier 3</div><div class="m">10 <small>shares</small></div><p>Deploying your own token and creating its <b>first</b> Reef pair, with at least <b>25,000 BDAG</b> of your own liquidity in it.</p></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <ol class="steps">
+        <li><b>Window: Wed Oct 7, 09:00 to Fri Nov 6, 09:00 (UTC+7).</b> <span class="muted">Anything before or after doesn't count. Only BDAG pairs on Reef count, and each action is credited to the wallet that signed it.</span></li>
+        <li><b>First 1,000 wallets are in</b>, ranked by their first qualifying action. <span class="muted">One claim per wallet, at the highest tier it reached. Team wallets are excluded.</span></li>
+        <li><b>Size:</b> 2,100,000 REEF shared across all shares, at most 2,100 REEF per share. <span class="muted">1,000 Tier-1 wallets would get 2,100 each; a mix of tiers makes one share smaller. Nothing is split beyond the cap.</span></li>
+        <li><b>Claims open after the pool is live</b> and close <b>Thu Feb 4, 2027, 09:00 (UTC+7)</b>. <span class="muted">Every unclaimed or unallocated REEF then goes to the dead address, never to the team.</span></li>
+        <li><b>Check it yourself.</b> <span class="muted">The full list, every amount and proof, and the script that produced them will be published, so anyone can recompute the result from Reef's public on-chain events.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ NOT -->
+  <section class="block" id="not">
+    <div class="sechead"><h2>What $REEF is not</h2><p>Plainly, so nobody buys it for the wrong reasons.</p></div>
+    <ul class="nots">
+      <li><b>Not a governance token</b><span>Holding REEF gives no vote over Reef or anything else.</span></li>
+      <li><b>Not a revenue share</b><span>REEF has no claim on Reef's trading fees. The 0.05% protocol fee goes to Reef's treasury, not to holders.</span></li>
+      <li><b>Not a promise of value</b><span>No price target, no listing promise, no roadmap that depends on the price.</span></li>
+      <li><b>Not connected to BlockDAG Network&rsquo;s token or listings</b><span>$REEF lives on the community-run network and is separate from BlockDAG Network&rsquo;s own BDAG token, its migration and its exchange listings.</span></li>
+    </ul>
+  </section>
+
+  <!-- ======================================================= CONTRACTS -->
+  <section class="block" id="contracts">
+    <div class="sechead"><h2>Contracts</h2><p>Chain ID 1404 &mdash; the community chain (<code>rpc.blockdag.engineering</code>). Always check the address, not the name.</p></div>
+    <div class="subh">$REEF</div>
+    <div class="addrs" id="addrsReef">
+      <div class="addr"><div class="lbl"><b>ReefToken</b>Fixed supply, no owner</div><code data-a="0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416"></code><button>Copy</button></div>
+      <div class="addr" id="rfPresaleRow"><div class="lbl"><b>Presale</b>Buy &amp; claim here only</div><span class="pending">Posted here before the sale opens on Oct 7</span><span></span></div>
+      <div class="addr"><div class="lbl"><b>Dev vesting</b>12-month cliff, 36 months</div><code data-a="0x5468821749B936ffa6C3aF840841058b026E288f"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Treasury vesting</b>6-month cliff, 36 months</div><code data-a="0x8750aC546e0B6234B292F3830958F780E3e304BD"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Airdrop claim</b>Deployed after the sale</div><span class="pending">Posted here after the Nov 6 snapshot</span><span></span></div>
+      <div class="addr"><div class="lbl"><b>REEF/BDAG pool</b>Fixed in advance; empty until launch</div><code data-a="0x1Ea359266c19635c4e92B8dEf5933AbFc6A9182D"></code><button>Copy</button></div>
+    </div>
+    <p class="muted small" style="margin:10px 0 0">Reef creates every pool at an address calculated from the two tokens, so the REEF/BDAG pool&rsquo;s address is known before it exists. Until launch it holds no liquidity; the presale contract&rsquo;s <code>finalize()</code> is what seeds it, at 225 BDAG per REEF.</p>
+    <p class="muted small" style="margin:8px 0 0">The presale&rsquo;s source code and exact compiler settings are <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/reef-token" target="_blank" rel="noopener">published on GitHub</a>, with steps to check that they match the code at the presale address. The block explorer can&rsquo;t verify it yet, because its upload limit is smaller than the source file.</p>
+    <div class="subh">Allocation wallets</div>
+    <div class="addrs">
+      <div class="addr"><div class="lbl"><b>Liquidity</b>Pairs REEF at launch; receives LP after the lock</div><code data-a="0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Presale holder</b>Funds the presale contract</div><code data-a="0xdFa06aE38addc9aa11Df033bE457CD6D00153942"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Airdrop holder</b>Funds the airdrop claim contract</div><code data-a="0xC87ac8FDDB6EF32a2fEE40500FBb24E4ea54Acc6"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Marketing</b>Tester thank-yous, then vesting</div><code data-a="0xaFb7f412dE83978188fAc2248e3A5f9A71dCf386"></code><button>Copy</button></div>
+    </div>
+    <div class="subh">Reef DEX</div>
+    <div class="addrs">
+      <div class="addr"><div class="lbl"><b>Router</b></div><code data-a="0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Factory</b></div><code data-a="0x9603042044b6B1A1637c508F731ba01219142239"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>WBDAG</b></div><code data-a="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA"></code><button>Copy</button></div>
+    </div>
+  </section>
+
+  <!-- ============================================================= FAQ -->
+  <section class="block" id="faq">
+    <div class="sechead"><h2>FAQ</h2></div>
+    <details><summary>Why is there no dollar price anywhere?</summary>
+      <p>The community chain's BDAG isn't listed on any outside exchange, so it has no established market price. Anything written in dollars would be made up. Every figure here is in BDAG on purpose. Don't confuse it with the BDAG token that BlockDAG Network lists on exchanges &mdash; that is on a different network.</p></details>
+    <details><summary>Which chain is this? I've seen two.</summary>
+      <p>Chain ID 1404 is currently used by two separate networks with different histories. $REEF and Reef live on the <b>community-run network</b> (<code>rpc.blockdag.engineering</code>, <code>explorer.blockdag.engineering</code>). Reef's own site has an RPC status panel that cross-checks endpoints. If your wallet shows something different from this page, stop and check before signing.</p></details>
+    <details><summary>Does REEF pay passive income?</summary>
+      <p>No. Holding REEF pays nothing: no staking yield, no share of Reef's fees, no buybacks. REEF can't mint new tokens, so any &ldquo;yield&rdquo; would only be the project handing out its own supply, and we'd rather not pretend that's income.</p>
+      <p>The income that does exist on Reef comes from <b>providing liquidity</b>. Anyone who adds REEF and BDAG to the REEF/BDAG pool earns 0.25% of every trade through it, in proportion to their share, paid by the traders, not by the project. That is market income, it goes up and down with trading, and liquidity providers carry real risks (including impermanent loss if the price moves). A time-limited extra reward for REEF/BDAG liquidity providers is being considered; nothing is promised, and it would be announced here first if it happens.</p></details>
+    <details><summary>So what is REEF for?</summary>
+      <p>Today: thanking early users and testers (the airdrop), and giving Reef its own pool. Planned, not promised: REEF as a <b>bond</b> across Reef, Nodal and Handshake &mdash; for example, a pool creator locking REEF for a &ldquo;bonded&rdquo; badge that is burned automatically if they pull the liquidity soon after launch. You put REEF at risk to be trusted; you don't get paid for holding it. Each of these would be a separate contract, published and tested before it goes live, and announced here.</p></details>
+    <details><summary>Does buying at 150 and a pool opening at 225 mean a profit?</summary>
+      <p>No. The 225 is only the ratio the pool starts at. The pool is small, so the first sales will push the price down, and there may be many sellers. You could end up with REEF worth less than you paid, or very little.</p></details>
+    <details><summary>What if the presale doesn't sell out?</summary>
+      <p>The pool still opens at exactly 225 BDAG per REEF, just with less depth: it pairs whatever was raised. Every unsold presale REEF goes to the dead address, so an under-filled sale can't benefit the team.</p></details>
+    <details><summary>What stops the team from taking the BDAG?</summary>
+      <p>The presale contract has no owner and no withdraw function for BDAG. The only ways BDAG leaves it are into the pool (<code>finalize()</code>) or back to buyers (<code>refund()</code>). The LP tokens stay inside the same contract for 365 days.</p></details>
+    <details><summary>What happens if the pool can't be launched?</summary>
+      <p>If <code>finalize()</code> hasn't succeeded within 7 days after the sale closes (after Fri Nov 13, 2026, 09:00 UTC+7), every buyer can call <code>refund()</code> and get their BDAG back in full. After the first refund, the launch is permanently cancelled, and the presale REEF stays locked in the contract forever.</p></details>
+    <details><summary>Has this been audited?</summary>
+      <p>No independent audit. The contracts were tested against Reef's real contracts with the real sale dates, including deliberate attempts to break them, and those tests will be published with the source. That is not the same as an audit. Treat everything here as experimental.</p></details>
+    <details><summary>Could the ticker or name change?</summary>
+      <p>The community chain's own ticker might change one day. That would be display-only: nothing in these contracts depends on the name &ldquo;BDAG&rdquo;.</p></details>
+    <details><summary>Who can't take part?</summary>
+      <p>US and UK persons may not buy in the presale or claim the airdrop. Only take part where it is lawful for you, and only if you are 18 or older.</p></details>
+  </section>
+
+</main>
+
+<footer>
+  <span>$REEF on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice.</span>
+  <span><a href="/">Open Reef</a> · <a href="/reef/overview.pdf" target="_blank" rel="noopener">Token overview (PDF)</a> · <a href="https://explorer.blockdag.engineering/" rel="noopener">Explorer</a></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.17.0/ethers.umd.min.js"></script>
+<script>
+// =====================================================================
+// $REEF presale: buy & claim panel
+// Set `presale` to the deployed ReefPresale address before the sale opens.
+// Until then the panel shows the sale as "coming soon" and every action is off.
+// =====================================================================
+const REEF_CFG = {
+  chainId: 1404,
+  chainName: "BlockDAG",
+  presale: "0x030d2466f634022FB93fbdF475ea81faFf2525a0",
+  token: "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
+  rpcs: ["https://rpc.blockdag.engineering", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net"],
+  explorer: "https://explorer.blockdag.engineering",
+};
+
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const PRICE = 150n;
+  const FOR_SALE = 1050000n * 10n ** 18n;
+  const GAS_BUFFER = 5n * 10n ** 18n; // keep 5 BDAG back for gas when using Max
+  const ABI = [
+    "function buy() payable", "function finalize()", "function claim()", "function refund()",
+    "function startTime() view returns (uint256)", "function endTime() view returns (uint256)",
+    "function totalRaised() view returns (uint256)", "function MAX_RAISE() view returns (uint256)",
+    "function MAX_PER_WALLET() view returns (uint256)", "function REFUND_DELAY() view returns (uint256)",
+    "function contributed(address) view returns (uint256)", "function settled(address) view returns (bool)",
+    "function claimable(address) view returns (uint256)", "function finalized() view returns (bool)",
+    "function refunding() view returns (bool)", "function lpToken() view returns (address)",
+    "function lpUnlockTime() view returns (uint256)",
+  ];
+  const ERC20 = ["function balanceOf(address) view returns (uint256)"];
+  const BTNS = ["rfConnect", "rfSwitch", "rfBuy", "rfFinalize", "rfClaim", "rfRefund"];
+
+  let ro = null, wallet = null, signer = null, account = null;
+  let onChain = false, walletSeesCode = false, listening = false, busy = false, st = null;
+
+  const fmt = (wei, dp = 2) => Number(ethers.formatEther(wei)).toLocaleString("en-US", { maximumFractionDigits: dp });
+  const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+  const show = (id, on) => $(id).classList.toggle("rf-hide", !on);
+  const dateFmt = (ts) => new Date(Number(ts) * 1000).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+  function msg(html, kind) { const m = $("rfMsg"); m.className = "rf-msg " + (kind || "info"); m.innerHTML = html || ""; }
+  function txLink(h) { return `<a href="${REEF_CFG.explorer}/tx/${h}" target="_blank" rel="noopener">View transaction</a>`; }
+  function setPhase(text, kind) { $("rfPhase").textContent = text; $("rfPhasePill").className = "rf-pill " + (kind || ""); }
+  function errText(e) {
+    if (e && (e.code === "ACTION_REJECTED" || e.code === 4001)) return "Request cancelled in your wallet.";
+    const m = (e && (e.reason || e.shortMessage || (e.info && e.info.error && e.info.error.message) || e.message)) || "Something went wrong.";
+    if (/user (rejected|denied)/i.test(m)) return "Request cancelled in your wallet.";
+    if (/insufficient funds/i.test(m)) return "Not enough BDAG in your wallet for this amount plus gas.";
+    return m.replace(/^execution reverted:?\s*/i, "").replace(/^Error:\s*/, "").replace(/^"|"$/g, "");
+  }
+
+  async function pickRpc() {
+    for (const url of REEF_CFG.rpcs) {
+      try {
+        const p = new ethers.JsonRpcProvider(url, REEF_CFG.chainId, { staticNetwork: true });
+        await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]);
+        return p;
+      } catch (e) { /* try the next one */ }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------ reading
+  async function load() {
+    if (!REEF_CFG.presale) { renderSoon(); return; }
+    if (!ro) ro = await pickRpc();
+    if (!ro) { setPhase("Can't reach the chain", "bad"); msg("Couldn't reach a BlockDAG RPC to read the sale. Please try again shortly.", "err"); return; }
+    try {
+      if ((await ro.getCode(REEF_CFG.presale)) === "0x") { setPhase("Contract not found", "bad"); msg("No presale contract found at the configured address on this network.", "err"); return; }
+      const c = new ethers.Contract(REEF_CFG.presale, ABI, ro);
+      const tok = new ethers.Contract(REEF_CFG.token, ERC20, ro);
+      const [blk, start, end, raised, maxRaise, cap, delay, fin, refunding, held, lpToken, lpUnlock] = await Promise.all([
+        ro.getBlock("latest"), c.startTime(), c.endTime(), c.totalRaised(), c.MAX_RAISE(), c.MAX_PER_WALLET(),
+        c.REFUND_DELAY(), c.finalized(), c.refunding(), tok.balanceOf(REEF_CFG.presale), c.lpToken(), c.lpUnlockTime(),
+      ]);
+      let me = null;
+      if (account) {
+        const [paid, settled, claim, bal] = await Promise.all([c.contributed(account), c.settled(account), c.claimable(account), ro.getBalance(account)]);
+        me = { paid, settled, claim, bal };
+      }
+      st = { now: BigInt(blk.timestamp), start, end, raised, maxRaise, cap, delay, fin, refunding, funded: held >= FOR_SALE, lpToken, lpUnlock, me };
+      render();
+    } catch (e) {
+      ro = null; // pick again next time
+      setPhase("Can't read the sale", "bad"); msg("Couldn't read the presale just now: " + errText(e), "err");
+    }
+  }
+
+  function phase(s) {
+    if (s.fin) return "finalized";
+    if (s.refunding) return "refunding";
+    const closed = s.now > s.end || s.raised >= s.maxRaise;
+    if (!closed) return s.now < s.start ? "before" : (s.funded ? "live" : "unfunded");
+    return s.now > s.end + s.delay ? "refundOpen" : "ended";
+  }
+
+  // ------------------------------------------------------------ rendering
+  function renderSoon() {
+    setPhase("Address coming soon", "wait");
+    $("rfActTitle").textContent = "Buy REEF";
+    show("rfBuyBox", true); $("rfAmt").disabled = true; $("rfMax").disabled = true;
+    ["rfSwitch", "rfBuy", "rfFinalize", "rfClaim", "rfRefund"].forEach((b) => show(b, false));
+    show("rfConnect", !account);
+    $("rfHelp").textContent = "The presale contract address will be posted here and under Contracts before the sale opens on Wed Oct 7, 2026, 09:00 (UTC+7). Until then there is nothing to buy, so ignore anyone offering REEF early.";
+    renderNet();
+  }
+
+  function render() {
+    const s = st, ph = phase(s), me = s.me;
+    const pct = Number((s.raised * 10000n) / s.maxRaise) / 100;
+    $("rfRaised").textContent = fmt(s.raised, 0);
+    $("rfBar").style.width = Math.min(100, pct) + "%";
+    $("rfPct").textContent = (s.raised > 0n && pct < 0.01) ? "<0.01%" : pct.toLocaleString("en-US", { maximumFractionDigits: 2 }) + "%";
+    $("rfSold").textContent = ph === "refunding" ? "Cancelled" : fmt(s.raised / PRICE, 2) + " of 1,050,000";
+    $("rfAcct").textContent = account ? short(account) : "Not connected";
+    if (me) {
+      $("rfPaid").textContent = fmt(me.paid) + " BDAG";
+      $("rfReef").textContent = me.settled ? (s.fin ? "Claimed" : "Refunded") : fmt(me.paid / PRICE) + " REEF";
+      $("rfCapLeft").textContent = ["before", "unfunded", "live"].includes(ph) ? fmt(s.cap - me.paid) + " BDAG" : "–";
+      $("rfBal").textContent = fmt(me.bal, 2);
+    } else {
+      ["rfPaid", "rfReef", "rfCapLeft", "rfBal"].forEach((id) => ($(id).textContent = "–"));
+    }
+
+    const labels = {
+      before: ["Opens Wed Oct 7, 09:00 (UTC+7)", "wait"], unfunded: ["Opening shortly", "wait"], live: ["Live", "ok"],
+      ended: ["Closed, pool not launched yet", "wait"], refundOpen: ["Refunds open", "bad"],
+      refunding: ["Launch cancelled, refunds open", "bad"], finalized: ["Pool launched", "ok"],
+    };
+    setPhase(...labels[ph]);
+
+    const ready = !!account && onChain && walletSeesCode;
+    const canRefund = !!me && me.paid > 0n && !me.settled;
+    show("rfConnect", !account);
+    show("rfSwitch", !!account && !onChain);
+    show("rfBuyBox", ["before", "unfunded", "live"].includes(ph));
+    show("rfBuy", ["before", "unfunded", "live"].includes(ph) && !!account && onChain);
+    show("rfFinalize", ["ended", "refundOpen"].includes(ph) && ready && s.raised > 0n);
+    show("rfClaim", ph === "finalized" && ready && !!me && me.claim > 0n);
+    show("rfRefund", ["refundOpen", "refunding"].includes(ph) && ready && canRefund);
+    $("rfAmt").disabled = ph !== "live"; $("rfMax").disabled = ph !== "live" || !ready;
+    $("rfBuy").disabled = busy || ph !== "live" || !ready;
+    $("rfBuy").textContent = ph === "live" ? "Buy" : ph === "before" ? "Opens Wed Oct 7, 09:00 (UTC+7)" : "Opening shortly";
+
+    const titles = { before: "Buy REEF", unfunded: "Buy REEF", live: "Buy REEF", ended: "Launch the pool", refundOpen: "Launch or refund", refunding: "Refund", finalized: "Claim your REEF" };
+    $("rfActTitle").textContent = titles[ph];
+    const addr = `<code>${REEF_CFG.presale}</code>`;
+    const help = {
+      before: `Buying opens Wed Oct 7, 2026, 09:00 (UTC+7). When you buy, check your wallet shows the presale address ${addr}.`,
+      unfunded: "The sale window has started, but the presale contract hasn't received its 1,050,000 REEF yet, so buying is paused until it has.",
+      live: `Up to 2,500,000 BDAG per wallet. Your REEF is claimable once the sale ends and the pool launches. Check your wallet shows the presale address ${addr} before confirming.`,
+      ended: "The sale has closed. Anyone can launch the pool: it pairs every BDAG raised with REEF at 225 BDAG each and sends unsold REEF to the dead address. If it isn't launched within 7 days of the close, refunds open.",
+      refundOpen: "The pool wasn't launched within 7 days of the close, so refunds are open. It can still be launched until someone refunds; the first refund cancels the launch for good.",
+      refunding: "The launch was cancelled. Every buyer can take back exactly the BDAG they paid, at any time.",
+      finalized: "The pool is live. Claim your REEF whenever you like; there is no deadline.",
+    };
+    $("rfHelp").innerHTML = help[ph];
+    if (s.raised === 0n && ["ended", "refundOpen"].includes(ph)) $("rfHelp").textContent = "The sale closed with nothing raised, so there is no pool to launch.";
+    $("rfPoolNote").innerHTML = s.fin
+      ? `Pool: <a href="${REEF_CFG.explorer}/address/${s.lpToken}" target="_blank" rel="noopener"><code>${short(s.lpToken)}</code></a> · LP locked until ${dateFmt(s.lpUnlock)}`
+      : "";
+    renderNet();
+    updateGet();
+  }
+
+  function renderNet() {
+    const pill = $("rfNetPill");
+    if (!account) { pill.className = "rf-pill"; $("rfNet").textContent = "Wallet not connected"; return; }
+    if (!onChain) { pill.className = "rf-pill bad"; $("rfNet").textContent = "Wrong network"; return; }
+    if (REEF_CFG.presale && !walletSeesCode) { pill.className = "rf-pill bad"; $("rfNet").textContent = "Check your wallet's RPC"; return; }
+    pill.className = "rf-pill ok"; $("rfNet").textContent = "BlockDAG · " + short(account);
+  }
+
+  function parseAmt() {
+    const raw = ($("rfAmt").value || "").trim().replace(/,/g, "");
+    if (!raw) return 0n;
+    try { return ethers.parseEther(raw); } catch (e) { return null; }
+  }
+  function updateGet() {
+    const v = parseAmt();
+    $("rfGet").innerHTML = v === null
+      ? "Enter an amount of BDAG, like <b>1500</b>."
+      : `You receive <b>${fmt(v / PRICE, 4)} REEF</b> to claim after the pool launches (price 150 BDAG each).`;
+  }
+
+  // ------------------------------------------------------------ wallet
+  async function connect() {
+    if (!window.ethereum) { msg("No wallet found. Install MetaMask or a similar wallet, then reload.", "err"); return; }
+    try {
+      const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
+      account = ethers.getAddress(accs[0]);
+      wallet = new ethers.BrowserProvider(window.ethereum);
+      if (!listening && window.ethereum.on) {
+        window.ethereum.on("accountsChanged", (a) => { account = a && a.length ? ethers.getAddress(a[0]) : null; checkNet().then(load); });
+        window.ethereum.on("chainChanged", () => { wallet = new ethers.BrowserProvider(window.ethereum); checkNet().then(load); });
+        listening = true;
+      }
+      msg("", "info");
+      await checkNet();
+      await load();
+    } catch (e) { msg(errText(e), "err"); }
+  }
+  async function checkNet() {
+    onChain = false; walletSeesCode = false; signer = null;
+    if (!account || !wallet) { renderNet(); return; }
+    try { onChain = Number((await wallet.getNetwork()).chainId) === REEF_CFG.chainId; } catch (e) { onChain = false; }
+    if (onChain) {
+      signer = await wallet.getSigner(account);
+      if (REEF_CFG.presale) {
+        try { walletSeesCode = (await wallet.getCode(REEF_CFG.presale)) !== "0x"; } catch (e) { walletSeesCode = false; }
+        if (!walletSeesCode) msg(`Your wallet is on chain 1404 but can't see the presale contract. It may be using an RPC on the other chain-1404 network. In your wallet's network settings, set the RPC URL to <code>${REEF_CFG.rpcs[0]}</code>, then reload.`, "err");
+      }
+    }
+    renderNet();
+  }
+  async function switchNet() {
+    const hex = "0x" + REEF_CFG.chainId.toString(16);
+    try {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] });
+    } catch (e) {
+      const code = e && (e.code || (e.data && e.data.originalError && e.data.originalError.code));
+      if (code !== 4902) { msg(errText(e), "err"); return; }
+      try {
+        await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{
+          chainId: hex, chainName: REEF_CFG.chainName,
+          nativeCurrency: { name: "BlockDAG", symbol: "BDAG", decimals: 18 },
+          rpcUrls: REEF_CFG.rpcs, blockExplorerUrls: [REEF_CFG.explorer],
+        }] });
+      } catch (e2) { msg(errText(e2), "err"); return; }
+    }
+    wallet = new ethers.BrowserProvider(window.ethereum);
+    await checkNet(); await load();
+  }
+
+  // ------------------------------------------------------------ actions
+  function setBusy(on) { busy = on; BTNS.forEach((b) => ($(b).disabled = on)); }
+  async function send(fn, overrides, okText) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const c = new ethers.Contract(REEF_CFG.presale, ABI, signer);
+      await c[fn].staticCall(overrides || {}); // surfaces the contract's reason before you sign
+      msg("Confirm in your wallet…", "info");
+      const tx = await c[fn](overrides || {});
+      msg(`Waiting for confirmation… ${txLink(tx.hash)}`, "info");
+      const r = await tx.wait();
+      if (!r || r.status !== 1) throw new Error("The transaction failed on-chain.");
+      msg(`${okText} ${txLink(tx.hash)}`, "ok");
+      if (fn === "buy") { $("rfAmt").value = ""; $("rfAck").checked = false; }
+    } catch (e) {
+      msg(errText(e), "err");
+    } finally {
+      setBusy(false);
+      await load();
+    }
+  }
+  async function buy() {
+    if (!st || !st.me) return;
+    const v = parseAmt();
+    if (v === null || v <= 0n) { msg("Enter an amount of BDAG, like 1500.", "err"); return; }
+    const capLeft = st.cap - st.me.paid, room = st.maxRaise - st.raised;
+    if (v > capLeft) { msg(`That's more than your remaining cap of ${fmt(capLeft)} BDAG.`, "err"); return; }
+    if (v > room) { msg(`Only ${fmt(room)} BDAG of the sale is left.`, "err"); return; }
+    if (v > st.me.bal) { msg("Not enough BDAG in your wallet for that amount.", "err"); return; }
+    if (!$("rfAck").checked) { msg("Please tick the box to confirm you've read the risks.", "err"); return; }
+    await send("buy", { value: v }, `Done: ${fmt(v / PRICE, 4)} REEF reserved for ${fmt(v)} BDAG.`);
+  }
+  function setMax() {
+    if (!st || !st.me) return;
+    const cands = [st.cap - st.me.paid, st.maxRaise - st.raised, st.me.bal > GAS_BUFFER ? st.me.bal - GAS_BUFFER : 0n];
+    let m = cands.reduce((a, b) => (b < a ? b : a));
+    m = (m / 10n ** 12n) * 10n ** 12n; // trim to 6 decimals
+    $("rfAmt").value = ethers.formatEther(m).replace(/\.0$/, "");
+    updateGet();
+  }
+
+  $("rfConnect").addEventListener("click", connect);
+  $("rfSwitch").addEventListener("click", switchNet);
+  $("rfBuy").addEventListener("click", buy);
+  $("rfMax").addEventListener("click", setMax);
+  $("rfAmt").addEventListener("input", updateGet);
+  $("rfFinalize").addEventListener("click", () => send("finalize", null, "The pool is launched."));
+  $("rfClaim").addEventListener("click", () => send("claim", null, "Your REEF has been sent to your wallet."));
+  $("rfRefund").addEventListener("click", () => send("refund", null, "Your BDAG has been refunded."));
+
+  // Show the presale address under Contracts once it is configured
+  if (REEF_CFG.presale) {
+    const row = $("rfPresaleRow");
+    if (row) row.innerHTML = `<div class="lbl"><b>Presale</b>Buy &amp; claim here only</div><code data-a="${REEF_CFG.presale}"></code><button>Copy</button>`;
+  }
+
+  load();
+  setInterval(() => { if (!busy && REEF_CFG.presale) load(); }, 15000);
+})();
+</script>
+<script>
+(function(){
+  var START = 1791338400, END = 1793930400, REFUND = END + 7*86400;
+  var EXPLORER = "https://explorer.blockdag.engineering/address/";
+
+  // addresses: render full address as explorer link + copy button
+  document.querySelectorAll("code[data-a]").forEach(function(el){
+    var a = el.getAttribute("data-a");
+    var link = document.createElement("a");
+    link.href = EXPLORER + a; link.target = "_blank"; link.rel = "noopener"; link.textContent = a;
+    el.appendChild(link);
+    var btn = el.parentNode.querySelector("button");
+    if (btn) btn.addEventListener("click", function(){
+      try { navigator.clipboard.writeText(a).then(function(){ btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = "Copy"; }, 1400); }); }
+      catch (e) { btn.textContent = "Select it"; }
+    });
+  });
+
+  // viewer's local times
+  try {
+    var f = new Intl.DateTimeFormat(undefined, { weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit", timeZoneName:"short" });
+    document.getElementById("localTimes").textContent = "opens " + f.format(new Date(START*1000)) + ", closes " + f.format(new Date(END*1000));
+  } catch (e) { document.getElementById("localTimes").textContent = "see UTC times above"; }
+
+  // status + countdown (time-based only; the page does not read the chain)
+  var box = document.getElementById("status"), txt = document.getElementById("statusText"), cd = document.getElementById("countdown");
+  function span(s){ var d=Math.floor(s/86400), h=Math.floor(s%86400/3600), m=Math.floor(s%3600/60), x=Math.floor(s%60);
+    return (d? d+"d ":"") + String(h).padStart(2,"0")+"h "+String(m).padStart(2,"0")+"m "+String(x).padStart(2,"0")+"s"; }
+  function tick(){
+    var now = Date.now()/1000;
+    if (now < START) { box.className = "status"; cd.textContent = "opens in " + span(START-now); }
+    else if (now <= END) { box.className = "status live"; txt.innerHTML = "<b>Presale and airdrop window are open</b> <span class=\"tz\">until Fri Nov 6, 09:00 UTC+7 (02:00 UTC), or until it sells out</span>"; cd.textContent = "closes in " + span(END-now); }
+    else { box.className = "status closed"; txt.innerHTML = "<b>The sale window closed Fri Nov 6, 2026, 09:00 UTC+7.</b> <span class=\"tz\">Launch and claim updates are posted on Reef's channels and in the Contracts section below.</span>"; cd.textContent = ""; }
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
