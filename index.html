@@ -138,7 +138,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .gate-box ol li{margin-bottom:7px}
 .gate-box ol b{color:var(--text)}
 .gate-check{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--text);margin-top:10px;cursor:pointer}
-.gate-check input{margin-top:2px;accent-color:var(--coral);flex:none}
+.gate-check input{margin-top:2px;accent-color:var(--good);flex:none}
 .gate-actions{display:flex;gap:10px;padding:12px 22px 18px;border-top:1px solid var(--line);background:var(--card)}
 .gate-actions .cta{margin-top:0;padding:13px;font-size:15px}
 .gate-actions .cta.secondary{flex:none;width:auto;padding:13px 18px}
@@ -610,6 +610,9 @@ const TRADES_MAX_SHOWN = 8;
 const LOCK_ABI = [
   "function unlockTime() view returns (uint256)",
 ];
+// Display-only: factory pair indexes left out of the Pools list and the token list (index 1 = the BDAG/CTEST test pool).
+// The pool still exists on-chain and stays tradeable by address; nothing here blocks any pair.
+const HIDDEN_PAIR_INDEXES = new Set([1]);
 // Optional, non-gatekeeping annotation layer: pair address -> its known LP-lock contract.
 // This never restricts which pairs are tradeable — it only adds a badge when a lock is known.
 const KNOWN_LOCKS = {
@@ -899,7 +902,8 @@ function loadPoolTokens() {
       const n = Number(await factory.allPairsLength());
       const pairs = await Promise.all(Array.from({ length: Math.min(n, 300) }, (_, i) => factory.allPairs(i)));
       const seen = new Set();
-      await Promise.all(pairs.map(async (pa) => {
+      await Promise.all(pairs.map(async (pa, idx) => {
+        if (HIDDEN_PAIR_INDEXES.has(idx)) return;
         const c = new ethers.Contract(pa, PAIR_ABI, p);
         const [t0, t1] = await Promise.all([c.token0(), c.token1()]);
         seen.add(t0.toLowerCase()); seen.add(t1.toLowerCase());
@@ -1643,7 +1647,8 @@ async function loadPoolList() {
     });
     if (addrs.length === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
     list.innerHTML = "";
-    for (const addr of addrs) {
+    for (const [idx, addr] of addrs.entries()) {
+      if (HIDDEN_PAIR_INDEXES.has(idx)) continue;
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
       const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
       const [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
