@@ -750,8 +750,23 @@ function rpcRow(e, r) {
 }
 
 // ---------- Wallet ----------
+function walletAppLinks() {
+  // Phones: a normal browser has no wallet, so offer to reopen this page inside the wallet app's own browser.
+  const page = location.href.split("#")[0];
+  const mm = "https://link.metamask.io/dapp/" + encodeURI(page.replace(/^https?:\/\//, ""));
+  const tw = "https://link.trustwallet.com/open_url?coin_id=60&url=" + encodeURIComponent(page);
+  const st = 'style="display:inline-block;margin:6px 8px 0 0;padding:8px 12px;border:1px solid currentColor;border-radius:10px;font-weight:600;text-decoration:none"';
+  return '<a ' + st + ' href="' + mm + '">Open in MetaMask</a><a ' + st + ' href="' + tw + '">Open in Trust Wallet</a>';
+}
+function isMobileBrowser() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
 async function connect() {
-  if (!window.ethereum) { showMsg("swap", "No wallet found. On a computer, install MetaMask or a similar wallet, then reload. On a phone, open this page in your wallet app's built-in browser instead of Chrome or Safari.", "err"); return; }
+  if (!window.ethereum) {
+    if (isMobileBrowser()) {
+      showMsg("swap", "", "err");
+      $("#swapMsg").innerHTML = "No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks();
+    } else showMsg("swap", "No wallet found. Install MetaMask or a similar wallet, then reload.", "err");
+    return;
+  }
   try {
     const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
     provider = new ethers.BrowserProvider(window.ethereum);
