@@ -610,6 +610,9 @@ const TRADES_MAX_SHOWN = 8;
 const LOCK_ABI = [
   "function unlockTime() view returns (uint256)",
 ];
+// Display-only: factory pair indexes left out of the Pools list and the token list (index 1 = the BDAG/CTEST test pool).
+// The pool still exists on-chain and stays tradeable by address; nothing here blocks any pair.
+const HIDDEN_PAIR_INDEXES = new Set([1]);
 // Optional, non-gatekeeping annotation layer: pair address -> its known LP-lock contract.
 // This never restricts which pairs are tradeable — it only adds a badge when a lock is known.
 const KNOWN_LOCKS = {
@@ -899,7 +902,8 @@ function loadPoolTokens() {
       const n = Number(await factory.allPairsLength());
       const pairs = await Promise.all(Array.from({ length: Math.min(n, 300) }, (_, i) => factory.allPairs(i)));
       const seen = new Set();
-      await Promise.all(pairs.map(async (pa) => {
+      await Promise.all(pairs.map(async (pa, idx) => {
+        if (HIDDEN_PAIR_INDEXES.has(idx)) return;
         const c = new ethers.Contract(pa, PAIR_ABI, p);
         const [t0, t1] = await Promise.all([c.token0(), c.token1()]);
         seen.add(t0.toLowerCase()); seen.add(t1.toLowerCase());
@@ -1643,7 +1647,8 @@ async function loadPoolList() {
     });
     if (addrs.length === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
     list.innerHTML = "";
-    for (const addr of addrs) {
+    for (const [idx, addr] of addrs.entries()) {
+      if (HIDDEN_PAIR_INDEXES.has(idx)) continue;
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
       const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
       const [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
