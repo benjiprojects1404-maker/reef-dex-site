@@ -443,6 +443,8 @@ footer a{text-decoration:underline}
       <p>No independent audit. The contracts were tested against Reef's real contracts with the real sale dates, including deliberate attempts to break them, and those tests will be published with the source. That is not the same as an audit. Treat everything here as experimental.</p></details>
     <details><summary>Could the ticker or name change?</summary>
       <p>The community chain's own ticker might change one day. That would be display-only: nothing in these contracts depends on the name &ldquo;BDAG&rdquo;.</p></details>
+    <details><summary>I'm on my phone and it says &ldquo;No wallet found&rdquo;. What do I do?</summary>
+      <p>A normal phone browser (Chrome, Safari) has no wallet in it, so the page can't connect. Open your wallet app (MetaMask, Trust Wallet or similar), use its built-in browser, and go to this page from there. Make sure the wallet is on BlockDAG (chain 1404), and check it shows the presale address from this page before you confirm.</p></details>
     <details><summary>Who can't take part?</summary>
       <p>US and UK persons may not buy in the presale or claim the airdrop. Only take part where it is lawful for you, and only if you are 18 or older.</p></details>
   </section>
@@ -642,7 +644,7 @@ const REEF_CFG = {
 
   // ------------------------------------------------------------ wallet
   async function connect() {
-    if (!window.ethereum) { msg("No wallet found. Install MetaMask or a similar wallet, then reload.", "err"); return; }
+    if (!window.ethereum) { msg("No wallet found. On a computer, install MetaMask or a similar wallet, then reload. On a phone, open this page in your wallet app's built-in browser instead of Chrome or Safari.", "err"); return; }
     try {
       const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
       account = ethers.getAddress(accs[0]);
