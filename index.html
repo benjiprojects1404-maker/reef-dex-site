@@ -751,7 +751,7 @@ function rpcRow(e, r) {
 
 // ---------- Wallet ----------
 async function connect() {
-  if (!window.ethereum) { showMsg("swap", "No wallet found. Install MetaMask or a similar wallet, then reload.", "err"); return; }
+  if (!window.ethereum) { showMsg("swap", "No wallet found. On a computer, install MetaMask or a similar wallet, then reload. On a phone, open this page in your wallet app's built-in browser instead of Chrome or Safari.", "err"); return; }
   try {
     const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
     provider = new ethers.BrowserProvider(window.ethereum);
