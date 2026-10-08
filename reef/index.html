@@ -654,7 +654,7 @@ const REEF_CFG = {
   function isMobileBrowser() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
   async function connect() {
     if (!window.ethereum) {
-      if (isMobileBrowser()) msg("No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks(), "err");
+      if (isMobileBrowser()) msg("No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks(), "ok");
       else msg("No wallet found. Install MetaMask or a similar wallet, then reload.", "err");
       return;
     }

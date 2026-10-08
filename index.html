@@ -762,7 +762,7 @@ function isMobileBrowser() { return /Android|iPhone|iPad|iPod/i.test(navigator.u
 async function connect() {
   if (!window.ethereum) {
     if (isMobileBrowser()) {
-      showMsg("swap", "", "err");
+      showMsg("swap", "", "ok");
       $("#swapMsg").innerHTML = "No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks();
     } else showMsg("swap", "No wallet found. Install MetaMask or a similar wallet, then reload.", "err");
     return;
