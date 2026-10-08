@@ -1499,13 +1499,30 @@ async function quoteLiqFrom(side) {
       $("#liqAAmt").value = ethers.formatUnits(aOut, liqTokA.decimals);
     }
   } catch (e) { return; }
-  if (account && isReef1404) $("#addBtn").disabled = false;
+  if (account && isReef1404) {
+    const vA2 = $("#liqAAmt").value.trim(), vB2 = $("#liqBAmt").value.trim();
+    const short = vA2 && vB2 ? await liqShortfall(vA2, vB2) : "";
+    if (short) { showMsg("pool", short, "err"); return; }
+    $("#addBtn").disabled = false;
+  }
+}
+// Returns a plain-English message if the wallet can't cover both sides, else "".
+async function liqShortfall(vA, vB) {
+  try {
+    const aAmt = ethers.parseUnits(vA, liqTokA.decimals), bAmt = ethers.parseUnits(vB, liqTokB.decimals);
+    const [balA, balB] = await Promise.all([balanceOf(liqTokA, account), balanceOf(liqTokB, account)]);
+    if (balA < aAmt) return "Not enough " + liqTokA.symbol + " in your wallet for this amount. Lower the amount.";
+    if (balB < bAmt) return "Not enough " + liqTokB.symbol + " in your wallet for this amount. Lower the amount.";
+  } catch (e) {}
+  return "";
 }
 async function doAddLiquidity() {
   if (!account || !isReef1404 || !liqTokA || !liqTokB) return;
   clearMsg("pool");
   const vA = $("#liqAAmt").value.trim(), vB = $("#liqBAmt").value.trim();
   if (!vA || !vB || Number(vA) <= 0 || Number(vB) <= 0) { showMsg("pool", "Enter both amounts.", "err"); return; }
+  const short = await liqShortfall(vA, vB);
+  if (short) { showMsg("pool", short, "err"); return; }
   $("#addBtn").disabled = true; $("#addBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
   try {
     const router = new ethers.Contract(ADDR.ROUTER, ROUTER_ABI, signer);
