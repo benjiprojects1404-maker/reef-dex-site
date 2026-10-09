@@ -286,7 +286,7 @@ footer p{margin:0 0 6px}
       <h3>What nobody can do</h3>
       <p>Reef's Router and Factory have no owner or admin. Nobody, including the team, can pause trading, block a wallet, freeze a pool, change the 0.30% swap fee or move funds out of a pool.</p>
       <h3>The one privileged role</h3>
-      <p>The Factory has a single setting, <code>feeToSetter</code>, which decides where the 0.05% protocol fee goes (or turns it off) and can hand that role to another address. It cannot touch liquidity already in pools or stop anyone trading. It's held by a 2-of-2 multisig with separate Trezor and Ledger hardware-wallet signers, so no single key can use it.</p>
+      <p>The Factory has a single setting, <code>feeToSetter</code>, which decides where the 0.05% protocol fee goes (or turns it off) and can hand that role to another address. It cannot touch liquidity already in pools or stop anyone trading. It's held by a 2-of-3 multisig with three separate hardware-wallet signers (any two must approve), so no single key can use it and losing one key doesn't lock it.</p>
       <h3>Approvals</h3>
       <p>When Reef asks you to approve a token, it asks for the exact amount of that trade or deposit, not unlimited spending. You can check and revoke approvals at any time on the explorer or with a tool like revoke.cash if it supports the chain.</p>
       <h3>Good habits</h3>
@@ -311,7 +311,7 @@ footer p{margin:0 0 6px}
         <div class="arow"><div class="lbl">Router<small>swaps and liquidity</small></div><div class="val">0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.blockdag.engineering/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76">Explorer</a></div></div>
         <div class="arow"><div class="lbl">Factory<small>creates pools</small></div><div class="val">0x9603042044b6B1A1637c508F731ba01219142239</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.blockdag.engineering/address/0x9603042044b6B1A1637c508F731ba01219142239">Explorer</a></div></div>
         <div class="arow"><div class="lbl">WBDAG<small>wrapped BDAG</small></div><div class="val">0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA">Explorer</a></div></div>
-        <div class="arow"><div class="lbl">Admin multisig<small>2-of-2, holds feeToSetter</small></div><div class="val">0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc">Explorer</a></div></div>
+        <div class="arow"><div class="lbl">Admin multisig<small>2-of-3, holds feeToSetter</small></div><div class="val">0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.bdagexplorer.com/address/0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc">Explorer</a></div></div>
         <div class="arow"><div class="lbl">Treasury<small>receives the 0.05% protocol fee</small></div><div class="val">0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.blockdag.engineering/address/0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267">Explorer</a></div></div>
         <div class="arow"><div class="lbl">TWAP oracle<small>NOCAP/BDAG pool</small></div><div class="val">0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b</div><div class="acts"><button data-copy>Copy</button><a class="btn" target="_blank" rel="noopener" href="https://explorer.blockdag.engineering/address/0xa461aAe6Ba4bDb68192D2a53e60640053a35FF7b">Explorer</a></div></div>
       </div>
@@ -325,7 +325,7 @@ footer p{margin:0 0 6px}
       <p>Reef is labelled beta and will stay that way until these are done. There are no fixed dates; each step happens when it's ready, and progress is posted on X.</p>
       <ul>
         <li>An independent security audit of the contracts.</li>
-        <li>Moving the admin multisig from 2-of-2 to 2-of-3, so a single lost key can't lock the fee setting.</li>
+        <li>Done on 9 Oct 2026: the admin multisig moved from 2-of-2 to 2-of-3, and its pause path was drilled on Nodal and Handshake.</li>
         <li>A public bug bounty.</li>
       </ul>
     </section>
