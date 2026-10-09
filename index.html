@@ -528,7 +528,6 @@ function rpcName(url) { const h = url.replace(/^https:\/\//, "").split("/")[0]; 
 // probe can't tell it apart from a real endpoint, so it's always shown as unusable.
 const FORK_ENDPOINT = { name: "bdagscan.com", url: "https://rpc.bdagscan.com", fork: true };
 const FALLBACK_RPC_URLS = [
-  "https://rpc.blockdag.engineering",
   "https://rpc.capedag.com",
   "https://rms-bdag-rpc.de/api/rpc-live",
   "https://rpc.dvdmining.com",
@@ -538,6 +537,7 @@ const FALLBACK_RPC_URLS = [
   "https://rpc.escrowhubs.io",
   "https://rpc.brazil.bdag-us.org",
   "https://rpc.bdagexplorer.com",
+  "https://rpc.blockdag.engineering",
 ];
 let RPC_ENDPOINTS = [...FALLBACK_RPC_URLS.map((url) => ({ name: rpcName(url), url })), FORK_ENDPOINT];
 let RPC_URLS = FALLBACK_RPC_URLS.slice();
