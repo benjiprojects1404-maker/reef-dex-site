@@ -13,7 +13,7 @@ Each address below was checked on 2 Oct 2026: the code on chain is byte-for-byte
 | ReefFactory | `0x9603042044b6B1A1637c508F731ba01219142239` | `contracts/reef/ReefFactory.sol` |
 | ReefRouter | `0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76` | `contracts/reef/ReefRouter.sol` |
 | WBDAG | `0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA` | `contracts/reef/WBDAG.sol` |
-| Admin multisig (2-of-2) | `0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc` | `contracts/reef/ReefAdminMultisig.sol` |
+| Admin multisig (2-of-3) | `0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc` | `contracts/reef/ReefAdminMultisig.sol` |
 | NodalRouter | `0xA06f8a856896aA1836f04F758C1E5Ac5dbe24672` | `contracts/nodal/NodalRouter.sol` |
 | NodalReefAdapter | `0x4b60D344eDA7E3D859739B5AbC1176d756E22d56` | `contracts/nodal/NodalReefAdapter.sol` |
 | Handshake OTCEscrow | `0xD907701A2D96f7D0E7596b02737C9F36446cf5CA` | `contracts/handshake/OTCEscrow.sol` |
@@ -23,6 +23,11 @@ Each address below was checked on 2 Oct 2026: the code on chain is byte-for-byte
 
 Read from chain the same day: Reef's `feeToSetter`, NodalRouter's `owner` and the escrow's `owner` are all the admin
 multisig. Reef's `feeTo` (protocol-fee treasury) is `0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267`.
+
+Admin multisig owners, read from chain with `getOwners()` on 9 Oct 2026: `0x306208Aa25A5BBAB22Bd9208c4178b9f2Dd929FD`,
+`0x33D599DD7C9e1C11b6DC4a48AE209D0f066CF91A` and `0xA874Ff1255379E01F6596cDB0EE631891Fe27767` (threshold 2). The third
+owner was added by multisig transaction 0 (block 23977207). Transactions 1 to 4 were a pause and unpause drill on
+NodalRouter and the Handshake escrow (blocks 23980687, 23981053, 23981982, 23982335), each executed through the multisig.
 
 Reef pools (pairs) are created by the Factory from `contracts/reef/ReefPair.sol`.
 
@@ -54,7 +59,7 @@ and compare the output with the code at the address (everything except the last 
 stamp).
 
 `contracts/reef/ReefAdminMultisigV2.sol` is **not deployed**. It's a proposed replacement that fixes finding M-1
-below, for use when the admin moves from 2-of-2 to 2-of-3.
+below, The deployed multisig went from 2-of-2 to 2-of-3 on 9 Oct 2026 by adding a third owner through its own `addOwner` (a confirmed multisig transaction), so V2 was not needed for that. It remains a proposed upgrade.
 
 ## Compiler settings
 
@@ -79,7 +84,7 @@ No critical or high findings. Every finding below except L-5 (a design property)
 
 | ID | Contract | Severity | Finding |
 |---|---|---|---|
-| M-1 | Admin multisig | Medium | A removed owner's earlier approvals still count, so after removing an owner a pending transaction can pass with fewer current owners than the threshold. No exposure today: the 2-of-2 can't remove an owner, and no multisig transactions exist yet. Fixed in `ReefAdminMultisigV2.sol`. |
+| M-1 | Admin multisig | Medium | A removed owner's earlier approvals still count, so after removing an owner a pending transaction can pass with fewer current owners than the threshold. No exposure today: no owner has ever been removed from the multisig. Fixed in `ReefAdminMultisigV2.sol`. |
 | L-1 | Handshake | Low | If the fee recipient can't receive BDAG, every fill fails (cancels still work). Keep the fee recipient a plain wallet. |
 | L-2 | Handshake | Low | A transfer-tax token on the wanted side pays the maker less than asked. |
 | L-3 | Handshake | Low | A token that blocks or pauses the escrow freezes that token's offers until it unblocks. |
