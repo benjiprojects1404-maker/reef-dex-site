@@ -204,6 +204,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .rpcdot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted)}
 .rpcdot.ok{background:var(--good)}
 .rpcdot.bad{background:var(--ember)}
+.rpcdot.warn{background:#f2b84b}
 .rpcdot.chk{background:var(--muted);animation:sp 1s linear infinite}
 .rpcname{flex:1;font-size:13px;font-weight:600;min-width:0}
 .rpcname small{display:block;color:var(--muted);font-weight:400;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -738,7 +739,7 @@ function rpcRow(e, r) {
       <button class="rpcpick" disabled>Use</button>
     </li>`;
   }
-  const dot = r === null ? "chk" : r.ok ? "ok" : "bad";
+  const dot = r === null ? "chk" : r.ok ? "ok" : e.feed === "ok" ? "warn" : "bad";
   const status = r === null ? "checking…"
     : e.feed === "behind" ? "behind the chain head &mdash; not used"
     : r.ok ? r.ms + " ms"
