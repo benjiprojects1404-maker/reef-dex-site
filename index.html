@@ -134,6 +134,11 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .presalebar{background:var(--card);border-bottom:2px solid var(--coral-soft);color:var(--text);font-size:13px;text-align:center;padding:8px 12px;line-height:1.45}
 .presalebar a{color:var(--coral);font-weight:700;text-decoration:underline;white-space:nowrap}
 .presalebar small{color:var(--muted);margin-left:6px}
+.adhint{font-size:12.5px;color:var(--muted);margin:8px 2px 2px;line-height:1.5}
+.adhint b{color:var(--text)}
+.adhint.ok{color:var(--good)}
+.adhint.ok b{color:var(--good)}
+.adhint a{color:var(--coral)}
 .gate-overlay{position:fixed;inset:0;background:rgba(6,6,7,.86);backdrop-filter:blur(3px);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
 .gate-box{max-width:460px;width:100%;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;background:var(--card);border:1px solid var(--coral-soft);border-radius:20px;box-shadow:0 0 60px -20px var(--coral-soft);overflow:hidden}
 .gate-body{overflow-y:auto;padding:22px 22px 6px;-webkit-overflow-scrolling:touch}
@@ -237,6 +242,22 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .contracts{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:12px}
 .contracts a{color:var(--polyp);text-decoration:none}
 .contracts a:hover{text-decoration:underline}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.copybtn,.qbtn{font:inherit;font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.copybtn:hover,.qbtn:hover{color:var(--text);border-color:var(--coral-soft)}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:6px 2px 0}
+.qmeta.stale{color:var(--amber)}
+.qmeta.stale .qbtn.ref{color:var(--amber);border-color:var(--amber)}
+.qmeta .btns{display:flex;gap:6px}
+.adrow{display:flex;gap:6px;margin-top:10px}
+.adrow input{flex:1;min-width:0;font:inherit;font-size:12.5px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--raised);color:var(--text)}
+.adrow .qbtn{font-size:12.5px;padding:6px 12px}
+.adout{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+.adout b{color:var(--text)}
+.adout .ok{color:var(--good)}
+.adout ul{margin:6px 0 0;padding-left:16px}
+.adout li{margin:3px 0}
+.adout a{color:var(--polyp)}
 .disclaimer{border-top:1px solid var(--line);margin-top:26px;padding-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
 .disclaimer h4{color:var(--text);font:700 13px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px}
 .disclaimer ul{margin:6px 0 16px;padding-left:18px}
@@ -246,7 +267,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <body>
 
 <div class="betabar">BETA &mdash; not independently audited, on an early-stage chain. <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">AI-assisted security review</a> &middot; <a href="#faq">Read more</a></div>
-<div class="presalebar"><b>$REEF presale is live</b> &mdash; 150 BDAG per REEF, closes 6 Nov. <a href="/reef/">View the presale &rarr;</a><small>Not for US/UK persons. Unaudited beta.</small></div>
+<div class="presalebar"><b>$REEF presale is live</b> &mdash; 150 BDAG per REEF, closes 6 Nov. <a href="/reef/">View the presale &rarr;</a> <span class="adbar">Airdrop: swap 1,000+ BDAG or add 5,000+ BDAG of liquidity on Reef before 6 Nov. <a href="/reef/#airdrop">Rules</a></span><small>Not for US/UK persons. Unaudited beta.</small></div>
 
 <div class="gate-overlay" id="gateOverlay" style="display:none">
   <div class="gate-box">
@@ -325,6 +346,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <div style="text-align:right;margin-top:2px"><button class="linklike" onclick="setMax()">Use max</button></div>
 
       <div class="rows" id="swapInfo"></div>
+      <div class="qmeta" id="quoteMeta" style="display:none"><span id="quoteAge"></span><span class="btns"><button type="button" class="qbtn ref" onclick="refreshSwapQuote()">Refresh</button><button type="button" class="qbtn" id="copySwapLink" onclick="copySwapLink()">Copy link</button></span></div>
+      <div class="adhint" id="shareNote" style="display:none"></div>
+      <div class="adhint" id="swapAirdrop" aria-live="polite"></div>
       <div class="impactwarn" id="impactWarn" style="display:none"></div>
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
@@ -378,6 +402,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         </div>
         <div class="empty" id="poolNewNote" style="display:none">No pool exists yet for this pair &mdash; you would create it and set the starting price.</div>
         <div id="poolShareBox"></div>
+        <div class="adhint" id="poolAirdrop" aria-live="polite"></div>
         <button class="cta" id="addBtn" disabled onclick="doAddLiquidity()">Select tokens</button>
       </div>
 
@@ -411,6 +436,12 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   </div>
 
   <div class="col side">
+    <div class="card" id="airdropCard">
+      <h3>REEF airdrop check</h3>
+      <p class="hint" style="margin-top:6px">See which of a wallet's Reef actions since 7 Oct match the airdrop rules. This is a self-check, not the final list: places go to the first 1,000 wallets, ranked after the 6 Nov snapshot.</p>
+      <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button></div>
+      <div id="adOut" class="adout" aria-live="polite"></div>
+    </div>
     <div class="card">
       <h3>Pools</h3>
       <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
@@ -418,12 +449,12 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <div class="card">
       <h3>Contracts</h3>
       <div class="contracts">
-        <a href="https://explorer.blockdag.engineering/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener">Router &middot; 0xbd6fbA&hellip;Cc76</a>
-        <a href="https://explorer.blockdag.engineering/address/0x9603042044b6B1A1637c508F731ba01219142239" target="_blank" rel="noopener">Factory &middot; 0x960304&hellip;2239</a>
-        <a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a>
+        <div class="crow"><a href="https://explorer.blockdag.engineering/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener">Router &middot; 0xbd6fbA&hellip;Cc76</a><button type="button" class="copybtn" data-copy="0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" aria-label="Copy address">Copy</button></div>
+        <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x9603042044b6B1A1637c508F731ba01219142239" target="_blank" rel="noopener">Factory &middot; 0x960304&hellip;2239</a><button type="button" class="copybtn" data-copy="0x9603042044b6B1A1637c508F731ba01219142239" aria-label="Copy address">Copy</button></div>
+        <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-09-29-recent-trades</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-11-airdrop-check</p>
     </div>
   </div>
 </main>
@@ -581,6 +612,44 @@ const ADDR = {
 };
 const NATIVE = { symbol: "BDAG", name: "BlockDAG", decimals: 18, address: null, native: true };
 const DEADLINE_SECS = 1200;
+// REEF airdrop window and thresholds, as published on /reef/ (Wed 7 Oct 09:00 to Fri 6 Nov 09:00, UTC+7).
+// These hints only describe the published rules; the final list is computed from on-chain events after the snapshot.
+const AIRDROP = {
+  start: Date.UTC(2026, 9, 7, 2, 0, 0), end: Date.UTC(2026, 10, 6, 2, 0, 0),
+  swapMin: 1000n * 10n ** 18n, liqMin: 5000n * 10n ** 18n, launchMin: 25000n * 10n ** 18n,
+};
+function airdropOpen(now) { const t = now == null ? Date.now() : now; return t >= AIRDROP.start && t < AIRDROP.end; }
+function isBdag(t) { return !!t && (t.native || (t.address && t.address.toLowerCase() === ADDR.WBDAG.toLowerCase())); }
+function bdagFmt(wei) { return Number(ethers.formatUnits(wei, 18)).toLocaleString("en-US", { maximumFractionDigits: 2 }); }
+const AIRDROP_RULES = '<a href="/reef/#airdrop">rules</a>';
+// Swap hint: how much BDAG this swap moves, and whether that meets the Tier 1 minimum.
+function swapAirdropHint(info) {
+  if (!info || !airdropOpen()) return { cls: "", html: "" };
+  let moved = null;
+  if (isBdag(tokFrom)) moved = info.amountIn; else if (isBdag(tokTo)) moved = info.amountOut;
+  if (moved == null) return { cls: "", html: `REEF airdrop: only swaps with BDAG on one side count (${AIRDROP_RULES}).` };
+  if (moved >= AIRDROP.swapMin) return { cls: "ok", html: `<b>&#10003; Airdrop Tier 1 size.</b> This swap moves ${bdagFmt(moved)} BDAG, which meets the 1,000 BDAG minimum. Places go to the first 1,000 wallets, and the final list is worked out from on-chain events after 6 Nov (${AIRDROP_RULES}).` };
+  return { cls: "", html: `REEF airdrop: swaps that move 1,000+ BDAG count. This one moves ${bdagFmt(moved)} BDAG (${AIRDROP_RULES}).` };
+}
+// Pool hint: BDAG side of an add-liquidity, against Tier 2 (existing pool) or Tier 3 (first liquidity in a new pool).
+function poolAirdropHint(aStr, bStr, isNewPool) {
+  if (!airdropOpen() || !liqTokA || !liqTokB) return { cls: "", html: "" };
+  let side = null, str = "";
+  if (isBdag(liqTokA)) { side = liqTokA; str = aStr; } else if (isBdag(liqTokB)) { side = liqTokB; str = bStr; }
+  if (!side) return { cls: "", html: `REEF airdrop: only pools with BDAG on one side count (${AIRDROP_RULES}).` };
+  let amt = 0n;
+  try { amt = str && Number(str) > 0 ? ethers.parseUnits(str, 18) : 0n; } catch (e) { amt = 0n; }
+  if (isNewPool) {
+    if (amt >= AIRDROP.launchMin) return { cls: "ok", html: `<b>&#10003; Airdrop Tier 3 size</b>, if you deployed this token yourself and this is its first Reef pair: ${bdagFmt(amt)} BDAG meets the 25,000 BDAG minimum. Otherwise adding 5,000+ BDAG counts as Tier 2 (${AIRDROP_RULES}).` };
+    if (amt >= AIRDROP.liqMin) return { cls: "ok", html: `<b>&#10003; Airdrop Tier 2 size.</b> ${bdagFmt(amt)} BDAG meets the 5,000 BDAG minimum. Launching your own token with 25,000+ BDAG in its first pair counts as Tier 3 (${AIRDROP_RULES}).` };
+    return { cls: "", html: `REEF airdrop: adding 5,000+ BDAG in one go counts (Tier 2), and 25,000+ BDAG when launching your own token counts as Tier 3 (${AIRDROP_RULES}).` };
+  }
+  if (amt >= AIRDROP.liqMin) return { cls: "ok", html: `<b>&#10003; Airdrop Tier 2 size.</b> This adds ${bdagFmt(amt)} BDAG in one go, which meets the 5,000 BDAG minimum. The final list is worked out from on-chain events after 6 Nov (${AIRDROP_RULES}).` };
+  return { cls: "", html: `REEF airdrop: adding 5,000+ BDAG of liquidity in one go counts (Tier 2)${amt > 0n ? `. This adds ${bdagFmt(amt)} BDAG` : ""} (${AIRDROP_RULES}).` };
+}
+function showHint(id, h) { const e = document.getElementById(id); if (!e) return; e.className = "adhint" + (h.cls ? " " + h.cls : ""); e.innerHTML = h.html; }
+let poolIsNew = false;
+function renderPoolAirdrop() { showHint("poolAirdrop", poolAirdropHint($("#liqAAmt").value.trim(), $("#liqBAmt").value.trim(), poolIsNew)); }
 
 // ---------- ABIs (only what this app calls) ----------
 const ERC20_ABI = [
@@ -885,6 +954,7 @@ async function findPath(a, b) {
 
 // ---------- Rendering: header / wallet ----------
 function renderWallet() {
+  const ad = document.getElementById("adAddr"); if (ad && account && !ad.value) ad.value = account;
   syncSwapBtn();
   const btn = $("#walletBtn");
   if (account) { btn.textContent = short(account); btn.classList.add("connected"); }
@@ -1065,6 +1135,217 @@ function clearAmounts() {
   clearMsg("swap");
 }
 
+
+// ---------- REEF airdrop self-check ----------
+// Reads Swap and Mint events on Reef's BDAG pairs inside the airdrop window, keeps the ones whose
+// transaction was signed by the wallet, and compares the BDAG side with the published minimums.
+// It is a self-check only: the final list (first 1,000 wallets, team excluded) is produced after 6 Nov.
+const MINT_IFACE = new ethers.Interface(["event Mint(address indexed sender, uint256 amount0, uint256 amount1)"]);
+const MINT_TOPIC = MINT_IFACE.getEvent("Mint").topicHash;
+const AD_MAX_TXS = 400;
+// Router maths can leave an add or swap a few wei under a round number (5,000 BDAG typed can land as 4,999.999...).
+// Treat anything within 0.001 BDAG of a minimum as meeting it. The final airdrop script must use the same tolerance.
+const AD_ROUNDING = 10n ** 15n;
+const meets = (amt, min) => amt + AD_ROUNDING >= min;
+let adRunning = false;
+async function bdagPairs(p) {
+  const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, p);
+  const n = Number(await factory.allPairsLength());
+  const addrs = await Promise.all(Array.from({ length: Math.min(n, 300) }, (_, i) => factory.allPairs(i)));
+  const w = ADDR.WBDAG.toLowerCase(), out = {};
+  await Promise.all(addrs.map(async (pa, idx) => {
+    if (HIDDEN_PAIR_INDEXES.has(idx)) return;
+    const c = new ethers.Contract(pa, PAIR_ABI, p);
+    const [t0, t1] = await Promise.all([c.token0(), c.token1()]);
+    if (t0.toLowerCase() === w) out[pa.toLowerCase()] = { bdagIs0: true, token: t1 };
+    else if (t1.toLowerCase() === w) out[pa.toLowerCase()] = { bdagIs0: false, token: t0 };
+  }));
+  return out;
+}
+// Block range for the window: estimate from the recent block rate with a wide safety margin,
+// then keep only logs whose block timestamp is really inside the window.
+async function windowRange(p) {
+  const head = await p.getBlockNumber();
+  const back = Math.min(head, 200000);
+  const [hb, ob] = await Promise.all([p.getBlock(head), p.getBlock(head - back)]);
+  const secsPerBlock = Math.max(0.05, (hb.timestamp - ob.timestamp) / back);
+  const startTs = Math.floor(AIRDROP.start / 1000);
+  const est = head - Math.ceil((hb.timestamp - startTs) / secsPerBlock);
+  return { head, fromBlock: Math.max(0, est - 300000) };
+}
+async function airdropActions(p, wallet) {
+  const pairs = await bdagPairs(p);
+  const pairAddrs = Object.keys(pairs);
+  if (!pairAddrs.length) throw new Error("no BDAG pairs found");
+  const { head, fromBlock } = await windowRange(p);
+  const [swapsAll, mintsAll] = await Promise.all([
+    p.getLogs({ address: pairAddrs, topics: [SWAP_TOPIC], fromBlock, toBlock: head }),
+    p.getLogs({ address: pairAddrs, topics: [MINT_TOPIC], fromBlock, toBlock: head }),
+  ]);
+  // Keep only logs inside the window, by block timestamp.
+  const ts = {};
+  const blocks = [...new Set([...swapsAll, ...mintsAll].map((l) => l.blockNumber))];
+  await Promise.all(blocks.map(async (n) => { const b = await p.getBlock(n); ts[n] = b.timestamp * 1000; }));
+  const inWin = (l) => ts[l.blockNumber] >= AIRDROP.start && ts[l.blockNumber] < AIRDROP.end;
+  const swaps = swapsAll.filter(inWin), mints = mintsAll.filter(inWin);
+  const endBlock = head;
+  const hashes = [...new Set([...swaps, ...mints].map((l) => l.transactionHash))];
+  const partial = hashes.length > AD_MAX_TXS;
+  const me = wallet.toLowerCase(), mine = new Set();
+  const txs = await Promise.all(hashes.slice(0, AD_MAX_TXS).map((h) => p.getTransaction(h).catch(() => null)));
+  txs.forEach((t) => { if (t && t.from && t.from.toLowerCase() === me) mine.add(t.hash); });
+  // First-ever Mint per pair, to spot a token's first liquidity (Tier 3 needs that plus 25,000+ BDAG).
+  const firstMint = {};
+  const myMintPairs = [...new Set(mints.filter((l) => mine.has(l.transactionHash)).map((l) => l.address.toLowerCase()))];
+  await Promise.all(myMintPairs.map(async (pa) => {
+    const all = await p.getLogs({ address: pa, topics: [MINT_TOPIC], fromBlock: 0, toBlock: endBlock });
+    if (all.length) firstMint[pa] = all[0].transactionHash + ":" + all[0].index;
+  }));
+  const actions = [];
+  for (const l of swaps) {
+    if (!mine.has(l.transactionHash)) continue;
+    const info = pairs[l.address.toLowerCase()];
+    const ev = SWAP_IFACE.parseLog(l).args;
+    const bIn = info.bdagIs0 ? ev.amount0In : ev.amount1In, bOut = info.bdagIs0 ? ev.amount0Out : ev.amount1Out;
+    const moved = bIn > bOut ? bIn : bOut;
+    actions.push({ kind: "swap", tier: meets(moved, AIRDROP.swapMin) ? 1 : 0, bdag: moved, tx: l.transactionHash, block: l.blockNumber, token: info.token });
+  }
+  for (const l of mints) {
+    if (!mine.has(l.transactionHash)) continue;
+    const pa = l.address.toLowerCase(), info = pairs[pa];
+    const ev = MINT_IFACE.parseLog(l).args;
+    const b = info.bdagIs0 ? ev.amount0 : ev.amount1;
+    const first = firstMint[pa] === l.transactionHash + ":" + l.index;
+    const tier = first && meets(b, AIRDROP.launchMin) ? 3 : meets(b, AIRDROP.liqMin) ? 2 : 0;
+    actions.push({ kind: first ? "first liquidity" : "add liquidity", tier, bdag: b, tx: l.transactionHash, block: l.blockNumber, token: info.token });
+  }
+  actions.sort((a, b) => a.block - b.block);
+  return { actions, windowSwaps: swaps.length, partial };
+}
+async function runAirdropCheck() {
+  if (adRunning) return;
+  const out = $("#adOut"), btn = $("#adBtn");
+  const raw = ($("#adAddr").value || "").trim();
+  if (!ethers.isAddress(raw)) { out.innerHTML = "Enter a full wallet address (0x followed by 40 characters), or connect your wallet."; return; }
+  const wallet = ethers.getAddress(raw);
+  adRunning = true; btn.disabled = true; btn.textContent = "Checking…";
+  out.textContent = "Reading Reef's BDAG pools since 7 Oct. This can take a few seconds.";
+  try {
+    const res = await tryRpcFallback((p) => airdropActions(p, wallet));
+    if (!res.windowSwaps && !res.actions.length) {
+      out.innerHTML = "Couldn't confirm: the network returned no Reef swaps at all for the airdrop window, which is unlikely. Please try again in a moment.";
+      return;
+    }
+    const syms = {};
+    await Promise.all([...new Set(res.actions.map((a) => a.token))].map(async (t) => { try { syms[t] = (await tokenInfo(t)).symbol; } catch (e) { syms[t] = short(t); } }));
+    const best = res.actions.reduce((m, a) => Math.max(m, a.tier), 0);
+    const tierName = { 1: "Tier 1 (swap of 1,000+ BDAG)", 2: "Tier 2 (5,000+ BDAG of liquidity)", 3: "Tier 3 (first pair with 25,000+ BDAG, if you deployed the token)" };
+    let html = best
+      ? `<span class="ok"><b>&#10003; Found a qualifying action.</b></span> Highest: ${tierName[best]}.`
+      : res.actions.length ? "<b>No qualifying action yet.</b> The actions found are below the minimums." : "<b>No Reef BDAG-pair actions found</b> for this wallet since 7 Oct.";
+    if (res.actions.length) {
+      html += "<ul>" + res.actions.slice(-12).map((a) => `<li>${escHtml(a.kind)} &middot; ${escHtml(syms[a.token] || "")} &middot; ${bdagFmt(a.bdag)} BDAG${a.tier ? ` &middot; <span class="ok">Tier ${a.tier}</span>` : ""} &middot; <a href="${EXPLORER}/tx/${a.tx}" target="_blank" rel="noopener">tx</a></li>`).join("") + "</ul>";
+    }
+    html += `<p style="margin:8px 0 0">Not the final list. Places go to the first 1,000 wallets by their first qualifying action, team wallets are excluded, and the full list with proofs is published after 6 Nov. Presale buys don't count. <a href="/reef/#airdrop">Rules</a></p>`;
+    if (res.partial) html += `<p style="margin:6px 0 0">Only the first ${AD_MAX_TXS} transactions in the window were checked, so this may be incomplete.</p>`;
+    out.innerHTML = html;
+  } catch (e) {
+    out.textContent = "Couldn't read the chain just now. Please try again in a moment.";
+  } finally {
+    adRunning = false; btn.disabled = false; btn.textContent = "Check";
+  }
+}
+
+// ---------- Copy helper ----------
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {
+    try {
+      const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); const ok = document.execCommand("copy"); document.body.removeChild(ta); return ok;
+    } catch (e2) { return false; }
+  }
+}
+function flashBtn(btn, ok, idle) { btn.textContent = ok ? "Copied" : "Couldn't copy"; setTimeout(() => { btn.textContent = idle; }, 2000); }
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest && e.target.closest(".copybtn");
+  if (!b) return;
+  flashBtn(b, await copyText(b.getAttribute("data-copy")), "Copy");
+});
+
+// ---------- Quote age (stale after 30 s, so nobody signs on old numbers) ----------
+const QUOTE_STALE_S = 30, QUOTE_SLOW_MS = 4000;
+let quoteAgeTimer = null;
+function renderQuoteAge() {
+  const meta = $("#quoteMeta");
+  if (!meta) return;
+  if (!lastSwap || !lastSwap.quotedAt) { meta.style.display = "none"; clearInterval(quoteAgeTimer); quoteAgeTimer = null; return; }
+  meta.style.display = "";
+  const age = Math.max(0, Math.round((Date.now() - lastSwap.quotedAt) / 1000));
+  const stale = age >= QUOTE_STALE_S;
+  meta.classList.toggle("stale", stale);
+  let t = stale ? `This quote is ${age} s old. Refresh it before you swap.` : age < 2 ? "Quote just updated" : `Quote taken ${age} s ago`;
+  if (lastSwap.tookMs >= QUOTE_SLOW_MS) t += ` (the network took ${(lastSwap.tookMs / 1000).toFixed(1)} s to answer)`;
+  $("#quoteAge").textContent = t;
+  if (!quoteAgeTimer) quoteAgeTimer = setInterval(renderQuoteAge, 1000);
+}
+
+// ---------- Shareable swap links: /?from=BDAG&to=NOCAP&amount=1000 ----------
+// A link only fills in the form. Nothing is signed or sent until the user confirms in their wallet.
+const SHARE_AMOUNT_RE = /^\d{1,18}(\.\d{1,18})?$/;
+function parseShareParams(search) {
+  try {
+    const q = new URLSearchParams(search || "");
+    const from = (q.get("from") || "").trim().slice(0, 64), to = (q.get("to") || "").trim().slice(0, 64);
+    const amt = (q.get("amount") || "").trim();
+    return { from, to, amount: SHARE_AMOUNT_RE.test(amt) ? amt : "", present: !!(from || to || amt) };
+  } catch (e) { return { from: "", to: "", amount: "", present: false }; }
+}
+function resolveShareToken(list, ref) {
+  if (!ref) return null;
+  const r = ref.toLowerCase();
+  if (r === "bdag" || r === "native") return { ...NATIVE };
+  const byAddr = list.find((t) => t.address && t.address.toLowerCase() === r);
+  if (byAddr) return byAddr;
+  const bySym = list.filter((t) => (t.symbol || "").toLowerCase() === r);
+  return bySym.length === 1 ? bySym[0] : null;
+}
+function shareRef(list, t) {
+  if (t.native) return "BDAG";
+  return list.filter((x) => (x.symbol || "").toLowerCase() === (t.symbol || "").toLowerCase()).length === 1 ? t.symbol : t.address;
+}
+async function copySwapLink() {
+  const btn = $("#copySwapLink");
+  let list = [];
+  try { list = await loadPoolTokens(); } catch (e) {}
+  if (!tokFrom || !tokTo) return;
+  const q = new URLSearchParams();
+  q.set("from", shareRef(list, tokFrom)); q.set("to", shareRef(list, tokTo));
+  const amt = $("#fromAmt").value.trim();
+  if (SHARE_AMOUNT_RE.test(amt)) q.set("amount", amt);
+  flashBtn(btn, await copyText(`${location.origin}${location.pathname}?${q.toString()}`), "Copy link");
+}
+async function applyShareLink() {
+  const sh = parseShareParams(location.search);
+  if (!sh.present) return;
+  let list = [];
+  try { list = await loadPoolTokens(); } catch (e) {}
+  const f = sh.from ? resolveShareToken(list, sh.from) : null;
+  const t = sh.to ? resolveShareToken(list, sh.to) : null;
+  if (mode !== "swap") setMode("swap");
+  if (f) tokFrom = f;
+  if (t && !sameToken(t, tokFrom)) tokTo = t;
+  renderTokButtons();
+  if (sh.amount) { $("#fromAmt").value = sh.amount; fitAmtFont($("#fromAmt")); }
+  const bad = (sh.from && !f) || (sh.to && !t);
+  const note = $("#shareNote");
+  note.style.display = "";
+  note.textContent = bad
+    ? "This link names a token that has no Reef pool, so part of it was ignored. Check the pair below."
+    : "Opened from a shared link. It only fills in the form: check the pair and amount, and nothing is sent until you confirm in your wallet.";
+  refreshSwapQuote();
+  refreshBalances();
+}
+
 // ---------- Swap quoting ----------
 let fromEditTimer = null;
 $("#fromAmt") && $("#fromAmt").addEventListener("input", () => {
@@ -1073,6 +1354,7 @@ $("#fromAmt") && $("#fromAmt").addEventListener("input", () => {
 });
 async function refreshSwapQuote() {
   const my = ++quoteAbort;
+  const quoteStarted = Date.now();
   impactArmed = false; clearTimeout(impactTimer);
   clearMsg("swap");
   const amtStr = $("#fromAmt").value.trim();
@@ -1111,7 +1393,7 @@ async function refreshSwapQuote() {
         }
       }
     } catch (e) { impactPct = null; }
-    setSwapInfo({ path, amountIn, amountOut: out, rate, impactPct });
+    setSwapInfo({ path, amountIn, amountOut: out, rate, impactPct, quotedAt: Date.now(), tookMs: Date.now() - quoteStarted });
     if (account && isReef1404) $("#swapBtn").disabled = false;
     if (path.length === 2) loadChartForPair(path[0], path[1]); else hideChart();
   } catch (e) {
@@ -1403,6 +1685,8 @@ function setSwapInfo(info) {
   lastSwap = info;
   const box = $("#swapInfo");
   fitAllAmts();
+  showHint("swapAirdrop", swapAirdropHint(info));
+  renderQuoteAge();
   if (!info) { box.innerHTML = ""; renderImpactWarn(null); syncSwapBtn(); return; }
   const hops = info.path.length > 2 ? " (via WBDAG)" : "";
   const ip = info.impactPct;
@@ -1502,28 +1786,30 @@ async function quoteLiqFrom(side) {
   if (!liqTokA || !liqTokB) return;
   const pair = await pairFor(liqTokA, liqTokB);
   $("#addBtn").disabled = true;
-  if (!pair) { $("#poolNewNote").style.display = ""; $("#poolShareBox").innerHTML = ""; return; }
+  if (!pair) { poolIsNew = true; renderPoolAirdrop(); $("#poolNewNote").style.display = ""; $("#poolShareBox").innerHTML = ""; return; }
+  poolIsNew = false;
   $("#poolNewNote").style.display = "none";
   const p = new ethers.Contract(pair, PAIR_ABI, ro);
   const [t0, r] = await Promise.all([p.token0(), p.getReserves()]);
   const isA0 = t0.toLowerCase() === wrapped(liqTokA).toLowerCase();
   const [rA, rB] = isA0 ? [r[0], r[1]] : [r[1], r[0]];
-  if (rA === 0n || rB === 0n) { $("#poolNewNote").style.display = ""; return; }
+  if (rA === 0n || rB === 0n) { poolIsNew = true; renderPoolAirdrop(); $("#poolNewNote").style.display = ""; return; }
   try {
     if (side === "A") {
       const vA = $("#liqAAmt").value.trim();
-      if (!vA || Number(vA) <= 0) { $("#liqBAmt").value = ""; return; }
+      if (!vA || Number(vA) <= 0) { $("#liqBAmt").value = ""; renderPoolAirdrop(); return; }
       const aIn = ethers.parseUnits(vA, liqTokA.decimals);
       const bOut = (aIn * rB) / rA;
       $("#liqBAmt").value = ethers.formatUnits(bOut, liqTokB.decimals);
     } else {
       const vB = $("#liqBAmt").value.trim();
-      if (!vB || Number(vB) <= 0) { $("#liqAAmt").value = ""; return; }
+      if (!vB || Number(vB) <= 0) { $("#liqAAmt").value = ""; renderPoolAirdrop(); return; }
       const bIn = ethers.parseUnits(vB, liqTokB.decimals);
       const aOut = (bIn * rA) / rB;
       $("#liqAAmt").value = ethers.formatUnits(aOut, liqTokA.decimals);
     }
   } catch (e) { return; }
+  renderPoolAirdrop();
   if (account && isReef1404) {
     const vA2 = $("#liqAAmt").value.trim(), vB2 = $("#liqBAmt").value.trim();
     const short = vA2 && vB2 ? await liqShortfall(vA2, vB2) : "";
@@ -1764,6 +2050,7 @@ function init() {
     }).catch(() => {});
   }
   bindLiqInputs();
+  applyShareLink();
 }
 document.addEventListener("DOMContentLoaded", init);
 
