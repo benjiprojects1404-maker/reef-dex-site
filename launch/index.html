@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Launch a Token on Reef</title>
-<meta name="description" content="Step by step: deploy a token on BlockDAG chain 1404, create its first BDAG pool on Reef, lock the liquidity and tell people where to find it. NOCAP is the worked example.">
+<meta name="description" content="Step by step: deploy a token on BlockDAG chain 1404, create its first BDAG pool on Reef, lock the liquidity and tell people where to find it. NOCAP is the example.">
 <link rel="canonical" href="https://reefdex.fyi/launch/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://reefdex.fyi/launch/">
 <meta property="og:title" content="Launch a token on Reef">
-<meta property="og:description" content="Deploy a token, create its first BDAG pool on Reef, lock the liquidity. NOCAP is the worked example.">
+<meta property="og:description" content="Deploy a token, create its first BDAG pool on Reef, lock the liquidity. NOCAP is the example.">
 <meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=3">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Launch a token on Reef">
@@ -154,14 +154,14 @@ footer p{margin:0 0 6px}
       <li><a href="#tell">4. Tell people</a></li>
       <li class="grp">More</li>
       <li><a href="#airdrop">REEF airdrop, Tier 3</a></li>
-      <li><a href="#nocap">Worked example: NOCAP</a></li>
+      <li><a href="#nocap">Example: NOCAP</a></li>
       <li><a href="#faq">Questions</a></li>
     </ol>
   </nav>
   <main>
     <section id="top">
       <h1>Launch a token on Reef</h1>
-      <p class="lede">Anyone can launch a token on Reef. There is no listing form and nobody to ask. You deploy the token yourself, create its first pool with BDAG, and lock the liquidity so buyers can see you can't pull it. This page walks through it, using NOCAP as the worked example.</p>
+      <p class="lede">Anyone can launch a token on Reef. There is no listing form and nobody to ask. You deploy the token yourself, create its first pool with BDAG, and lock the liquidity so buyers can see you can't pull it. This page walks through it, with NOCAP's contracts as a real example to compare against.</p>
       <div class="warn"><b>Your token, your responsibility.</b> Reef doesn't review, approve or endorse tokens. A pool on Reef is not a recommendation. Only launch something you're prepared to stand behind, check the rules where you live, and don't make promises about price. Reef is unaudited beta software on an early-stage chain.</div>
     </section>
 
@@ -220,7 +220,7 @@ contract MyToken is ERC20 {
         <li>Deploy a simple time-lock that holds the LP token until a fixed date. NOCAP's lock is a short contract: it takes the LP token, a beneficiary and a duration of at least 6 months, and only lets the beneficiary withdraw after <code>unlockTime</code>. Anyone can read <code>unlockTime()</code> and <code>timeRemaining()</code> on the explorer.</li>
         <li>Send your LP tokens to the lock contract.</li>
         <li>Publish the lock address, the unlock date and the transaction, alongside your token address.</li>
-        <li>Ask for the lock to be added to Reef so the swap page shows a lock badge for your pair. The badge reads the lock live from the chain; nobody types in the dates by hand.</li>
+        <li>Point people to <code>unlockTime()</code> on the lock contract in the explorer, so they can check the date themselves instead of taking your word for it.</li>
       </ol>
     </section>
 
@@ -242,14 +242,14 @@ contract MyToken is ERC20 {
     </section>
 
     <section id="nocap">
-      <h2>Worked example: NOCAP</h2>
-      <p>NOCAP was launched on Reef following these steps: a token contract, a NOCAP/BDAG pool, and the pool's LP tokens held in a time-lock. Check each one yourself on the explorer.</p>
+      <h2>Example: NOCAP</h2>
+      <p>NOCAP has the three pieces this guide describes: a token contract, a NOCAP/BDAG pool on Reef, and a time-lock contract holding the pool's LP tokens. Check each one yourself on the explorer.</p>
       <div class="addr">
       <div class="arow"><div class="lbl">NOCAP token<small>ERC-20</small></div><div class="val">0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752" target="_blank" rel="noopener">Explorer</a></div></div>
       <div class="arow"><div class="lbl">NOCAP / BDAG pool<small>Reef pair</small></div><div class="val">0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046" target="_blank" rel="noopener">Explorer</a></div></div>
       <div class="arow"><div class="lbl">LP time-lock<small>holds the pool's LP tokens</small></div><div class="val">0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1" target="_blank" rel="noopener">Explorer</a></div></div>
       </div>
-      <p>On Reef, pick NOCAP in the swap card to see the lock badge, which reads the unlock time straight from the lock contract.</p>
+      <p>On the lock contract, <code>unlockTime()</code> shows when the LP can be withdrawn and <code>timeRemaining()</code> shows how long is left.</p>
     </section>
 
     <section id="faq">
