@@ -515,20 +515,20 @@ const REEF_CFG = {
     if (unbatched) opts.batchMaxCount = 1; // some nodes reject or throttle JSON-RPC batches
     return new ethers.JsonRpcProvider(url, REEF_CFG.chainId, opts);
   }
+  // Ask every node at once and use whichever answers first (each gets 6 s). Asking one after
+  // another meant a slow or dead first node could add 6 s per node before the sale showed.
   async function pickRpc(skip, unbatched) {
-    for (const url of REEF_CFG.rpcs) {
-      if (skip && skip.includes(url)) continue;
-      try {
-        const p = makeProvider(url, unbatched);
-        await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]);
-        p._reefUrl = url;
-        return p;
-      } catch (e) { /* try the next one */ }
-    }
-    return null;
+    const urls = REEF_CFG.rpcs.filter((u) => !(skip && skip.includes(u)));
+    if (!urls.length) return null;
+    const attempts = urls.map(async (url) => {
+      const p = makeProvider(url, unbatched);
+      await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]);
+      p._reefUrl = url;
+      return p;
+    });
+    try { return await Promise.any(attempts); } catch (e) { return null; }
   }
 
-  // ------------------------------------------------------------ reading
   // Reads the whole sale state through one provider. Throws on any failed call.
   async function readSale(prov) {
     if ((await prov.getCode(REEF_CFG.presale)) === "0x") { const e = new Error("no-contract"); e.noContract = true; throw e; }
