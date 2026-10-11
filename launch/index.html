@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Launch a Token on Reef</title>
+<meta name="description" content="Step by step: deploy a token on BlockDAG chain 1404, create its first BDAG pool on Reef, lock the liquidity and tell people where to find it. NOCAP is the worked example.">
+<link rel="canonical" href="https://reefdex.fyi/launch/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://reefdex.fyi/launch/">
+<meta property="og:title" content="Launch a token on Reef">
+<meta property="og:description" content="Deploy a token, create its first BDAG pool on Reef, lock the liquidity. NOCAP is the worked example.">
+<meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=3">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Launch a token on Reef">
+<meta name="twitter:description" content="Deploy a token, create its first BDAG pool on Reef, lock the liquidity.">
+<meta name="twitter:image" content="https://reefdex.fyi/assets/og-image.jpg?v=3">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#7fa3ab;--coral-text:#e79bab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--link:#7fd0f7;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--link:#0a5f88}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;color:var(--text);font:400 16px/1.65 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:var(--link)}
+header.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1160px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{height:30px;width:auto;display:block}
+.brand span{font:700 15px "Bricolage Grotesque",sans-serif;color:var(--muted);border-left:1px solid var(--line2);padding-left:10px}
+.topwrap .spacer{flex:1}
+.openapp{background:var(--tide);color:#fff;text-decoration:none;font:600 14px "Instrument Sans",sans-serif;padding:9px 15px;border-radius:11px;white-space:nowrap}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+
+.layout{max-width:1160px;margin:0 auto;padding:28px 16px 64px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px}
+nav.toc{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;border-left:2px solid transparent}
+nav.toc a:hover{color:var(--text);background:var(--raised)}
+nav.toc a.on{color:var(--text);border-left-color:var(--coral);background:var(--raised)}
+nav.toc .grp{font:600 11px "Instrument Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);opacity:.75;margin:14px 10px 4px}
+nav.toc .grp:first-child{margin-top:0}
+
+main{min-width:0;max-width:760px}
+h1{font:800 clamp(32px,5vw,46px)/1.08 "Bricolage Grotesque",sans-serif;letter-spacing:-.02em;margin:0 0 12px}
+.lede{font-size:18px;color:var(--muted);margin:0 0 22px;max-width:640px}
+section{padding-top:30px;margin-top:30px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0;margin-top:0;padding-top:0}
+h2{font:700 26px/1.2 "Bricolage Grotesque",sans-serif;letter-spacing:-.01em;margin:0 0 12px}
+h3{font:600 17px/1.3 "Instrument Sans",sans-serif;margin:24px 0 8px}
+p{margin:0 0 14px}
+ul,ol.steps{margin:0 0 16px;padding-left:22px}
+li{margin:4px 0}
+code,.mono{font:400 13.5px "JetBrains Mono",ui-monospace,monospace}
+code{background:var(--raised);border:1px solid var(--line);padding:1px 6px;border-radius:6px;word-break:break-all}
+pre{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;font:400 13px/1.6 "JetBrains Mono",ui-monospace,monospace;margin:0 0 16px}
+pre code{background:none;border:0;padding:0;word-break:normal}
+.note,.warn{border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:15px;border:1px solid var(--line2);background:var(--raised)}
+.warn{border-color:var(--coral-soft)}
+.note b,.warn b{color:var(--text)}
+.warn b:first-child{color:var(--coral-text)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--text);display:block}
+.card:hover{border-color:var(--line2)}
+.card b{display:block;font:700 16px "Bricolage Grotesque",sans-serif;margin-bottom:2px}
+.card span{color:var(--muted);font-size:14px}
+
+.tbl{width:100%;border-collapse:collapse;margin:0 0 16px;font-size:15px}
+.tbl th,.tbl td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-weight:600;color:var(--muted);font-size:13px}
+.tbl td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto;margin:0 0 16px}
+.scroll .tbl{margin:0}
+
+.addr{display:flex;flex-direction:column;gap:10px;margin:0 0 16px}
+.arow{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.arow .lbl{font-weight:600;font-size:14px}
+.arow .lbl small{font-weight:400;color:var(--muted);margin-left:6px}
+.arow .val{grid-column:1;font:400 13px "JetBrains Mono",ui-monospace,monospace;color:var(--muted);word-break:break-all}
+.arow .acts{grid-row:1 / span 2;grid-column:2;display:flex;gap:6px}
+.arow button,.arow a.btn{border:1px solid var(--line2);background:var(--raised);color:var(--text);font:600 12px "Instrument Sans",sans-serif;padding:6px 10px;border-radius:8px;cursor:pointer;text-decoration:none;white-space:nowrap}
+
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin:0 0 16px}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.sw i{display:block;height:46px}
+.sw div{padding:7px 10px;font-size:13px}
+.sw code{font-size:12px;border:0;background:none;padding:0}
+.brandbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;align-items:center;justify-content:center;margin:0 0 12px}
+.brandbox img{max-width:260px;width:100%;height:auto}
+
+details{border:1px solid var(--line);border-radius:12px;padding:0 14px;margin:0 0 10px;background:var(--card)}
+details summary{cursor:pointer;font-weight:600;padding:12px 0;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";float:right;color:var(--muted)}
+details[open] summary::after{content:"\2013"}
+details p{margin:0 0 12px;color:var(--text)}
+
+footer{max-width:1160px;margin:0 auto;padding:0 16px 48px;color:var(--muted);font-size:13px}
+footer p{margin:0 0 6px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:18px;padding-top:16px}
+  nav.toc{position:sticky;top:57px;z-index:5;max-height:none;overflow-x:auto;overflow-y:hidden;margin:0 -16px;padding:8px 16px;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav.toc ol{flex-direction:row;gap:6px;width:max-content}
+  nav.toc .grp{display:none}
+  nav.toc a{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+  nav.toc a.on{border-color:var(--coral-soft)}
+  html{scroll-padding-top:116px}
+  .brand span{display:none}
+}
+@media (max-width:420px){
+  .arow{grid-template-columns:1fr}
+  .arow .acts{grid-row:auto;grid-column:1;margin-top:6px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topwrap">
+    <a class="brand" href="/"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="Reef"><span>Launch guide</span></a>
+    <div class="spacer"></div>
+    <a class="openapp" href="/">Open Reef</a>
+  </div>
+</header>
+<div class="betabar">BETA: not independently audited, on an early-stage chain. <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener" style="color:inherit">AI-assisted security review</a>. Only use what you can afford to lose.</div>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li class="grp">Launch</li>
+      <li><a href="#before">Before you start</a></li>
+      <li><a href="#token">1. Deploy the token</a></li>
+      <li><a href="#pool">2. Create the pool</a></li>
+      <li><a href="#lock">3. Lock the liquidity</a></li>
+      <li><a href="#tell">4. Tell people</a></li>
+      <li class="grp">More</li>
+      <li><a href="#airdrop">REEF airdrop, Tier 3</a></li>
+      <li><a href="#nocap">Worked example: NOCAP</a></li>
+      <li><a href="#faq">Questions</a></li>
+    </ol>
+  </nav>
+  <main>
+    <section id="top">
+      <h1>Launch a token on Reef</h1>
+      <p class="lede">Anyone can launch a token on Reef. There is no listing form and nobody to ask. You deploy the token yourself, create its first pool with BDAG, and lock the liquidity so buyers can see you can't pull it. This page walks through it, using NOCAP as the worked example.</p>
+      <div class="warn"><b>Your token, your responsibility.</b> Reef doesn't review, approve or endorse tokens. A pool on Reef is not a recommendation. Only launch something you're prepared to stand behind, check the rules where you live, and don't make promises about price. Reef is unaudited beta software on an early-stage chain.</div>
+    </section>
+
+    <section id="before">
+      <h2>Before you start</h2>
+      <ul>
+        <li><b>A wallet on the community chain 1404.</b> RPC <code>https://rpc.blockdag.engineering</code> (or any node from the <a href="https://www.nodaldex.fyi/rpcs">public RPC list</a>), explorer <a href="https://explorer.blockdag.engineering">explorer.blockdag.engineering</a>. Two separate networks use chain ID 1404, so check your wallet's RPC before you sign anything.</li>
+        <li><b>BDAG for gas, and for the BDAG side of your pool.</b> Deploying and adding liquidity cost a little gas. The pool itself needs as much BDAG as you want to pair with your token.</li>
+        <li><b>A plan for the numbers:</b> total supply, how much goes into the pool, how much you keep (and whether you lock or vest that), and the starting price.</li>
+      </ul>
+      <div class="note"><b>Use one wallet throughout.</b> Deploy the token, create the pool and lock the LP from the same wallet. It keeps the story simple for buyers to check, and it's what the airdrop's Tier 3 looks for.</div>
+    </section>
+
+    <section id="token">
+      <h2>1. Deploy the token</h2>
+      <p>Reef works with any standard ERC-20 token. The simplest honest token is a fixed supply minted once to you, with no owner and no way to mint more. Buyers can read that in the code instead of taking your word for it.</p>
+<pre><code>// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MyToken is ERC20 {
+    constructor() ERC20("My Token", "MYT") {
+        _mint(msg.sender, 1_000_000_000 * 10 ** decimals()); // fixed supply, minted once
+    }
+}</code></pre>
+      <ol class="steps">
+        <li>Open <a href="https://remix.ethereum.org" target="_blank" rel="noopener">Remix</a>, create a file, paste the contract and change the name, symbol and supply.</li>
+        <li>Compile it (Solidity 0.8.20 or later).</li>
+        <li>Under <i>Deploy</i>, choose <i>Injected Provider</i> so Remix uses your wallet. Check your wallet shows chain 1404 on the community RPC, then deploy and confirm.</li>
+        <li>Copy the new contract address from Remix or the explorer. This address is your token's identity: names and symbols can be copied by anyone, addresses can't.</li>
+        <li>If you can, verify the source on the explorer so anyone can read it.</li>
+      </ol>
+      <div class="warn"><b>Avoid hidden levers.</b> Transfer taxes, blacklists, pausing, owner-only minting and adjustable fees all make buyers (rightly) nervous, and some break normal swaps. If your token has any of these, say so plainly.</div>
+    </section>
+
+    <section id="pool">
+      <h2>2. Create the pool</h2>
+      <p>On Reef, a pool is created the first time someone adds liquidity for a pair. That first deposit also sets the starting price.</p>
+      <ol class="steps">
+        <li>Open <a href="/">Reef</a>, connect your wallet and choose the <b>Pool</b> tab, then <b>Add liquidity</b>.</li>
+        <li>Pick <b>BDAG</b> on one side. On the other side, paste your token's address into the token search.</li>
+        <li>Reef shows "No pool exists yet for this pair". Enter both amounts. <b>The ratio you enter is the starting price.</b></li>
+        <li>Approve your token (Reef asks for the exact amount, never unlimited), then confirm the add.</li>
+        <li>You receive LP tokens for your share of the pool. Keep them safe; step 3 locks them.</li>
+      </ol>
+      <h3>Working out the starting price</h3>
+      <p>Price per token = BDAG deposited ÷ tokens deposited. For example, 25,000 BDAG with 1,000,000 tokens starts at 0.025 BDAG per token. If you put in too few tokens for the BDAG, the first traders buy the cheap side and you lose the difference, so double-check the ratio before you confirm.</p>
+      <div class="note"><b>Small print from the pool contract.</b> A tiny amount of the first deposit (1,000 of the smallest LP units, far less than a cent) is locked forever. This is standard protection against a pricing attack on new pools. Every trade pays a 0.30% fee: 0.25% to liquidity providers, 0.05% to Reef's treasury.</div>
+    </section>
+
+    <section id="lock">
+      <h2>3. Lock the liquidity</h2>
+      <p>Whoever holds the LP tokens can withdraw the pool at any time. Locking them in a time-lock contract and publishing its address is the clearest way to show buyers you can't.</p>
+      <ol class="steps">
+        <li>Deploy a simple time-lock that holds the LP token until a fixed date. NOCAP's lock is a short contract: it takes the LP token, a beneficiary and a duration of at least 6 months, and only lets the beneficiary withdraw after <code>unlockTime</code>. Anyone can read <code>unlockTime()</code> and <code>timeRemaining()</code> on the explorer.</li>
+        <li>Send your LP tokens to the lock contract.</li>
+        <li>Publish the lock address, the unlock date and the transaction, alongside your token address.</li>
+        <li>Ask for the lock to be added to Reef so the swap page shows a lock badge for your pair. The badge reads the lock live from the chain; nobody types in the dates by hand.</li>
+      </ol>
+    </section>
+
+    <section id="tell">
+      <h2>4. Tell people</h2>
+      <ul>
+        <li>Post the <b>token address</b>, the <b>pool</b> and the <b>lock address</b> together, and ask people to check them on the explorer.</li>
+        <li>Share a ready-made swap link. It opens Reef with your pair filled in and nothing sent until the buyer confirms: <code>https://reefdex.fyi/?from=BDAG&amp;to=YOUR_TOKEN_ADDRESS</code></li>
+        <li>Say what your token is and isn't. Plain, honest wording ages better than promises.</li>
+        <li>Never DM people first, and warn your community that anyone sending them a different address isn't you.</li>
+      </ul>
+    </section>
+
+    <section id="airdrop">
+      <h2>REEF airdrop, Tier 3</h2>
+      <p>During the REEF airdrop window (Wed 7 Oct 09:00 to Fri 6 Nov 09:00, UTC+7), deploying your own token and creating its first Reef pair with at least <b>25,000 BDAG of your own liquidity</b> counts as Tier 3, which is worth 10 shares. The action is credited to the wallet that signed it, and only BDAG pairs count.</p>
+      <p>Places go to the first 1,000 wallets by their first qualifying action, and the final list is worked out from on-chain events after 6 Nov. The <a href="/">airdrop check</a> on Reef's main page shows which of a wallet's actions match the rules so far. See the <a href="/reef/#airdrop">full airdrop rules</a>.</p>
+      <div class="note"><b>Don't launch a token just for the airdrop.</b> A token with a pool is a public thing that other people may buy. Launch because you mean it.</div>
+    </section>
+
+    <section id="nocap">
+      <h2>Worked example: NOCAP</h2>
+      <p>NOCAP was launched on Reef following these steps: a token contract, a NOCAP/BDAG pool, and the pool's LP tokens held in a time-lock. Check each one yourself on the explorer.</p>
+      <div class="addr">
+      <div class="arow"><div class="lbl">NOCAP token<small>ERC-20</small></div><div class="val">0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752" target="_blank" rel="noopener">Explorer</a></div></div>
+      <div class="arow"><div class="lbl">NOCAP / BDAG pool<small>Reef pair</small></div><div class="val">0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046" target="_blank" rel="noopener">Explorer</a></div></div>
+      <div class="arow"><div class="lbl">LP time-lock<small>holds the pool's LP tokens</small></div><div class="val">0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1</div><div class="acts"><button type="button" data-copy>Copy</button><a class="btn" href="https://explorer.blockdag.engineering/address/0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1" target="_blank" rel="noopener">Explorer</a></div></div>
+      </div>
+      <p>On Reef, pick NOCAP in the swap card to see the lock badge, which reads the unlock time straight from the lock contract.</p>
+    </section>
+
+    <section id="faq">
+      <h2>Questions</h2>
+      <details><summary>Does Reef charge a listing fee?</summary><p>No. There's no listing and no fee to create a pool. You pay normal network gas, and traders pay the 0.30% swap fee.</p></details>
+      <details><summary>Can I pair my token with something other than BDAG?</summary><p>Yes, any two tokens can have a pool. A BDAG pair is the easiest for people to reach, and it's the only kind that counts for the REEF airdrop.</p></details>
+      <details><summary>Can I add more liquidity later?</summary><p>Yes. Anyone can add to an existing pool at the current price. New LP tokens you receive aren't locked unless you lock them too.</p></details>
+      <details><summary>Can Reef remove my pool or token?</summary><p>No. Pools are permissionless contracts. Reef's site may hide a pair from its own lists, but the pool keeps existing on-chain.</p></details>
+      <details><summary>Will Reef promote my token?</summary><p>No. Reef doesn't endorse tokens. If you'd like help with a launch (token, pool, lock, site), that's a separate paid service: <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">benjiprojects1404 services</a>.</p></details>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <p>Reef is unaudited beta software. Nothing here is financial, investment, legal or tax advice. The software is provided as-is, without warranty.</p>
+  <p><a href="/">reefdex.fyi</a> · <a href="/overview.pdf" target="_blank" rel="noopener">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">benjiprojects1404</a></p>
+</footer>
+
+<script>
+// Copy buttons
+document.querySelectorAll("[data-copy]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var v = b.closest(".arow").querySelector(".val").textContent.trim();
+    var done = function () { var t = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = t; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, function () {});
+  });
+});
+// Highlight the section in view
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+  if (!("IntersectionObserver" in window)) return;
+  var current = null;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        if (current) current.classList.remove("on");
+        current = map[e.target.id];
+        if (current) {
+          current.classList.add("on");
+          var nav = document.querySelector("nav.toc");
+          if (window.matchMedia("(max-width:860px)").matches) nav.scrollLeft = current.offsetLeft - nav.clientWidth / 2 + current.offsetWidth / 2;
+        }
+      }
+    });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
