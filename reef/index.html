@@ -508,11 +508,18 @@ const REEF_CFG = {
     return m.replace(/^execution reverted:?\s*/i, "").replace(/^Error:\s*/, "").replace(/^"|"$/g, "");
   }
 
-  async function pickRpc() {
+  function makeProvider(url, unbatched) {
+    const opts = { staticNetwork: true };
+    if (unbatched) opts.batchMaxCount = 1; // some nodes reject or throttle JSON-RPC batches
+    return new ethers.JsonRpcProvider(url, REEF_CFG.chainId, opts);
+  }
+  async function pickRpc(skip, unbatched) {
     for (const url of REEF_CFG.rpcs) {
+      if (skip && skip.includes(url)) continue;
       try {
-        const p = new ethers.JsonRpcProvider(url, REEF_CFG.chainId, { staticNetwork: true });
+        const p = makeProvider(url, unbatched);
         await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]);
+        p._reefUrl = url;
         return p;
       } catch (e) { /* try the next one */ }
     }
@@ -520,29 +527,52 @@ const REEF_CFG = {
   }
 
   // ------------------------------------------------------------ reading
+  // Reads the whole sale state through one provider. Throws on any failed call.
+  async function readSale(prov) {
+    if ((await prov.getCode(REEF_CFG.presale)) === "0x") { const e = new Error("no-contract"); e.noContract = true; throw e; }
+    const c = new ethers.Contract(REEF_CFG.presale, ABI, prov);
+    const tok = new ethers.Contract(REEF_CFG.token, ERC20, prov);
+    const [blk, start, end, raised, maxRaise, cap, delay, fin, refunding, held, lpToken, lpUnlock] = await Promise.all([
+      prov.getBlock("latest"), c.startTime(), c.endTime(), c.totalRaised(), c.MAX_RAISE(), c.MAX_PER_WALLET(),
+      c.REFUND_DELAY(), c.finalized(), c.refunding(), tok.balanceOf(REEF_CFG.presale), c.lpToken(), c.lpUnlockTime(),
+    ]);
+    let me = null;
+    if (account) {
+      const [paid, settled, claim, bal] = await Promise.all([c.contributed(account), c.settled(account), c.claimable(account), prov.getBalance(account)]);
+      me = { paid, settled, claim, bal };
+    }
+    return { now: BigInt(blk.timestamp), start, end, raised, maxRaise, cap, delay, fin, refunding, funded: held >= FOR_SALE, lpToken, lpUnlock, me };
+  }
+
   async function load() {
     if (!REEF_CFG.presale) { renderSoon(); return; }
-    if (!ro) ro = await pickRpc();
-    if (!ro) { setPhase("Can't reach the chain", "bad"); msg("Couldn't reach a BlockDAG RPC to read the sale. Please try again shortly.", "err"); return; }
-    try {
-      if ((await ro.getCode(REEF_CFG.presale)) === "0x") { setPhase("Contract not found", "bad"); msg("No presale contract found at the configured address on this network.", "err"); return; }
-      const c = new ethers.Contract(REEF_CFG.presale, ABI, ro);
-      const tok = new ethers.Contract(REEF_CFG.token, ERC20, ro);
-      const [blk, start, end, raised, maxRaise, cap, delay, fin, refunding, held, lpToken, lpUnlock] = await Promise.all([
-        ro.getBlock("latest"), c.startTime(), c.endTime(), c.totalRaised(), c.MAX_RAISE(), c.MAX_PER_WALLET(),
-        c.REFUND_DELAY(), c.finalized(), c.refunding(), tok.balanceOf(REEF_CFG.presale), c.lpToken(), c.lpUnlockTime(),
-      ]);
-      let me = null;
-      if (account) {
-        const [paid, settled, claim, bal] = await Promise.all([c.contributed(account), c.settled(account), c.claimable(account), ro.getBalance(account)]);
-        me = { paid, settled, claim, bal };
+    // Try the node we already have, then every other node, then once more without JSON-RPC batching.
+    const tried = [];
+    let lastErr = null, sawContractMissing = false, reached = false;
+    for (const unbatched of [false, true]) {
+      for (let i = 0; i < REEF_CFG.rpcs.length; i++) {
+        let prov = (i === 0 && !unbatched) ? ro : null;
+        if (!prov) prov = await pickRpc(tried, unbatched);
+        if (!prov) break;
+        reached = true;
+        try {
+          st = await readSale(prov);
+          ro = prov;
+          render();
+          return;
+        } catch (e) {
+          if (e && e.noContract) sawContractMissing = true; else lastErr = e;
+          if (prov._reefUrl) tried.push(prov._reefUrl);
+          if (prov === ro) ro = null;
+        }
       }
-      st = { now: BigInt(blk.timestamp), start, end, raised, maxRaise, cap, delay, fin, refunding, funded: held >= FOR_SALE, lpToken, lpUnlock, me };
-      render();
-    } catch (e) {
-      ro = null; // pick again next time
-      setPhase("Can't read the sale", "bad"); msg("Couldn't read the presale just now: " + errText(e), "err");
+      tried.length = 0; // second pass: start again, unbatched
     }
+    ro = null; // pick again next time
+    if (!reached) { setPhase("Can't reach the chain", "bad"); msg("Couldn't reach a BlockDAG RPC to read the sale. Please try again shortly.", "err"); return; }
+    if (sawContractMissing && !lastErr) { setPhase("Contract not found", "bad"); msg("No presale contract found at the configured address on this network.", "err"); return; }
+    setPhase("Can't read the sale", "bad");
+    msg("Couldn't read the presale just now (tried every node): " + errText(lastErr) + " Reload in a moment, or check the RPC status on Reef's home page.", "err");
   }
 
   function phase(s) {
