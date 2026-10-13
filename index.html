@@ -454,7 +454,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-11-airdrop-check</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-trades-range</p>
     </div>
   </div>
 </main>
@@ -679,8 +679,13 @@ const SWAP_IFACE = new ethers.Interface([
   "event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)",
 ]);
 const SWAP_TOPIC = SWAP_IFACE.getEvent("Swap").topicHash;
-const CHART_LOOKBACK_BLOCKS = 20000;
-const CHART_CHUNK_BLOCKS = 2000;
+// Quiet pools can go hours without a trade, so look back up to ~4M blocks (about a month at ~0.7 s
+// per block) and stop early once there is enough to show. Big chunks first; if an endpoint refuses
+// a range, retry the same range with the next smaller size.
+const CHART_LOOKBACK_BLOCKS = 4_000_000;
+const CHART_CHUNK_SIZES = [1_000_000, 100_000, 10_000, 2_000];
+const CHART_MAX_REQUESTS = 40;
+const CHART_MIN_POINTS = 40;
 const TRADES_MAX_SHOWN = 8;
 const LOCK_ABI = [
   "function unlockTime() view returns (uint256)",
@@ -1532,14 +1537,22 @@ async function loadPriceChart(pairAddr, isToken0From, my) {
     const trades = [];
     let to = latest;
     let rejected = false;
+    let sizeIdx = 0;
+    let requests = 0;
     while (to > earliest) {
-      const from = Math.max(earliest, to - CHART_CHUNK_BLOCKS + 1);
+      if (trades.length >= TRADES_MAX_SHOWN && points.length >= CHART_MIN_POINTS) break;
+      if (requests >= CHART_MAX_REQUESTS) break; // enough RPC calls for one page view; show what we have
+      const from = Math.max(earliest, to - CHART_CHUNK_SIZES[sizeIdx] + 1);
       let logs;
+      requests++;
       try {
         // One query covers both event types (topic0 can match either), so the chart and the
         // trades feed share a single set of RPC calls instead of fetching the same range twice.
         logs = await ro.getLogs({ address: pairAddr, topics: [[SYNC_TOPIC, SWAP_TOPIC]], fromBlock: from, toBlock: to });
-      } catch (e) { rejected = true; break; } // this endpoint likely rejects the range — keep whatever was gathered so far
+      } catch (e) {
+        if (sizeIdx < CHART_CHUNK_SIZES.length - 1) { sizeIdx++; continue; } // retry this range in smaller pieces
+        rejected = true; break; // even small ranges fail on this endpoint — keep whatever was gathered so far
+      }
       if (my !== chartAbort) return;
       for (const log of logs) {
         if (log.topics[0] === SYNC_TOPIC) {
@@ -1552,21 +1565,36 @@ async function loadPriceChart(pairAddr, isToken0From, my) {
       }
       to = from - 1;
     }
+    const scannedBlocks = latest - Math.max(to, earliest);
     if (my !== chartAbort) return;
     points.sort((a, b) => a.block - b.block);
-    renderPriceChart(points, isToken0From);
+    renderPriceChart(points, isToken0From, scannedBlocks);
     trades.sort((a, b) => (b.block - a.block) || (b.logIndex - a.logIndex));
-    renderRecentTrades(trades.slice(0, TRADES_MAX_SHOWN), isToken0From, latest, rejected);
+    renderRecentTrades(trades.slice(0, TRADES_MAX_SHOWN), isToken0From, latest, rejected, scannedBlocks);
   } catch (e) {
     if (my !== chartAbort) return;
     $("#chartBox").innerHTML = '<div class="empty">Could not load price history from this RPC endpoint. Try a different one in RPC status.</div>';
     $("#tradesBox").innerHTML = '<div class="empty">Could not load recent trades from this RPC endpoint.</div>';
   }
 }
-function renderRecentTrades(trades, isToken0From, latestBlock, rangeMayBeIncomplete) {
+// Rough wall-clock span for a block count (BlockDAG targets ~0.7 s per block); labels only.
+function approxSpan(blocks) {
+  const hours = (blocks * 0.7) / 3600;
+  if (hours < 1) return "the last hour";
+  if (hours < 48) return `the last ~${Math.round(hours)} hours`;
+  return `the last ~${Math.round(hours / 24)} days`;
+}
+function approxAgo(blocks) {
+  const secs = blocks * 0.7;
+  if (secs < 60) return `${Math.max(1, Math.round(secs))}s ago`;
+  if (secs < 3600) return `${Math.round(secs / 60)} min ago`;
+  if (secs < 48 * 3600) return `${Math.round(secs / 3600)} h ago`;
+  return `${Math.round(secs / 86400)} days ago`;
+}
+function renderRecentTrades(trades, isToken0From, latestBlock, rangeMayBeIncomplete, scannedBlocks) {
   const box = $("#tradesBox");
   if (!trades.length) {
-    box.innerHTML = `<div class="th">Recent trades</div><div class="empty">No trades found for this pair in the queried block range.</div>`;
+    box.innerHTML = `<div class="th">Recent trades</div><div class="empty">No trades in ${approxSpan(scannedBlocks)}.</div>`;
     return;
   }
   const symIn0 = isToken0From ? tokFrom.symbol : tokTo.symbol; // token0's symbol
@@ -1585,7 +1613,7 @@ function renderRecentTrades(trades, isToken0From, latestBlock, rangeMayBeIncompl
     const boughtIsToTok = symBought === toSymbol;
     return `<div class="trow">
       <span><b class="${boughtIsToTok ? "in" : "out"}">${fmtAmount(amtSold)} ${symSold}</b> &rarr; <b class="${boughtIsToTok ? "in" : "out"}">${fmtAmount(amtBought)} ${symBought}</b></span>
-      <span class="blk">${ago === 0 ? "this block" : ago + " blk ago"}</span>
+      <span class="blk">${ago === 0 ? "this block" : approxAgo(ago)}</span>
     </div>`;
   }).join("");
   box.innerHTML = `<div class="th">Recent trades${rangeMayBeIncomplete ? " (partial range — endpoint limit)" : ""}</div>${rows}`;
@@ -1597,9 +1625,9 @@ function priceFromReserves(r0, r1, isToken0From, decFrom, decTo) {
   const fTo = Number(ethers.formatUnits(rTo, decTo));
   return fFrom === 0 ? 0 : fTo / fFrom;
 }
-function renderPriceChart(points, isToken0From) {
+function renderPriceChart(points, isToken0From, scannedBlocks) {
   const box = $("#chartBox");
-  if (!points.length) { box.innerHTML = '<div class="empty">No pool updates found for this pair in the queried block range.</div>'; return; }
+  if (!points.length) { box.innerHTML = `<div class="empty">No pool activity in ${approxSpan(scannedBlocks)}, so there is no price history to chart yet.</div>`; return; }
   const prices = points.map((p) => priceFromReserves(p.r0, p.r1, isToken0From, tokFrom.decimals, tokTo.decimals));
   const min = Math.min(...prices), max = Math.max(...prices);
   const w = 320, h = 84, pad = 4;
