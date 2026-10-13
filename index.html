@@ -1463,7 +1463,7 @@ async function loadTwapBadge(pairAddr) {
       try {
         const last = Number(await oracle.blockTimestampLast());
         const age = Math.max(0, Math.floor(Date.now() / 1000) - last);
-        ageNote = ` Last refreshed ${fmtDuration(age)} ago.` + (age > 172800 ? " <b>This average is stale &mdash; nobody has refreshed it recently.</b>" : "");
+        ageNote = ` Last updated ${fmtDuration(age)} ago.` + (age > 172800 ? " It hasn't been updated for a while, so treat it as a reference only. Swaps are unaffected: they always use the live pool price." : "");
       } catch (e) {}
       box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
         <span><b>${fmtPrice(price)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average from an on-chain oracle, not a live quote.${ageNote}</span>${refreshBtn}`;
