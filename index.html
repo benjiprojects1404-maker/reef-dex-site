@@ -454,7 +454,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-trades-range</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-chart-direction</p>
     </div>
   </div>
 </main>
@@ -1625,10 +1625,21 @@ function priceFromReserves(r0, r1, isToken0From, decFrom, decTo) {
   const fTo = Number(ethers.formatUnits(rTo, decTo));
   return fFrom === 0 ? 0 : fTo / fFrom;
 }
+// The chart always shows one token's price in the other, chosen so that "up" means that token
+// gained value whichever way the swap form is set: a token paired with BDAG is priced in BDAG;
+// for a token/token pair, the "You receive" token is priced in the "You pay" token.
+function isBdagTok(t) {
+  return !!t && (t.native || (t.address && t.address.toLowerCase() === ADDR.WBDAG.toLowerCase()));
+}
 function renderPriceChart(points, isToken0From, scannedBlocks) {
   const box = $("#chartBox");
   if (!points.length) { box.innerHTML = `<div class="empty">No pool activity in ${approxSpan(scannedBlocks)}, so there is no price history to chart yet.</div>`; return; }
-  const prices = points.map((p) => priceFromReserves(p.r0, p.r1, isToken0From, tokFrom.decimals, tokTo.decimals));
+  const subjectIsFrom = isBdagTok(tokTo) && !isBdagTok(tokFrom);
+  const subject = subjectIsFrom ? tokFrom : tokTo;
+  const quote = subjectIsFrom ? tokTo : tokFrom;
+  const subjectIsToken0 = subjectIsFrom ? isToken0From : !isToken0From;
+  // priceFromReserves(..., isToken0From, decFrom, decTo) returns "To per From"; here From = subject, To = quote.
+  const prices = points.map((p) => priceFromReserves(p.r0, p.r1, subjectIsToken0, subject.decimals, quote.decimals));
   const min = Math.min(...prices), max = Math.max(...prices);
   const w = 320, h = 84, pad = 4;
   const range = (max - min) || (max || 1) * 0.001 || 1;
@@ -1641,18 +1652,20 @@ function renderPriceChart(points, isToken0From, scannedBlocks) {
   const first = prices[0], last = prices[prices.length - 1];
   const change = first ? ((last - first) / first) * 100 : 0;
   const blockSpan = points.length > 1 ? points[points.length - 1].block - points[0].block : 0;
+  const spanText = blockSpan > 0 ? approxSpan(blockSpan).replace(/^the last /, "") : "";
+  const changeText = `${change >= 0 ? "+" : ""}${fmt(change, 2)}%${spanText ? " over " + spanText : ""}`;
   box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-      <span style="font-size:12px;color:var(--muted)">Recent price &middot; ${tokTo.symbol} per ${tokFrom.symbol}</span>
-      <span style="font-size:12px;${change >= 0 ? "" : "color:var(--ember)"}">${change >= 0 ? "+" : ""}${fmt(change, 2)}% over shown range</span>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--muted)">${subject.symbol} price in ${quote.symbol}</span>
+      <span style="font-size:12px;${change >= 0 ? "color:var(--good)" : "color:var(--ember)"}">${changeText}</span>
     </div>
-    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" role="img" aria-label="${subject.symbol} price in ${quote.symbol}, ${changeText}">
       <polyline points="${pts}" fill="none" stroke="var(--polyp)" stroke-width="2" vector-effect="non-scaling-stroke"/>
     </svg>
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px">
-      <span>${fmtPrice(min)}</span><span>${fmtPrice(max)}</span>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px;gap:8px;flex-wrap:wrap">
+      <span>Now ${fmtPrice(last)} ${quote.symbol}</span><span>Low ${fmtPrice(min)} &middot; High ${fmtPrice(max)}</span>
     </div>
-    <p class="hint" style="margin-top:6px">From this pool's own reserve history over the last ${blockSpan.toLocaleString()} blocks &mdash; not a third-party price feed.</p>`;
+    <p class="hint" style="margin-top:6px">From this pool's own reserve history${spanText ? " over " + spanText : ""} &mdash; not a third-party price feed.</p>`;
 }
 
 let lastSwap = null;
