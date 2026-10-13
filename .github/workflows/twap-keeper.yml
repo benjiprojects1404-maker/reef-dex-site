@@ -1,0 +1,29 @@
+name: TWAP oracle keeper
+
+# Checks every 6 hours and only sends a transaction when the oracle's 24h window has passed.
+# Needs a repository secret KEEPER_PRIVATE_KEY: a throwaway wallet holding only a little BDAG for gas.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        working-directory: keeper
+        run: npm install --no-audit --no-fund
+      - name: Update oracle if due
+        working-directory: keeper
+        env:
+          KEEPER_PRIVATE_KEY: ${{ secrets.KEEPER_PRIVATE_KEY }}
+        run: node update-oracle.mjs
