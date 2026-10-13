@@ -454,7 +454,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-chart-direction</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-twap-direction</p>
     </div>
   </div>
 </main>
@@ -1436,13 +1436,18 @@ async function loadTwapBadge(pairAddr) {
   const icon = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
   const short = oracleAddr.slice(0, 6) + "\u2026" + oracleAddr.slice(-4);
   const oracle = new ethers.Contract(oracleAddr, TWAP_ABI, ro);
+  const subjectIsFrom = isBdagTok(tokTo) && !isBdagTok(tokFrom);
+  const subject = subjectIsFrom ? tokFrom : tokTo;
+  const quote = subjectIsFrom ? tokTo : tokFrom;
   // Read the stored average directly. "No data yet" is shown only when the average really is zero;
   // a failed read (flaky RPC endpoint) gets its own message instead of looking like an empty oracle.
   let avgX, last;
   try {
     const token0 = (await oracle.token0()).toLowerCase();
-    const fromIs0 = wrapped(tokFrom).toLowerCase() === token0;
-    avgX = BigInt(fromIs0 ? await oracle.price0Average() : await oracle.price1Average());
+    // Same direction as the price chart: the token priced in BDAG (see renderPriceChart), so the
+    // badge and the chart never read in opposite directions.
+    const subjectIs0 = wrapped(subject).toLowerCase() === token0;
+    avgX = BigInt(subjectIs0 ? await oracle.price0Average() : await oracle.price1Average());
     last = Number(await oracle.blockTimestampLast());
   } catch (e) {
     console.warn("[Reef] TWAP oracle read failed", oracleAddr, e);
@@ -1459,11 +1464,11 @@ async function loadTwapBadge(pairAddr) {
     return;
   }
   // Same maths as consult(): amountOut = average * amountIn >> 112, done here in BigInt.
-  const oneUnit = ethers.parseUnits("1", tokFrom.decimals);
-  const price = ethers.formatUnits((avgX * oneUnit) >> 112n, tokTo.decimals);
+  const oneUnit = ethers.parseUnits("1", subject.decimals);
+  const price = ethers.formatUnits((avgX * oneUnit) >> 112n, quote.decimals);
   const age = Math.max(0, Math.floor(Date.now() / 1000) - last);
   const ageNote = ` Last updated ${fmtDuration(age)} ago.` + (age > 172800 ? " It hasn't been updated for a while, so treat it as a reference only. Swaps are unaffected: they always use the live pool price." : "");
-  box.innerHTML = `${icon}<span><b>${fmtPrice(price)}</b> ${tokTo.symbol} per ${tokFrom.symbol} &mdash; 24h time-weighted average from an on-chain oracle (${short}), not a live quote.${ageNote}</span>`;
+  box.innerHTML = `${icon}<span><b>${fmtPrice(price)}</b> ${quote.symbol} per ${subject.symbol} &mdash; 24h time-weighted average from an on-chain oracle (${short}), not a live quote.${ageNote}</span>`;
 }
 async function loadLockBadge(pairAddr) {
   const lockAddr = KNOWN_LOCKS[pairAddr.toLowerCase()];
