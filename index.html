@@ -2019,9 +2019,12 @@ async function loadPoolList() {
       if (HIDDEN_PAIR_INDEXES.has(idx)) continue;
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
       const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
-      const [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
+      let [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
+      let r0 = r[0], r1 = r[1];
+      // Always list the token first and BDAG second (e.g. COOKED / BDAG), whatever the on-chain token order.
+      if (isBdag(t0) && !isBdag(t1)) { [t0, t1] = [t1, t0]; [r0, r1] = [r1, r0]; }
       const li = el("li");
-      li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}</div><div class="res">${fmt(ethers.formatUnits(r[0], t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r[1], t1.decimals), 2)} ${t1.symbol}</div>`;
+      li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}</div><div class="res">${fmt(ethers.formatUnits(r0, t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r1, t1.decimals), 2)} ${t1.symbol}</div>`;
       li.onclick = () => selectPoolPair(t0, t1);
       list.appendChild(li);
     }
