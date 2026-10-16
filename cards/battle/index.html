@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if(/^www\./i.test(location.hostname)){location.replace(location.protocol+"//"+location.hostname.replace(/^www\./i,"")+location.pathname+location.search+location.hash);}</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Card Battle · reef.dex</title>
+<meta name="description" content="Play COOKED × NOCAP cards stat against stat. Free to play, no wagering.">
+<meta name="theme-color" content="#050f14">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reef.dex">
+<meta property="og:title" content="Card Battle · COOKED × NOCAP">
+<meta property="og:description" content="150 stat-battle cards. Every mint goes into a Reef pool as permanent liquidity.">
+<meta property="og:url" content="https://reefdex.fyi/cards/battle/">
+<meta property="og:image" content="https://reefdex.fyi/assets/cards/lineup.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#7fa3ab;--coral-text:#e79bab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);--bg:var(--ink);--accent:var(--polyp);
+  --mustard:#FFC23A;--ketchup:#D7372B;--purple:#9B3FE0;--cyan:#4FCBE8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#33525a;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:400 15px/1.6 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%,var(--glow1),transparent 60%),radial-gradient(40% 26% at 4% 100%,var(--glow2),transparent 65%);background-repeat:no-repeat;background-attachment:fixed}
+a{color:inherit}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+header.top{border-bottom:1px solid var(--line)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--ketchup) 15%,var(--mustard) 40%,var(--purple) 65%,var(--cyan) 85%,transparent)}
+.topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font:800 20px "Bricolage Grotesque",sans-serif;text-decoration:none}
+.brand span{color:var(--coral-text)}
+nav.jump{display:flex;gap:4px;background:var(--raised);border-radius:12px;padding:4px;flex-wrap:wrap;margin-left:auto}
+nav.jump a{color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:7px 11px;border-radius:9px;text-decoration:none}
+nav.jump a:hover{background:var(--card);color:var(--text)}
+.hero{padding:40px 0 18px}
+.eyebrow{font:600 12px "Instrument Sans",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--coral-text)}
+.hero h1{font-size:clamp(34px,6vw,58px);font-weight:800;line-height:1.02;margin:10px 0 12px}
+.hero h1 .c{color:var(--mustard)} .hero h1 .n{color:var(--cyan)}
+.hero p{max-width:640px;color:var(--muted);font-size:17px;margin:0}
+.lineup{margin:24px 0 8px;border-radius:20px;overflow:hidden;border:1px solid var(--line2)}
+.lineup img{display:block;width:100%;height:auto}
+section{margin-top:40px}
+.sechead{margin-bottom:14px}
+.sechead h2{font-size:clamp(22px,3.4vw,30px);font-weight:700}
+.sechead p{color:var(--muted);margin:4px 0 0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+.pill.ok i{background:var(--good)} .pill.bad i{background:var(--ember)} .pill.wait i{background:var(--amber)}
+.counts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.count{border-radius:16px;padding:14px;border:1px solid var(--line2)}
+.count.c{background:linear-gradient(135deg,rgba(215,55,43,.18),rgba(255,194,58,.12))}
+.count.n{background:linear-gradient(135deg,rgba(155,63,224,.2),rgba(79,203,232,.12))}
+.count b{display:block;font:800 30px/1.1 "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:6px;background:var(--raised);overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;width:0;border-radius:6px;transition:width .6s}
+.count.c .bar span{background:linear-gradient(90deg,var(--mustard),var(--ketchup))}
+.count.n .bar span{background:linear-gradient(90deg,var(--purple),var(--cyan))}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.pick button{all:unset;box-sizing:border-box;min-width:0;cursor:pointer;border-radius:16px;border:2px solid var(--line2);padding:10px;text-align:center;background:var(--raised)}
+.pick button img{width:100%;max-width:150px;display:block;margin:0 auto 6px;border-radius:10px}
+.pick button b{font:800 16px "Bricolage Grotesque",sans-serif}
+.pick button[aria-pressed="true"].c{border-color:var(--mustard);box-shadow:0 0 0 3px rgba(255,194,58,.25)}
+.pick button[aria-pressed="true"].n{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(79,203,232,.25)}
+.ack{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin:10px 2px 12px;cursor:pointer}
+.ack input{margin-top:3px;accent-color:var(--good)}
+.btn{width:100%;border:0;border-radius:14px;padding:14px;font:600 15px "Instrument Sans",sans-serif;cursor:pointer;background:var(--tide);color:#fff}
+.btn.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.btn:disabled{background:var(--raised);color:var(--muted);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--line)}
+.btn+.btn{margin-top:8px}
+.hide{display:none!important}
+.msg{font-size:13px;margin-top:10px;border-radius:12px;padding:0}
+.msg:not(:empty){padding:10px 12px;border:1px solid var(--line2)}
+.msg.err{border-color:rgba(229,98,74,.5);color:#f3a493} .msg.ok{border-color:rgba(63,191,131,.5)}
+.msg a{text-decoration:underline}
+.warn{border-left:3px solid var(--coral);background:var(--raised);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--muted);margin-top:14px}
+.warn b{color:var(--text)}
+ol.steps{margin:0;padding-left:20px} ol.steps li{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)} th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+code{font-size:12px;background:var(--raised);padding:1px 5px;border-radius:6px;word-break:break-all}
+footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+
+.arena{display:grid;grid-template-columns:minmax(0,320px) auto minmax(0,320px);justify-content:center;gap:24px;align-items:start}
+.side h3{font-size:15px;line-height:1.25;margin-bottom:8px;display:flex;flex-direction:column;gap:2px;min-height:44px}
+.slot{position:relative;aspect-ratio:360/503;border-radius:14px;overflow:hidden;background:var(--raised);border:1px solid var(--line2)}
+.slot img{width:100%;height:100%;object-fit:cover;display:block}
+.slot .back{position:absolute;inset:0;display:grid;place-items:center;font:800 64px "Bricolage Grotesque",sans-serif;color:var(--muted);background:repeating-linear-gradient(45deg,var(--raised),var(--raised) 12px,var(--card) 12px,var(--card) 24px)}
+.slot.win{box-shadow:0 0 0 3px var(--good)} .slot.lose{opacity:.55}
+.vs{align-self:center;font:800 28px "Bricolage Grotesque",sans-serif;color:var(--muted);padding-top:30px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stats button{all:unset;box-sizing:border-box;min-width:0;cursor:pointer;border-radius:12px;padding:9px 10px;background:var(--raised);border:1px solid var(--line2);font-size:13px;display:flex;justify-content:space-between;gap:6px}
+.stats button b{font-variant-numeric:tabular-nums}
+.stats button:hover:not(:disabled){border-color:var(--accent)}
+.stats button:disabled{cursor:default;opacity:.6}
+.stats button.chosen{border-color:var(--mustard);opacity:1}
+.score{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.score b{font:800 26px "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
+.modes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.modes .btn{width:auto;padding:10px 16px}
+.result{font:700 18px "Bricolage Grotesque",sans-serif;min-height:28px;margin:12px 0 0}
+.tier{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+@media (max-width:700px){.arena{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.vs{display:none}.stats{grid-template-columns:1fr;gap:6px}.stats button{padding:7px 9px;font-size:12px}.side h3{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="betabar">Free to play. No wagering, no prizes. Cards are collectibles and a game, not an investment. Not for US/UK persons.</div>
+<header class="top"><div class="topwrap">
+  <a class="brand" href="/">reef<span>.</span>dex</a>
+  <nav class="jump"><a href="/cards/">Mint</a><a href="#rules">Rules</a><a href="/">Swap on Reef</a></nav>
+</div></header>
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow">COOKED × NOCAP · Card battle</div>
+    <h1><span class="c">Stat</span> vs <span class="n">stat</span></h1>
+    <p>Five rounds against the house. Pick a stat, highest number takes the round. Kitchen Crew stats go up against Truth Squad stats slot for slot: Heat meets Honesty, Crunch meets Swagger.</p>
+  </div>
+
+  <section>
+    <div class="modes">
+      <button class="btn" id="mPractice">Practice: random cards</button>
+      <button class="btn alt" id="mMine">Play my cards</button>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div class="card" id="table">
+      <div class="score"><span class="muted small">Round</span><b id="round">1/5</b><span class="muted small" style="margin-left:auto">You</span><b id="sYou">0</b><span class="muted">–</span><b id="sHouse">0</b><span class="muted small">House</span></div>
+      <div class="arena">
+        <div class="side"><h3><span id="youName">Your card</span><span class="tier" id="youTier"></span></h3><div class="slot" id="youSlot"></div><div class="stats" id="youStats"></div></div>
+        <div class="vs">VS</div>
+        <div class="side"><h3><span id="houseName">House card</span><span class="tier" id="houseTier"></span></h3><div class="slot" id="houseSlot"></div><div class="stats" id="houseStats"></div></div>
+      </div>
+      <div class="result" id="result"></div>
+      <button class="btn" id="next" style="margin-top:12px">Next round</button>
+    </div>
+  </section>
+
+  <section id="rules">
+    <div class="sechead"><h2>Rules</h2></div>
+    <div class="card"><ol class="steps">
+      <li>You and the house each get five cards. One card each is turned over per round.</li>
+      <li>On odd rounds you pick the stat; on even rounds the house picks its best one.</li>
+      <li>Both cards compare the same stat slot. Higher number wins the round; equal is a draw.</li>
+      <li><b>Practice</b> deals from all 150 cards. <b>Play my cards</b> uses the cards your wallet holds (after the reveal), topped up with random cards if you hold fewer than five.</li>
+      <li>Nothing is staked and nothing is won. It's just for fun.</li>
+    </ol></div>
+  </section>
+</main>
+<footer><span>COOKED × NOCAP Cards on Reef · BlockDAG chain 1404 (community chain).</span><a href="/cards/">Back to the cards</a></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.17.0/ethers.umd.min.js"></script>
+<script>
+const CFG = { chainId: 1404, cards: "0xc30918566EE9dA799622E14B14133a21652e4062",
+  rpcs: ["https://rpc.bdagexplorer.com", "https://rpc.dagcore.net", "https://rpc.blockdag.engineering"] };
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const STATS = { c: ["Heat", "Crunch", "Spice", "Burn factor"], n: ["Honesty", "Swagger", "Hype resist.", "Realness"] };
+  const TIER = { c: "Common", u: "Uncommon", r: "Rare", e: "Epic", l: "★ Legendary" };
+  const ABI = ["function revealed() view returns (bool)", "function minted(uint256) view returns (uint256)", "function ownerOf(uint256) view returns (address)", "function cardOf(uint256) view returns (uint256)"];
+  let DATA = [], you = [], house = [], round = 0, sYou = 0, sHouse = 0, done = false;
+  const card = (n) => { const d = DATA[n - 1]; return { n, brand: d[0], name: d[1], tier: d[2], stats: d[3] }; };
+  const rand = (k) => Math.floor(Math.random() * k);
+  function deal(k, exclude = []) { const out = []; while (out.length < k) { const n = 1 + rand(150); if (!out.includes(n) && !exclude.includes(n)) out.push(n); } return out; }
+  function msg(t, kind) { const m = $("msg"); m.className = "msg " + (kind || ""); m.textContent = t || ""; }
+
+  function showCard(side, c, open) {
+    const slot = $(side + "Slot"); slot.className = "slot";
+    slot.innerHTML = open ? `<img src="/assets/cards/thumbs/${c.n}.webp" alt="${c.name}, card #${c.n}">` : `<div class="back">?</div>`;
+    $(side + "Name").textContent = open ? `${c.name} #${c.n}` : (side === "you" ? "Your card" : "House card");
+    $(side + "Tier").textContent = open ? TIER[c.tier] : "";
+    const box = $(side + "Stats"); box.innerHTML = "";
+    STATS[c.brand].forEach((lbl, i) => {
+      const b = document.createElement("button"); b.dataset.i = i;
+      b.innerHTML = `<span>${lbl}</span><b>${open ? c.stats[i] : "?"}</b>`;
+      b.disabled = true; box.appendChild(b);
+    });
+  }
+  function start(deckYou) {
+    you = deckYou; house = deal(5, you); round = 0; sYou = 0; sHouse = 0; done = false; play();
+  }
+  function play() {
+    $("round").textContent = (round + 1) + "/5"; $("sYou").textContent = sYou; $("sHouse").textContent = sHouse; $("result").textContent = "";
+    $("next").classList.add("hide");
+    const a = card(you[round]), h = card(house[round]);
+    showCard("you", a, true); showCard("house", h, false);
+    if (round % 2 === 0) {
+      $("result").textContent = "Your pick: choose a stat.";
+      [...$("youStats").children].forEach((b) => { b.disabled = false; b.onclick = () => resolve(+b.dataset.i); });
+    } else {
+      $("result").textContent = "House is choosing…";
+      setTimeout(() => resolve(h.stats.indexOf(Math.max(...h.stats))), 900);
+    }
+  }
+  function resolve(i) {
+    const a = card(you[round]), h = card(house[round]);
+    showCard("house", h, true);
+    [...$("youStats").children].forEach((b) => (b.disabled = true));
+    $("youStats").children[i].classList.add("chosen"); $("houseStats").children[i].classList.add("chosen");
+    const x = a.stats[i], y = h.stats[i];
+    const res = x > y ? "win" : x < y ? "lose" : "draw";
+    if (res === "win") sYou++; if (res === "lose") sHouse++;
+    $("youSlot").classList.add(res === "win" ? "win" : res === "lose" ? "lose" : "x");
+    $("houseSlot").classList.add(res === "lose" ? "win" : res === "win" ? "lose" : "x");
+    $("result").textContent = `${STATS[a.brand][i]} ${x} vs ${STATS[h.brand][i]} ${y}: ` + (res === "win" ? "you take it." : res === "lose" ? "house takes it." : "draw.");
+    $("sYou").textContent = sYou; $("sHouse").textContent = sHouse;
+    round++;
+    if (round === 5) {
+      done = true;
+      $("result").textContent += sYou > sHouse ? `  You win the match ${sYou}–${sHouse}!` : sYou < sHouse ? `  House wins ${sHouse}–${sYou}.` : `  Match drawn ${sYou}–${sHouse}.`;
+      $("next").textContent = "Play again";
+    } else $("next").textContent = "Next round";
+    $("next").classList.remove("hide");
+  }
+  $("next").onclick = () => (done ? start(lastMode === "mine" && mine.length ? fill(mine) : deal(5)) : play());
+
+  let lastMode = "practice", mine = [];
+  const fill = (own) => { const d = own.slice(0, 5); return d.concat(deal(5 - d.length, d)).sort(() => Math.random() - 0.5); };
+  $("mPractice").onclick = () => { lastMode = "practice"; msg(""); start(deal(5)); };
+  $("mMine").onclick = async () => {
+    if (!window.ethereum) { msg("No wallet in this browser. Practice mode still works.", "err"); return; }
+    try {
+      msg("Reading your cards…");
+      const [acc] = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const ro = await pickRpc(); if (!ro) { msg("Can't reach BlockDAG right now. Try practice mode.", "err"); return; }
+      const c = new ethers.Contract(CFG.cards, ABI, ro);
+      if (!(await c.revealed())) { msg("Your cards stay face down until the reveal (sell-out or 15 Nov 2026). Practice mode deals from the full set meanwhile.", "err"); return; }
+      const [mc, mn] = await Promise.all([c.minted(0), c.minted(1)]);
+      const ids = []; for (let i = 1; i <= Number(mc); i++) ids.push(i); for (let i = 76; i <= 75 + Number(mn); i++) ids.push(i);
+      const owners = await Promise.all(ids.map((t) => c.ownerOf(t).catch(() => null)));
+      const ownIds = ids.filter((t, k) => owners[k] && owners[k].toLowerCase() === acc.toLowerCase());
+      if (!ownIds.length) { msg("This wallet holds no cards. Practice mode is open to everyone.", "err"); return; }
+      mine = (await Promise.all(ownIds.map((t) => c.cardOf(t)))).map(Number);
+      lastMode = "mine"; msg(`Playing with your ${mine.length} card${mine.length > 1 ? "s" : ""}` + (mine.length < 5 ? ", topped up with random cards." : "."), "ok");
+      start(fill(mine));
+    } catch (e) { msg((e && (e.shortMessage || e.message)) || "Something went wrong.", "err"); }
+  };
+  async function pickRpc() {
+    const tries = CFG.rpcs.map(async (u) => { const p = new ethers.JsonRpcProvider(u, CFG.chainId, { staticNetwork: true, batchMaxCount: 1 });
+      await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]); return p; });
+    try { return await Promise.any(tries); } catch (e) { return null; }
+  }
+  fetch("/assets/cards/cards.json").then((r) => r.json()).then((d) => { DATA = d; start(deal(5)); })
+    .catch(() => msg("Couldn't load the card list. Refresh to try again.", "err"));
+})();
+</script>
+</body>
+</html>
