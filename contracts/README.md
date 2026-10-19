@@ -31,11 +31,11 @@ NodalRouter and the Handshake escrow (blocks 23980687, 23981053, 23981982, 23982
 
 Reef pools (pairs) are created by the Factory from `contracts/reef/ReefPair.sol`.
 
-**NOCAP LP lock** `0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1`: source in `nocap/NoCapLPLock.sol` (Solidity 0.8.20,
-OpenZeppelin, kept outside the test build because it uses a different compiler). Its functions and settings match the
-chain, but its bytecode didn't rebuild exactly from this file with the recorded settings, so treat this source as
-"believed to match" rather than proven. Read on 2 Oct 2026: it holds 99.99% of the NOCAP/BDAG pool's LP tokens,
-beneficiary `0x134C6025C234D7E3847bDA9e4aD794df9a805510`, unlocks 25 Mar 2027 09:45 UTC.
+**NOCAP LP lock** `0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1`: source in `nocap/NoCapLPLock.sol`, kept outside the
+test build because it uses a different compiler: Solidity **0.8.20**, optimizer **on, 200 runs**, EVM **berlin**,
+OpenZeppelin Contracts **5.6.1**. Earlier attempts used OpenZeppelin 5.0.2, which is why it didn't rebuild exactly;
+with 5.6.1 it matches and is verified on the explorer (19 Oct 2026). Read on 2 Oct 2026: it holds 99.99% of the
+NOCAP/BDAG pool's LP tokens, beneficiary `0x134C6025C234D7E3847bDA9e4aD794df9a805510`, unlocks 25 Mar 2027 09:45 UTC.
 
 **$REEF presale** `0x030d2466f634022FB93fbdF475ea81faFf2525a0`: source in `reef-token/ReefPresale.sol`, kept outside the
 test build because it uses a different compiler: Solidity **0.8.20**, optimizer **on, 200 runs**, EVM **berlin**,
@@ -46,9 +46,7 @@ The constructor arguments on chain are the ReefToken, the Reef router, the liqui
 02:00 UTC), an end of 1793930400 (Fri 6 Nov 2026, 02:00 UTC) and a 365-day LP lock. It held 1,050,000 REEF, and the
 liquidity wallet had approved it for 700,000 REEF.
 
-The explorer can't verify it yet: explorer.blockdag.engineering refuses uploads larger than about 8 KB, and this
-source with its OpenZeppelin imports is about 43 KB as a single file. The same limit is the likely reason the NOCAP LP
-lock never verified. To check it yourself:
+It is verified on the explorer (19 Oct 2026). To check it yourself:
 
 ```
 npm i solc@0.8.20
@@ -58,8 +56,25 @@ node -e "const s=require('solc');const i=require('./reef-token/ReefPresale.stand
 and compare the output with the code at the address (everything except the last 53 bytes, which are the metadata
 stamp).
 
-`contracts/reef/ReefAdminMultisigV2.sol` is **not deployed**. It's a proposed replacement that fixes finding M-1
-below, The deployed multisig went from 2-of-2 to 2-of-3 on 9 Oct 2026 by adding a third owner through its own `addOwner` (a confirmed multisig transaction), so V2 was not needed for that. It remains a proposed upgrade.
+**Token sources.** `reef-token/ReefToken.sol` is the REEF token (`0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416`) and
+`nocap/NoCapToken.sol` is the NOCAP token (`0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752`). Both use the same settings
+as the presale (0.8.20, optimizer 200, berlin, OpenZeppelin 5.6.1) and are kept outside the test build.
+
+## Verified on the explorer
+
+Source verified on [explorer.bdagexplorer.com](https://explorer.bdagexplorer.com) on 19 Oct 2026. Each is a
+"partial match": the contract code is identical, and only the compiler's metadata stamp differs (file names and
+paths change it).
+
+| Contract | Status |
+|---|---|
+| WBDAG, admin multisig, NodalRouter, Handshake OTCEscrow | Verified |
+| NodalReefAdapter, Reef TWAP oracle | Verified |
+| $COOKED curve, $COOKED token | Verified |
+| REEF token, REEF presale | Verified |
+| NOCAP token, NOCAP LP lock | Verified |
+| COOKED x NOCAP Cards (`0xc30918566EE9dA799622E14B14133a21652e4062`) and its royalty router (`0x82444E975E0074f44E7E88647cC84CfC40b7741e`) | Verified |
+| ReefFactory, ReefRouter | Not yet: they were built with `metadata.bytecodeHash: "none"`, which the explorer's verifier can't set yet. The Factory embeds the pair's creation code, so it needs that setting to match. Requested from the explorer team. |
 
 ## Compiler settings
 
