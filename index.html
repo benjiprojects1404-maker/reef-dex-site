@@ -538,9 +538,11 @@ const CHAIN_ID_HEX = "0x57c";
 // node board (bdag.community/chain#nodes): nodes that shut down drop off and new ones appear without
 // a site update. Only nodes the board finds on chain 1404, near the head and with matching block
 // hashes are used for reads. The built-in list below is used until the live list loads, if it
-// can't be loaded, and for the wallet's "add network" prompt. Last reviewed 1 Oct 2026.
+// can't be loaded, and for the wallet's "add network" prompt. Last reviewed 20 Oct 2026: the community
+// gateway (rpc.community.bdag-us.org) goes first; the individual nodes are fallbacks.
 const RPC_LIST_URL = "https://www.nodaldex.fyi/api/rpcs";
 const RPC_NAMES = {
+  "rpc.community.bdag-us.org": "BDAG Community RPC",
   "rpc.bdagexplorer.com": "BDAG Explorer",
   "rpc.blockdag.engineering": "blockdag.engineering",
   "rpc.east.bdag-us.org": "BDAG-US (east)",
@@ -564,6 +566,7 @@ function rpcName(url) { const h = url.replace(/^https:\/\//, "").split("/")[0]; 
 // probe can't tell it apart from a real endpoint, so it's always shown as unusable.
 const FORK_ENDPOINT = { name: "bdagscan.com", url: "https://rpc.bdagscan.com", fork: true };
 const FALLBACK_RPC_URLS = [
+  "https://rpc.community.bdag-us.org",
   "https://rpc.capedag.com",
   "https://rms-bdag-rpc.de/api/rpc-live",
   "https://rpc.dvdmining.com",
