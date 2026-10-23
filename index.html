@@ -173,7 +173,9 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .pooltoggle{display:flex;gap:6px;margin-bottom:14px}
 .pooltoggle button{flex:1;border:1px solid var(--line2);background:var(--raised);color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:9px 0;border-radius:11px;cursor:pointer}
 .pooltoggle button.on{background:var(--tide);border-color:var(--tide);color:#fff}
-.side h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 10px}
+.side h3,#topCard h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 10px}
+@media (min-width:861px){main{align-items:stretch}.col>.card:last-child{flex:1}}
+#topCard .toplist{margin-top:0}
 .poollist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto}
 .poollist li{border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:13px}
 .poollist li:hover{border-color:var(--line2)}
