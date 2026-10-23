@@ -183,7 +183,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .poolsearch{width:100%;box-sizing:border-box;margin:8px 0 10px;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:var(--raised);color:var(--text);font:inherit;font-size:12.5px}
 .poolsearch:focus{outline:none;border-color:var(--line2)}
 .poolcount{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
-.toplist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:top}
+.toplist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;counter-reset:top}
 .toplist li{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:13px;counter-increment:top}
 .toplist li:hover{border-color:var(--line2)}
 .toplist li::before{content:counter(top);color:var(--muted);font-size:12px;width:12px;text-align:right}
@@ -448,6 +448,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       </div>
     </section>
 
+    <div class="card" id="topCard">
+      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
+      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
+      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
+    </div>
   </div>
 
   <div class="col side">
@@ -456,11 +461,6 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <p class="hint" style="margin-top:6px">See which of a wallet's Reef actions since 7 Oct match the airdrop rules. This is a self-check, not the final list: places go to the first 1,000 wallets, ranked after the 6 Nov snapshot.</p>
       <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button></div>
       <div id="adOut" class="adout" aria-live="polite"></div>
-    </div>
-    <div class="card" id="topCard">
-      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
-      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
-      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
     </div>
     <div class="card">
       <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
