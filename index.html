@@ -173,13 +173,27 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .pooltoggle{display:flex;gap:6px;margin-bottom:14px}
 .pooltoggle button{flex:1;border:1px solid var(--line2);background:var(--raised);color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:9px 0;border-radius:11px;cursor:pointer}
 .pooltoggle button.on{background:var(--tide);border-color:var(--tide);color:#fff}
-.side h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 10px}
+.side h3,#topCard h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 10px}
+@media (min-width:861px){main{align-items:stretch}.col>.card:last-child{flex:1}}
+#topCard .toplist{margin-top:0}
 .poollist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto}
 .poollist li{border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font-size:13px}
 .poollist li:hover{border-color:var(--line2)}
 .poollist .pair{font-weight:600}
 .poollist .res{color:var(--muted);margin-top:2px}
 .empty{color:var(--muted);font-size:13px;padding:8px 2px}
+.poolsearch{width:100%;box-sizing:border-box;margin:8px 0 10px;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:var(--raised);color:var(--text);font:inherit;font-size:12.5px}
+.poolsearch:focus{outline:none;border-color:var(--line2)}
+.poolcount{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
+.toplist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;counter-reset:top}
+.toplist li{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:13px;counter-increment:top}
+.toplist li:hover{border-color:var(--line2)}
+.toplist li::before{content:counter(top);color:var(--muted);font-size:12px;width:12px;text-align:right}
+.toplist .tk{flex:1;min-width:0}
+.toplist .tk b{display:block}
+.toplist .tk span{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.toplist .v{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
+.toplist .v b{display:block;color:inherit;font-size:13px}
 .footer{max-width:1080px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
 .footer a{text-decoration:underline}
 dialog{border:0;border-radius:20px;padding:0;background:var(--card);color:var(--text);max-width:420px;width:calc(100% - 32px)}
@@ -436,6 +450,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       </div>
     </section>
 
+    <div class="card" id="topCard">
+      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
+      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
+      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
+    </div>
   </div>
 
   <div class="col side">
@@ -446,7 +465,8 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <div id="adOut" class="adout" aria-live="polite"></div>
     </div>
     <div class="card">
-      <h3>Pools</h3>
+      <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
+      <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
       <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
     </div>
     <div class="card">
@@ -457,7 +477,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.blockdag.engineering/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-13-info-badges</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-23-pools-search</p>
     </div>
   </div>
 </main>
@@ -2005,9 +2025,26 @@ async function tryRpcFallback(taskFn) {
   }
   throw lastErr;
 }
+let poolRows = [];
+function filterPools() {
+  const q = ($("#poolSearch").value || "").trim().toLowerCase();
+  const list = $("#poolList");
+  let shown = 0;
+  for (const r of poolRows) {
+    const hit = !q || r.hay.includes(q);
+    r.li.style.display = hit ? "" : "none";
+    if (hit) shown++;
+  }
+  const none = list.querySelector(".nomatch");
+  if (none) none.remove();
+  if (poolRows.length && !shown) { const d = el("div", "empty nomatch"); d.textContent = "No pools match that search."; list.appendChild(d); }
+  $("#poolCount").textContent = poolRows.length ? (q ? `${shown} of ${poolRows.length}` : `${poolRows.length}`) : "";
+}
 async function loadPoolList() {
   const list = $("#poolList");
   list.innerHTML = '<div class="empty">Loading pools…</div>';
+  poolRows = [];
+  $("#poolCount").textContent = "";
   try {
     const addrs = await tryRpcFallback(async (p) => {
       const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, p);
@@ -2017,21 +2054,105 @@ async function loadPoolList() {
       return Promise.all(Array.from({ length: count }, (_, i) => factory.allPairs(i)));
     });
     if (addrs.length === 0) { list.innerHTML = '<div class="empty">No pools yet. Be the first to add liquidity.</div>'; return; }
-    list.innerHTML = "";
-    for (const [idx, addr] of addrs.entries()) {
-      if (HIDDEN_PAIR_INDEXES.has(idx)) continue;
+    const rows = await Promise.all(addrs.map(async (addr, idx) => {
+      if (HIDDEN_PAIR_INDEXES.has(idx)) return null;
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
       const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
       let [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
       let r0 = r[0], r1 = r[1];
       // Always list the token first and BDAG second (e.g. COOKED / BDAG), whatever the on-chain token order.
       if (isBdag(t0) && !isBdag(t1)) { [t0, t1] = [t1, t0]; [r0, r1] = [r1, r0]; }
+      return { addr, t0, t1, r0, r1, t0a, t1a };
+    }));
+    list.innerHTML = "";
+    for (const row of rows) {
+      if (!row) continue;
+      const { addr, t0, t1, r0, r1, t0a, t1a } = row;
       const li = el("li");
       li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}</div><div class="res">${fmt(ethers.formatUnits(r0, t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r1, t1.decimals), 2)} ${t1.symbol}</div>`;
+      li.title = `Pool ${addr}`;
       li.onclick = () => selectPoolPair(t0, t1);
       list.appendChild(li);
+      const hay = [t0.symbol, t0.name, t1.symbol, t1.name, t0a, t1a, addr, t0.native || t1.native ? "bdag wbdag" : ""].join(" ").toLowerCase();
+      poolRows.push({ li, hay });
     }
+    filterPools();
   } catch (e) { list.innerHTML = '<div class="empty">Could not load pools right now.</div>'; }
+  loadTopTokens();
+}
+
+// ---------- Top 5 tokens ----------
+// Ranks tokens by the BDAG traded through their BDAG pool in roughly the last 24 hours (Swap events),
+// and falls back to pool liquidity (BDAG side) if there were no trades or the log query fails.
+let topLoading = false;
+async function loadTopTokens() {
+  if (topLoading) return;
+  topLoading = true;
+  const list = $("#topList"), basis = $("#topBasis");
+  list.innerHTML = '<div class="empty">Loading…</div>';
+  basis.textContent = "";
+  try {
+    const rows = await tryRpcFallback(async (p) => {
+      const pairs = await bdagPairs(p);
+      const addrs = Object.keys(pairs);
+      if (!addrs.length) return [];
+      const stats = {};
+      await Promise.all(addrs.map(async (pa) => {
+        const { bdagIs0, token } = pairs[pa];
+        const r = await new ethers.Contract(pa, PAIR_ABI, p).getReserves();
+        const key = token.toLowerCase();
+        const s0 = stats[key] || (stats[key] = { token, liq: 0n, vol: 0n, pair: pa });
+        s0.liq += bdagIs0 ? r[0] : r[1];
+      }));
+      let volOk = false;
+      try {
+        const head = await p.getBlockNumber();
+        const back = Math.min(head, 20000);
+        const [hb, ob] = await Promise.all([p.getBlock(head), p.getBlock(head - back)]);
+        const spb = Math.max(0.05, (hb.timestamp - ob.timestamp) / back);
+        const fromBlock = Math.max(0, head - Math.ceil(86400 / spb));
+        const logs = await p.getLogs({ address: addrs, topics: [SWAP_TOPIC], fromBlock, toBlock: head });
+        for (const l of logs) {
+          const pr = pairs[l.address.toLowerCase()];
+          if (!pr) continue;
+          const ev = SWAP_IFACE.parseLog(l);
+          const [a0In, a1In, a0Out, a1Out] = [ev.args[1], ev.args[2], ev.args[3], ev.args[4]];
+          const v = pr.bdagIs0 ? a0In + a0Out : a1In + a1Out;
+          stats[pr.token.toLowerCase()].vol += v;
+        }
+        volOk = true;
+      } catch (e) { volOk = false; }
+      const list = Object.values(stats);
+      const anyVol = volOk && list.some((x) => x.vol > 0n);
+      list.sort((a, b) => {
+        const ka = anyVol ? a.vol : a.liq, kb = anyVol ? b.vol : b.liq;
+        if (kb !== ka) return kb > ka ? 1 : -1;
+        return b.liq > a.liq ? 1 : b.liq < a.liq ? -1 : 0;
+      });
+      return { byVol: anyVol, top: list.slice(0, 5) };
+    });
+    if (!rows || !rows.top || !rows.top.length) { list.innerHTML = '<div class="empty">No BDAG pools yet.</div>'; return; }
+    basis.textContent = rows.byVol ? "· 24h volume" : "· by liquidity";
+    $("#topNote").textContent = rows.byVol
+      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Not an endorsement: check the contract before trading."
+      : "No trades in the last 24 hours, so ranked by BDAG liquidity in each token's pool. Not an endorsement: check the contract before trading.";
+    const infos = await Promise.all(rows.top.map((x) => tokenInfo(x.token)));
+    list.innerHTML = "";
+    rows.top.forEach((x, i) => {
+      const t = infos[i];
+      const li = el("li");
+      const main = rows.byVol ? x.vol : x.liq;
+      const mainLabel = rows.byVol ? "BDAG 24h" : "BDAG liquidity";
+      li.innerHTML = `<div class="tk"><b></b><span></span></div><div class="v"><b>${fmt(ethers.formatUnits(main, 18), 0)}</b>${mainLabel}</div>`;
+      li.querySelector(".tk b").textContent = t.symbol;
+      li.querySelector(".tk span").textContent = t.name;
+      li.title = `${t.name} · ${x.token}`;
+      li.onclick = () => selectPoolPair(t, { ...NATIVE });
+      list.appendChild(li);
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="empty">Could not load the ranking right now.</div>';
+  } finally { topLoading = false; }
 }
 async function tokenInfoWrapped(addr) {
   if (addr.toLowerCase() === ADDR.WBDAG.toLowerCase()) return { ...NATIVE };
@@ -2105,6 +2226,7 @@ function init() {
   });
   renderTokButtons();
   renderNet();
+  $("#poolSearch").addEventListener("input", filterPools);
   loadPoolList();
   if (window.ethereum) {
     window.ethereum.request({ method: "eth_accounts" }).then((accs) => {
