@@ -1,0 +1,26 @@
+{
+  "_note": "Inputs for the REEF airdrop snapshot. Team wallets are excluded from the airdrop. BENJI: add every other wallet you control (deployers, MetaMask accounts, test wallets) before the final run.",
+  "rpcs": [
+    "https://rpc.community.bdag-us.org",
+    "https://rpc.blockdag.engineering"
+  ],
+  "explorer": "https://explorer.blockdag.engineering",
+  "factory": "0x9603042044b6B1A1637c508F731ba01219142239",
+  "wbdag": "0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA",
+  "reefToken": "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
+  "presale": "0x030d2466f634022FB93fbdF475ea81faFf2525a0",
+  "hiddenPairIndexes": [1],
+  "excludedWallets": {
+    "0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418": "REEF liquidity wallet",
+    "0xdFa06aE38addc9aa11Df033bE457CD6D00153942": "REEF presale holder",
+    "0xC87ac8FDDB6EF32a2fEE40500FBb24E4ea54Acc6": "REEF airdrop holder",
+    "0xaFb7f412dE83978188fAc2248e3A5f9A71dCf386": "REEF marketing wallet",
+    "0x134C6025C234D7E3847bDA9e4aD794df9a805510": "NoCap_Liquidity",
+    "0x306208Aa25A5BBAB22Bd9208c4178b9f2Dd929FD": "Reef admin multisig owner (Trezor)",
+    "0x33D599DD7C9e1C11b6DC4a48AE209D0f066CF91A": "Reef admin multisig owner (Ledger 1)",
+    "0xA874Ff1255379E01F6596cDB0EE631891Fe27767": "Reef admin multisig owner (Ledger 2)"
+  },
+  "deployerOverrides": {
+    "_note": "token address -> deployer wallet, only for tokens whose deployer the explorer can't report. Each entry needs a creation tx link in the published notes."
+  }
+}
