@@ -9,7 +9,9 @@
   "wbdag": "0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA",
   "reefToken": "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
   "presale": "0x030d2466f634022FB93fbdF475ea81faFf2525a0",
-  "hiddenPairIndexes": [1],
+  "hiddenPairIndexes": [
+    1
+  ],
   "excludedWallets": {
     "0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418": "REEF liquidity wallet",
     "0xdFa06aE38addc9aa11Df033bE457CD6D00153942": "REEF presale holder",
@@ -18,9 +20,30 @@
     "0x134C6025C234D7E3847bDA9e4aD794df9a805510": "NoCap_Liquidity",
     "0x306208Aa25A5BBAB22Bd9208c4178b9f2Dd929FD": "Reef admin multisig owner (Trezor)",
     "0x33D599DD7C9e1C11b6DC4a48AE209D0f066CF91A": "Reef admin multisig owner (Ledger 1)",
-    "0xA874Ff1255379E01F6596cDB0EE631891Fe27767": "Reef admin multisig owner (Ledger 2)"
+    "0xA874Ff1255379E01F6596cDB0EE631891Fe27767": "Reef admin multisig owner (Ledger 2)",
+    "0xcA8358Ebbd82ad678ffB288d5A9b4915F24799B5": "BDAG_Mining_Mainnet (Benji)",
+    "0xBE7ee8E66082d81Ec9Ae5C4E30D29A44eDaB3AE7": "Chord_Deployer"
   },
   "deployerOverrides": {
     "_note": "token address -> deployer wallet, only for tokens whose deployer the explorer can't report. Each entry needs a creation tx link in the published notes."
-  }
+  },
+  "excludedWalletPatterns": {
+    "_note": "Benji's other wallets, from his wallet app (26 Oct), which shows only the start and end of each address. A wallet is excluded if its address starts and ends with these characters. Replace with full addresses when convenient.",
+    "0x1b898...2bF17": "COOKED_Main",
+    "0xECc48...86267": "reef_treasury_wallet",
+    "0x6524E...F80d8": "Nodal_Arb_Bot",
+    "0x2226d...A3E94": "Reef_Dev",
+    "0x6dA9b...e91C8": "Reef_Treasury",
+    "0x96845...F7994": "benji_projects_1404",
+    "0x26bDb...fF940": "Handshake_Main",
+    "0xb96DE...c8bA5": "Orbit_Social",
+    "0x8A8F4...B2127": "Nodal",
+    "0xED270...961dA": "NoCap_Dev_Beneficiary",
+    "0x9E0a2...47815": "NoCap_Marketing",
+    "0x556Ff...E1156": "Nodal_Arb_Bot_Hot_Wallet",
+    "0x95389...117EC": "TEST - MIB",
+    "0xB2CDb...97367": "Bless",
+    "0xd0FC...52B7": "Chord_Trezor"
+  },
+  "_todo": "Chord_Taker (0x56673...) needs its full address: the wallet app cut off its ending."
 }

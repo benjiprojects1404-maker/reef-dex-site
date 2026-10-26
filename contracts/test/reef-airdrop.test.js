@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
-const { RULES, tierOf, allocate } = require("../scripts/airdrop/rules");
+const { RULES, tierOf, allocate, patternMatcher } = require("../scripts/airdrop/rules");
 
 const E18 = 10n ** 18n;
 const DEAD = "0x000000000000000000000000000000000000dEaD";
@@ -46,6 +46,15 @@ describe("REEF airdrop rules", () => {
     expect(r.perShare).to.equal(RULES.perShareCap); // few shares: capped at 2,100 per share
     expect(r.entries[0].amount).to.equal(3n * 2100n * E18);
     expect(r.unallocated).to.equal(RULES.pot - 4n * 2100n * E18);
+  });
+
+  it("excludes team wallets given as start...end patterns", () => {
+    const m = patternMatcher(["0xcA835...799B5"]);
+    expect(m("0xca8358ebbd82ad678ffb288d5a9b4915f24799b5")).to.equal(true);
+    expect(m("0xca8358ebbd82ad678ffb288d5a9b4915f24799b6")).to.equal(false);
+    const r = allocate([swap("0xca8358ebbd82ad678ffb288d5a9b4915f24799b5", 1, 1000n * E18), swap("0xb", 2, 1000n * E18)], m);
+    expect(r.entries.map((e) => e.wallet)).to.deep.equal(["0xb"]);
+    expect(() => patternMatcher(["0x12...3"])).to.throw();
   });
 
   it("caps the list at 1,000 wallets and never pays out more than the pot", () => {

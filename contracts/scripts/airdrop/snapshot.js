@@ -11,7 +11,7 @@ const fs = require("fs");
 const path = require("path");
 const { ethers } = require("ethers");
 const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
-const { RULES, allocate } = require("./rules");
+const { RULES, allocate, patternMatcher } = require("./rules");
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
@@ -166,7 +166,9 @@ async function main() {
   }
 
   const excluded = new Set(Object.keys(cfg.excludedWallets).map((a) => a.toLowerCase()));
-  const res = allocate(actions, excluded);
+  const patterns = Object.keys(cfg.excludedWalletPatterns || {}).filter((k) => !k.startsWith("_"));
+  const byPattern = patternMatcher(patterns);
+  const res = allocate(actions, (w) => excluded.has(w) || byPattern(w));
   const tree = res.entries.length ? StandardMerkleTree.of(res.entries.map((e) => [ethers.getAddress(e.wallet), e.amount.toString()]), ["address", "uint256"]) : null;
 
   fs.mkdirSync(OUT, { recursive: true });

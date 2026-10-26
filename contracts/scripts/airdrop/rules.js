@@ -49,9 +49,10 @@ const order = (a, b) => (a.block - b.block) || (a.logIndex - b.logIndex);
 
 /**
  * actions: every Swap/Mint on Reef BDAG pairs inside the window, credited to the wallet that signed the tx.
- * excluded: Set of lower-case team wallets.
+ * excluded: Set of lower-case team wallets, or a function (wallet) => bool.
  */
 function allocate(actions, excluded = new Set()) {
+  const isExcluded = typeof excluded === "function" ? excluded : (w) => excluded.has(w);
   const byWallet = new Map();
   const review = [];
   for (const a of [...actions].sort(order)) {
@@ -66,7 +67,7 @@ function allocate(actions, excluded = new Set()) {
   const excludedHits = [];
   const ranked = [];
   for (const v of [...byWallet.values()].sort((x, y) => order(x.first, y.first))) {
-    if (excluded.has(v.wallet)) excludedHits.push(v.wallet);
+    if (isExcluded(v.wallet)) excludedHits.push(v.wallet);
     else ranked.push(v);
   }
   const winners = ranked.slice(0, RULES.maxWallets);
@@ -94,4 +95,14 @@ function allocate(actions, excluded = new Set()) {
   };
 }
 
-module.exports = { RULES, meets, tierOf, allocate };
+// "0xabcd...1234" style patterns (start and end of an address, as wallet apps show them).
+function patternMatcher(patterns) {
+  const list = patterns.map((p) => {
+    const [a, b] = p.toLowerCase().split("...");
+    if (!a || !b || !a.startsWith("0x") || a.length < 6 || b.length < 2) throw new Error(`bad wallet pattern ${p}`);
+    return [a, b];
+  });
+  return (w) => list.some(([a, b]) => w.startsWith(a) && w.endsWith(b));
+}
+
+module.exports = { RULES, meets, tierOf, allocate, patternMatcher };
