@@ -22,28 +22,28 @@
     "0x33D599DD7C9e1C11b6DC4a48AE209D0f066CF91A": "Reef admin multisig owner (Ledger 1)",
     "0xA874Ff1255379E01F6596cDB0EE631891Fe27767": "Reef admin multisig owner (Ledger 2)",
     "0xcA8358Ebbd82ad678ffB288d5A9b4915F24799B5": "BDAG_Mining_Mainnet (Benji)",
-    "0xBE7ee8E66082d81Ec9Ae5C4E30D29A44eDaB3AE7": "Chord_Deployer"
+    "0xBE7ee8E66082d81Ec9Ae5C4E30D29A44eDaB3AE7": "Chord_Deployer",
+    "0x556Fffc7831388061B8603D2790C0162B13E1156": "Nodal_Arb_Bot_Hot_Wallet",
+    "0x5667383e4739f300eC387C172E4AF3F52dF88B8B": "Chord_Taker",
+    "0x953893949d31904Dc472a270596310FeCDe117EC": "TEST - MIB",
+    "0x96845D7f89773F6F1d36403D82c31FF61bdF7994": "benji_projects_1404",
+    "0x26bDba7b184df8b88965Bed46AEd6ea0E60fF940": "Handshake_Main",
+    "0xb96DE24B0990EC9b34300AC1F10D69fF733c8bA5": "Orbit_Social",
+    "0x8A8F4E1d70F889C5aA2579E8ff2826e4fE8B2127": "Nodal",
+    "0xED2704878a60411ca248102c5c31d37c9E4961dA": "NoCap_Dev_Beneficiary",
+    "0x9E0a2178147972Ff9ACBa7F5F05e963E07047815": "NoCap_Marketing",
+    "0x1b8985f6Fe74C738452b41bb3F445D7e0c62bF17": "COOKED_Main",
+    "0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267": "reef_treasury_wallet",
+    "0x6524E89E094a0646C7e35BF18eA530C4967F80d8": "Nodal_Arb_Bot",
+    "0x2226d86703BDCdf1029C4a9fb0a0851A999A3E94": "Reef_Dev",
+    "0x6dA9bdb6522678Ee7FD7eea184B3744CFD9e91C8": "Reef_Treasury",
+    "0xB2CDb0f34e192450fB1525c0932aEc326a597367": "Bless"
   },
   "deployerOverrides": {
     "_note": "token address -> deployer wallet, only for tokens whose deployer the explorer can't report. Each entry needs a creation tx link in the published notes."
   },
   "excludedWalletPatterns": {
-    "_note": "Benji's other wallets, from his wallet app (26 Oct), which shows only the start and end of each address. A wallet is excluded if its address starts and ends with these characters. Replace with full addresses when convenient.",
-    "0x1b898...2bF17": "COOKED_Main",
-    "0xECc48...86267": "reef_treasury_wallet",
-    "0x6524E...F80d8": "Nodal_Arb_Bot",
-    "0x2226d...A3E94": "Reef_Dev",
-    "0x6dA9b...e91C8": "Reef_Treasury",
-    "0x96845...F7994": "benji_projects_1404",
-    "0x26bDb...fF940": "Handshake_Main",
-    "0xb96DE...c8bA5": "Orbit_Social",
-    "0x8A8F4...B2127": "Nodal",
-    "0xED270...961dA": "NoCap_Dev_Beneficiary",
-    "0x9E0a2...47815": "NoCap_Marketing",
-    "0x556Ff...E1156": "Nodal_Arb_Bot_Hot_Wallet",
-    "0x95389...117EC": "TEST - MIB",
-    "0xB2CDb...97367": "Bless",
+    "_note": "Wallets known only by the start and end of the address (Benji's wallet app, 26 Oct). Excluded if an address starts and ends with these characters.",
     "0xd0FC...52B7": "Chord_Trezor"
-  },
-  "_todo": "Chord_Taker (0x56673...) needs its full address: the wallet app cut off its ending."
+  }
 }
