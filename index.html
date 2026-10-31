@@ -1865,19 +1865,32 @@ async function pairFor(a, b) {
   const addr = await factory.getPair(wrapped(a), wrapped(b));
   return addr === ethers.ZeroAddress ? null : addr;
 }
+// Keeps the add button's label truthful (it used to stay on "Select tokens" with both tokens picked).
+function setAddBtn(label, enabled) { const b = $("#addBtn"); b.textContent = label; b.disabled = !enabled; }
+// Brand-new pool (or one with no reserves): both amounts are typed by hand and set the starting price.
+async function enableNewPool() {
+  poolIsNew = true; renderPoolAirdrop(); $("#poolNewNote").style.display = ""; $("#poolShareBox").innerHTML = "";
+  const vA = $("#liqAAmt").value.trim(), vB = $("#liqBAmt").value.trim();
+  if (!vA || !vB || !(Number(vA) > 0) || !(Number(vB) > 0)) { setAddBtn("Enter both amounts", false); return; }
+  if (!account) { setAddBtn("Connect wallet", false); return; }
+  if (!isReef1404) { setAddBtn("Switch to BlockDAG (1404)", false); return; }
+  const short = await liqShortfall(vA, vB);
+  if (short) { showMsg("pool", short, "err"); setAddBtn("Not enough balance", false); return; }
+  setAddBtn("Create pool & add liquidity", true);
+}
 async function quoteLiqFrom(side) {
   clearMsg("pool");
-  if (!liqTokA || !liqTokB) return;
+  if (!liqTokA || !liqTokB) { setAddBtn("Select tokens", false); return; }
   const pair = await pairFor(liqTokA, liqTokB);
   $("#addBtn").disabled = true;
-  if (!pair) { poolIsNew = true; renderPoolAirdrop(); $("#poolNewNote").style.display = ""; $("#poolShareBox").innerHTML = ""; return; }
+  if (!pair) return enableNewPool();
   poolIsNew = false;
   $("#poolNewNote").style.display = "none";
   const p = new ethers.Contract(pair, PAIR_ABI, ro);
   const [t0, r] = await Promise.all([p.token0(), p.getReserves()]);
   const isA0 = t0.toLowerCase() === wrapped(liqTokA).toLowerCase();
   const [rA, rB] = isA0 ? [r[0], r[1]] : [r[1], r[0]];
-  if (rA === 0n || rB === 0n) { poolIsNew = true; renderPoolAirdrop(); $("#poolNewNote").style.display = ""; return; }
+  if (rA === 0n || rB === 0n) return enableNewPool();
   try {
     if (side === "A") {
       const vA = $("#liqAAmt").value.trim();
@@ -1894,12 +1907,13 @@ async function quoteLiqFrom(side) {
     }
   } catch (e) { return; }
   renderPoolAirdrop();
-  if (account && isReef1404) {
-    const vA2 = $("#liqAAmt").value.trim(), vB2 = $("#liqBAmt").value.trim();
-    const short = vA2 && vB2 ? await liqShortfall(vA2, vB2) : "";
-    if (short) { showMsg("pool", short, "err"); return; }
-    $("#addBtn").disabled = false;
-  }
+  const vA2 = $("#liqAAmt").value.trim(), vB2 = $("#liqBAmt").value.trim();
+  if (!vA2 || !vB2) { setAddBtn("Enter an amount", false); return; }
+  if (!account) { setAddBtn("Connect wallet", false); return; }
+  if (!isReef1404) { setAddBtn("Switch to BlockDAG (1404)", false); return; }
+  const short = await liqShortfall(vA2, vB2);
+  if (short) { showMsg("pool", short, "err"); setAddBtn("Not enough balance", false); return; }
+  setAddBtn("Add liquidity", true);
 }
 // Returns a plain-English message if the wallet can't cover both sides, else "".
 async function liqShortfall(vA, vB) {
