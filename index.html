@@ -418,6 +418,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
           </div>
         </div>
         <div class="empty" id="poolNewNote" style="display:none">No pool exists yet for this pair &mdash; you would create it and set the starting price.</div>
+        <div class="empty" id="poolDustNote" style="display:none"></div>
         <div id="poolShareBox"></div>
         <div class="adhint" id="poolAirdrop" aria-live="polite"></div>
         <button class="cta" id="addBtn" disabled onclick="doAddLiquidity()">Select tokens</button>
@@ -1880,6 +1881,7 @@ async function enableNewPool() {
 }
 async function quoteLiqFrom(side) {
   clearMsg("pool");
+  $("#poolDustNote").style.display = "none";
   if (!liqTokA || !liqTokB) { setAddBtn("Select tokens", false); return; }
   const pair = await pairFor(liqTokA, liqTokB);
   $("#addBtn").disabled = true;
@@ -1891,6 +1893,14 @@ async function quoteLiqFrom(side) {
   const isA0 = t0.toLowerCase() === wrapped(liqTokA).toLowerCase();
   const [rA, rB] = isA0 ? [r[0], r[1]] : [r[1], r[0]];
   if (rA === 0n || rB === 0n) return enableNewPool();
+  // Emptied pool: all LP was removed and only the 1,000 units locked at creation remain. The leftover
+  // dust still sets the price, and adding through the router uses it, so say so plainly.
+  const supply = await p.totalSupply();
+  if (supply <= 1000n) {
+    const px = Number(ethers.formatUnits(rB, liqTokB.decimals)) / Number(ethers.formatUnits(rA, liqTokA.decimals));
+    $("#poolDustNote").textContent = `This pool was emptied: all its liquidity was removed, and only a tiny amount locked when it was created is left. That leftover still sets the price, about ${px.toLocaleString("en-GB", { maximumSignificantDigits: 4 })} ${liqTokB.symbol} per ${liqTokA.symbol}, and adding liquidity uses it. Check the amounts below match the price you want before you confirm.`;
+    $("#poolDustNote").style.display = "";
+  }
   try {
     if (side === "A") {
       const vA = $("#liqAAmt").value.trim();
@@ -2136,7 +2146,8 @@ async function loadTopTokens() {
         }
         volOk = true;
       } catch (e) { volOk = false; }
-      const list = Object.values(stats);
+      // Pools with under 1 BDAG left (e.g. emptied ones) aren't worth ranking.
+      const list = Object.values(stats).filter((x) => x.liq >= 10n ** 18n);
       const anyVol = volOk && list.some((x) => x.vol > 0n);
       list.sort((a, b) => {
         const ka = anyVol ? a.vol : a.liq, kb = anyVol ? b.vol : b.liq;
