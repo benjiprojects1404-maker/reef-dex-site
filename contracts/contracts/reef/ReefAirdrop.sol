@@ -86,7 +86,7 @@ contract ReefAirdrop {
         return totalAllocated - totalClaimed;
     }
 
-    /// @notice After the deadline, anyone can send everything left (unclaimed + unallocated) to the dead address.
+    /// @notice After the deadline, anyone can send everything left (unclaimed REEF, plus anything sent here by mistake) to the dead address.
     function burnExpired() external {
         require(block.timestamp >= claimDeadline, "claims still open");
         uint256 amount = token.balanceOf(address(this));
