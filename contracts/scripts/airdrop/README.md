@@ -34,15 +34,12 @@ Implements the rules published at https://reefdex.fyi/reef/#airdrop.
 
 1. Add every team wallet to `config.json` → `excludedWallets`.
 2. `cd contracts && node scripts/airdrop/snapshot.js`. It refuses to run before the window closes unless you pass `--allow-open` for a dry run.
-3. Review `out/airdrop.json`, in particular `excludedTeamWalletsThatQualified` and `needsReview`.
+3. Review `out/airdrop.json`, in particular `excludedTeamWalletsThatQualified`, `needsReview` and `liquidityRemoved` (listed wallets that later took out liquidity they were credited for adding).
 4. Publish `out/` together with this folder.
-5. Deploy `ReefAirdrop` with these constructor arguments:
-   - REEF `0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416`
-   - presale `0x030d2466f634022FB93fbdF475ea81faFf2525a0`
-   - `merkleRoot` and `totalAllocated` from `out/airdrop.json`
-   - `claimDeadline` `1801706400` (4 Feb 2027 09:00 UTC+7)
-6. Verify the source, then send 2,100,000 REEF from the airdrop holder to the contract. Anyone can then call `burnUnallocated()` to burn the part nobody on the list can claim.
-7. Claims open once the presale is finalized. After the deadline, anyone can call `burnExpired()`.
+5. `node scripts/airdrop/deploy-args.js`. It checks that the amounts add up to `totalAllocated` and that the root and every proof match, then prints the constructor arguments and the two transfers. Copy them; don't type them by hand.
+6. Deploy `ReefAirdrop` with the printed arguments (REEF `0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416`, presale `0x030d2466f634022FB93fbdF475ea81faFf2525a0`, `merkleRoot`, `totalAllocated`, `claimDeadline` `1801706400` = 4 Feb 2027 09:00 UTC+7). Verify the source and check `totalAllocated()` and `merkleRoot()` on the explorer.
+7. From the airdrop holder, send **exactly `totalAllocated`** to the contract, and send the rest of the 2,100,000 REEF straight to `0x000000000000000000000000000000000000dEaD`. The contract has no "burn the surplus" function, because a surplus worked out from a mistyped `totalAllocated` could include REEF that listed wallets are owed.
+8. Claims open once the presale is finalized. After the deadline, anyone can call `burnExpired()`.
 
 ## Dry run, 26 Oct 2026 (window still open, not final)
 

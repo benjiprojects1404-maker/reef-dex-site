@@ -24,9 +24,11 @@ const PAIR_ABI = ["function token0() view returns (address)", "function token1()
 const EV = new ethers.Interface([
   "event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to)",
   "event Mint(address indexed sender, uint256 amount0, uint256 amount1)",
+  "event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to)",
 ]);
 const SWAP = EV.getEvent("Swap").topicHash;
 const MINT = EV.getEvent("Mint").topicHash;
+const BURN = EV.getEvent("Burn").topicHash;
 
 const log = (...a) => console.error(...a);
 
@@ -121,15 +123,16 @@ async function main() {
   const addrs = Object.keys(bdagPairs);
   log(`${n} pairs, ${addrs.length} counted BDAG pairs`);
 
-  const swaps = [], mints = [];
+  const swaps = [], mints = [], burns = [];
   for (const a of addrs) {
     swaps.push(...(await logs(p, a, SWAP, startBlock, endBlock)));
     mints.push(...(await logs(p, a, MINT, startBlock, endBlock)));
+    burns.push(...(await logs(p, a, BURN, startBlock, endBlock)));
   }
   log(`${swaps.length} swaps, ${mints.length} liquidity adds in the window`);
 
   // Credit each action to the wallet that signed the transaction.
-  const hashes = [...new Set([...swaps, ...mints].map((l) => l.transactionHash))];
+  const hashes = [...new Set([...swaps, ...mints, ...burns].map((l) => l.transactionHash))];
   const from = {};
   await pool(hashes, 8, async (h) => { const t = await retry(() => p.getTransaction(h)); from[h] = t.from.toLowerCase(); });
 
@@ -169,10 +172,26 @@ async function main() {
   const patterns = Object.keys(cfg.excludedWalletPatterns || {}).filter((k) => !k.startsWith("_"));
   const byPattern = patternMatcher(patterns);
   const res = allocate(actions, (w) => excluded.has(w) || byPattern(w));
+
+  const fmt = (wei) => ethers.formatUnits(wei, 18);
+  // Flag (don't change) listed wallets that removed liquidity from a pair they were credited a
+  // liquidity add on, later in the window: the add may have been made only to qualify.
+  const listed = new Set(res.entries.map((e) => e.wallet));
+  const liquidityRemoved = [];
+  for (const b of burns) {
+    const w = from[b.transactionHash], pa = b.address.toLowerCase(), info = bdagPairs[pa];
+    if (!listed.has(w)) continue;
+    const ev = EV.parseLog(b).args;
+    const removed = info.bdagIs0 ? ev.amount0 : ev.amount1;
+    const added = actions.filter((a) => a.kind === "mint" && a.wallet === w && mints.some((m) => m.transactionHash === a.tx && m.address.toLowerCase() === pa) && (a.block < b.blockNumber || (a.block === b.blockNumber && a.logIndex < b.index)));
+    if (!added.length) continue;
+    const note = { wallet: ethers.getAddress(w), pair: pa, addTx: added[0].tx, removeTx: b.transactionHash, removedBDAG: fmt(removed), note: "removed liquidity later in the window from a pair it was credited a liquidity add on; check before publishing" };
+    liquidityRemoved.push(note);
+    res.review.push({ wallet: w, tx: b.transactionHash, note: note.note });
+  }
   const tree = res.entries.length ? StandardMerkleTree.of(res.entries.map((e) => [ethers.getAddress(e.wallet), e.amount.toString()]), ["address", "uint256"]) : null;
 
   fs.mkdirSync(OUT, { recursive: true });
-  const fmt = (wei) => ethers.formatUnits(wei, 18);
   const list = res.entries.map((e, i) => ({
     rank: e.rank, wallet: ethers.getAddress(e.wallet), tier: e.tier, shares: Number(e.shares),
     amount: e.amount.toString(), amountREEF: fmt(e.amount), firstTx: e.firstTx, firstBlock: e.firstBlock,
@@ -189,6 +208,7 @@ async function main() {
     byTier: [1, 2, 3].reduce((o, t) => ({ ...o, [t]: list.filter((e) => e.tier === t).length }), {}),
     excludedTeamWalletsThatQualified: res.excludedHits.map((a) => ethers.getAddress(a)),
     needsReview: res.review,
+    liquidityRemoved,
   };
   fs.writeFileSync(path.join(OUT, "airdrop.json"), JSON.stringify({ ...summary, entries: list }, null, 2));
   fs.writeFileSync(path.join(OUT, "airdrop.csv"), "rank,wallet,tier,shares,amountREEF,firstTx\n" + list.map((e) => [e.rank, e.wallet, e.tier, e.shares, e.amountREEF, e.firstTx].join(",")).join("\n") + "\n");

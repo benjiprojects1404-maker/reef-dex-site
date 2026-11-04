@@ -200,13 +200,7 @@ contract ReefAirdropFuzzTest is Test {
         drop.claim(accts[0], amts[0], proofs[0]);
         presale.setFinalized(true);
 
-        // Anyone can burn only the surplus; listed amounts are untouched.
-        if (extra > 0) {
-            drop.burnUnallocated();
-            assertEq(token.balanceOf(DEAD), extra, "burned the wrong amount");
-        }
-        vm.expectRevert("nothing to burn");
-        drop.burnUnallocated();
+        // Nothing can be burned before the deadline; any over-funding just waits for burnExpired.
         vm.expectRevert("claims still open");
         drop.burnExpired();
 
@@ -228,7 +222,7 @@ contract ReefAirdropFuzzTest is Test {
             drop.claim(accts[i], amts[i], proofs[i]);
             // Whatever is still owed stays in the contract.
             assertGe(token.balanceOf(address(drop)), drop.totalAllocated() - drop.totalClaimed(), "owed REEF missing");
-            assertEq(drop.unallocated(), 0, "listed REEF counted as burnable");
+            assertEq(drop.outstanding(), drop.totalAllocated() - drop.totalClaimed());
         }
         assertEq(drop.totalClaimed(), claimedSum);
         assertEq(token.balanceOf(relayer), 0, "relayer was paid");
@@ -244,7 +238,7 @@ contract ReefAirdropFuzzTest is Test {
         uint256 left = token.balanceOf(address(drop));
         if (left > 0) {
             drop.burnExpired();
-            assertEq(token.balanceOf(DEAD), extra + left);
+            assertEq(token.balanceOf(DEAD), left);
         }
         assertEq(token.balanceOf(address(drop)), 0);
         // Every REEF went either to a listed wallet or to the dead address.

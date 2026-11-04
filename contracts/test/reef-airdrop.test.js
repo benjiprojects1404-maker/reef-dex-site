@@ -87,7 +87,8 @@ describe("ReefAirdrop", () => {
     const total = 8400n * E18;
     const deadline = (await time.latest()) + 30 * 86400;
     const drop = await (await ethers.getContractFactory("ReefAirdrop")).deploy(await token.getAddress(), await presale.getAddress(), tree.root, total, deadline);
-    await token.mint(await drop.getAddress(), 2_100_000n * E18);
+    // Funded with exactly the list total; the holder burns the rest of the pot itself.
+    await token.mint(await drop.getAddress(), total);
     const proof = (i) => tree.getProof(i);
     return { token, presale, drop, tree, alice, bob, carol, helper, deadline, proof };
   }
@@ -121,16 +122,33 @@ describe("ReefAirdrop", () => {
     await expect(drop.claim(bob.address, 6300n * E18, proof(0))).to.be.revertedWith("not on the list");
   });
 
-  it("burns only the REEF nobody on the list can claim, and only to the dead address", async () => {
+  it("has no surplus burn, so a wrong totalAllocated can't burn REEF listed wallets are owed", async () => {
     const { drop, token, presale, alice, bob, proof } = await deploy();
-    await drop.burnUnallocated();
-    expect(await token.balanceOf(DEAD)).to.equal(2_100_000n * E18 - 8400n * E18);
-    expect(await token.balanceOf(await drop.getAddress())).to.equal(8400n * E18);
-    await expect(drop.burnUnallocated()).to.be.revertedWith("nothing to burn");
+    expect(drop.burnUnallocated).to.equal(undefined);
+    expect(drop.unallocated).to.equal(undefined);
+    expect(await drop.outstanding()).to.equal(8400n * E18);
     await presale.setFinalized(true);
     await drop.claim(alice.address, 2100n * E18, proof(0));
+    expect(await drop.outstanding()).to.equal(6300n * E18);
     await drop.claim(bob.address, 6300n * E18, proof(1));
+    expect(await drop.outstanding()).to.equal(0n);
     expect(await token.balanceOf(await drop.getAddress())).to.equal(0n);
+    expect(await token.balanceOf(DEAD)).to.equal(0n);
+  });
+
+  it("keeps every listed amount claimable even when totalAllocated was entered too low", async () => {
+    const [, alice, bob] = await ethers.getSigners();
+    const token = await (await ethers.getContractFactory("MockERC20")).deploy("Reef", "REEF", 0);
+    const presale = await (await ethers.getContractFactory("MockPresaleState")).deploy();
+    const tree = StandardMerkleTree.of([[alice.address, (2100n * E18).toString()], [bob.address, (6300n * E18).toString()]], ["address", "uint256"]);
+    const deadline = (await time.latest()) + 30 * 86400;
+    // Wrong value (too low), but the contract holds the real total: nobody can burn the difference.
+    const drop = await (await ethers.getContractFactory("ReefAirdrop")).deploy(await token.getAddress(), await presale.getAddress(), tree.root, 2100n * E18, deadline);
+    await token.mint(await drop.getAddress(), 8400n * E18);
+    await presale.setFinalized(true);
+    await drop.claim(alice.address, 2100n * E18, tree.getProof(0));
+    await drop.claim(bob.address, 6300n * E18, tree.getProof(1));
+    expect(await token.balanceOf(bob.address)).to.equal(6300n * E18);
   });
 
   it("closes at the deadline and then sends everything left to the dead address", async () => {
