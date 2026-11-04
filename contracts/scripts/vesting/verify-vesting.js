@@ -30,7 +30,8 @@ const TARGETS = process.env.VESTING
       { label: "Treasury vesting (6-month cliff, 36 months)", address: "0x8750aC546e0B6234B292F3830958F780E3e304BD" },
     ];
 
-const OZ_VERSIONS = ["5.0.2", "5.1.0", "5.2.0", "5.3.0", "5.4.0", "4.9.6", "5.0.0", "5.0.1"];
+// The deployed vesting contracts match with 5.6.x/5.7.0 (Remix pulled the latest OpenZeppelin in Sep 2026).
+const OZ_VERSIONS = ["5.6.1", "5.6.0", "5.7.0", "5.5.0", "5.4.0", "5.3.0", "5.2.0", "5.1.0", "5.0.2", "5.0.1", "5.0.0", "4.9.6"];
 const EVMS = ["shanghai", "paris", "london", "berlin"]; // shanghai is 0.8.20's default (Remix's default too)
 const OPTIMIZER = [{ enabled: false, runs: 200 }, { enabled: true, runs: 200 }];
 
