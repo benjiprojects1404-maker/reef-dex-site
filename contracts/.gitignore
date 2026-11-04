@@ -4,3 +4,6 @@ cache/
 typechain-types/
 coverage/
 .env
+lib/
+out-foundry/
+cache-foundry/
