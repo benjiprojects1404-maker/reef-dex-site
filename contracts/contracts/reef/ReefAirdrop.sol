@@ -19,9 +19,13 @@ interface IReefPresaleState {
 ///           and close at `claimDeadline` (Thu 4 Feb 2027, 09:00 UTC+7).
 ///         - Each listed wallet can claim once. Anyone may submit a claim for a wallet, but the
 ///           REEF always goes to the listed wallet itself.
-///         - REEF that is not on the list can be sent to the dead address at any time
-///           (`burnUnallocated`). After the deadline, everything left goes to the dead
-///           address (`burnExpired`). Neither path can ever send REEF to the team.
+///         - Fund it with exactly `totalAllocated`. The airdrop holder burns the rest of the
+///           2,100,000 REEF pot itself, by sending it straight to the dead address.
+///           There is deliberately no "burn the surplus" function here: `totalAllocated` is a
+///           constructor value the Merkle root can't confirm, so a surplus worked out from it
+///           could include REEF that listed wallets are still owed.
+///         - After the deadline, everything left goes to the dead address (`burnExpired`).
+///           Nothing here can ever send REEF to the team.
 contract ReefAirdrop {
     using SafeERC20 for IERC20;
 
@@ -77,23 +81,12 @@ contract ReefAirdrop {
         emit Claimed(account, amount);
     }
 
-    /// @notice REEF held here beyond what the list can still claim. Sent only to the dead address.
-    function unallocated() public view returns (uint256) {
-        uint256 bal = token.balanceOf(address(this));
-        uint256 owed = totalAllocated - totalClaimed;
-        return bal > owed ? bal - owed : 0;
+    /// @notice REEF still owed to listed wallets that haven't claimed yet.
+    function outstanding() external view returns (uint256) {
+        return totalAllocated - totalClaimed;
     }
 
-    /// @notice Anyone can burn the REEF that no listed wallet can claim (for example if fewer
-    ///         than 1,000 wallets qualified). Listed wallets' amounts are never touched.
-    function burnUnallocated() external {
-        uint256 amount = unallocated();
-        require(amount > 0, "nothing to burn");
-        token.safeTransfer(DEAD, amount);
-        emit Burned(amount, false);
-    }
-
-    /// @notice After the deadline, anyone can send everything left (unclaimed + unallocated) to the dead address.
+    /// @notice After the deadline, anyone can send everything left (unclaimed REEF, plus anything sent here by mistake) to the dead address.
     function burnExpired() external {
         require(block.timestamp >= claimDeadline, "claims still open");
         uint256 amount = token.balanceOf(address(this));
