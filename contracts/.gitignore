@@ -7,3 +7,4 @@ coverage/
 lib/
 out-foundry/
 cache-foundry/
+scripts/vesting/.cache/
