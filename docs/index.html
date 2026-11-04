@@ -318,16 +318,27 @@ footer p{margin:0 0 6px}
       <p>Pool (pair) addresses are created by the Factory. Read any pool's address with <code>getPair(tokenA, tokenB)</code> on the Factory.</p>
       <h3>Source code and tests</h3>
       <p>The full source for these contracts, with the test suite, is on <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts" target="_blank" rel="noopener">GitHub</a>. On 2 October 2026 every address above was checked against it: the code on chain is exactly what the published files compile to. The <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">security review</a> lists every finding and what was done about it.</p>
-      <p>On 4 November 2026 the pool contracts (Factory, Pair and Router) also passed a stateful fuzz test written with Foundry. It runs random actions against three pools at once: adding and removing liquidity, swaps in both directions, tokens sent straight to a pool, and time passing, with the protocol fee switched on. After every action it checks five rules:</p>
+      <p>On 4 November 2026 Reef's contracts also passed stateful fuzz tests written with Foundry.</p>
+      <p><b>Pools and router.</b> The test runs random actions against four pools at once, three token pairs and one native BDAG pool: adding and removing liquidity, swaps in both directions (including exact-output BDAG buys that overpay, so the refund runs), tokens sent straight to a pool, and time passing, with the protocol fee switched on. After every action it checks eight rules:</p>
       <ul>
         <li>A pool's recorded reserves always match the tokens it actually holds.</li>
         <li>A swap never lowers the pool's constant product (k).</li>
         <li>Every LP token is accounted for.</li>
         <li>No tokens are created or lost anywhere in the system.</li>
         <li>The 1,000 minimum LP tokens stay locked for good.</li>
+        <li>The Router never keeps anything between trades: no tokens, WBDAG, BDAG or LP tokens.</li>
+        <li>Every WBDAG is backed 1:1 by real BDAG.</li>
+        <li>No native BDAG is created or lost, and every BDAG payment, refund and payout matches to the wei.</li>
       </ul>
-      <p>All five held across the full run of 200,000 random actions (1,000 runs of 200 each).</p>
-      <p>What it doesn't cover: the native BDAG paths, the oracle, the airdrop and the vesting contract, and passing tests can't prove there are no bugs. It isn't an audit. To rerun it, clone the repo, then in <code>contracts/</code> run <code>npm ci</code> and <code>forge test --match-path "test/foundry/*" --profile ci</code> (needs <a href="https://book.getfoundry.sh" target="_blank" rel="noopener">Foundry</a>).</p>
+      <p>All eight held across 200,000 random actions (1,000 runs of 200 each).</p>
+      <p><b>Vesting, airdrop and oracle.</b> Fuzz tests, run 10,000 times each with random inputs, check that:</p>
+      <ul>
+        <li>The vesting contract pays exactly what has unlocked on schedule, never early and only to the beneficiary, including when it is under-funded and topped up later.</li>
+        <li>The airdrop pays only listed wallets their listed amount, once, can burn only what isn't owed to the list, and after the deadline sends what's left only to the dead address.</li>
+        <li>The 24-hour oracle matches the pool price when the price is steady, and barely moves when the price is spiked in the last seconds of a window.</li>
+      </ul>
+      <p>Each test was also checked by breaking the contract on purpose (removing the BDAG refund, unlocking vesting a second early, letting an airdrop wallet claim twice) and confirming the tests then fail.</p>
+      <p>What these tests don't cover: the admin multisig (it has its own tests), the presale contract, and removing liquidity with a signed permit. The oracle's <code>consult()</code> reverts rather than returning a wrong number if amount &times; price is astronomically large (above about 10<sup>43</sup> raw units), far beyond any real pool. Passing tests can't prove there are no bugs, and none of this is an audit. To rerun them, clone the repo, then in <code>contracts/</code> run <code>npm ci</code> and <code>forge test --match-path "test/foundry/*" --profile ci</code> (needs <a href="https://book.getfoundry.sh" target="_blank" rel="noopener">Foundry</a>).</p>
     </section>
 
     <section id="beta">
@@ -395,7 +406,7 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
 
     <section id="faq">
       <h2>FAQ</h2>
-      <details><summary>Has Reef been audited?</summary><p>Not by an independent auditor yet; that's the first step to <a href="#beta">leaving beta</a>. On 2 October 2026 every contract had an AI-assisted security review, with no critical or high-severity findings: <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">read the review</a>. The pool contracts also passed a stateful fuzz test on 4 November 2026 (<a href="#contracts">details</a>). None of this is an audit, so only use amounts you're comfortable losing.</p></details>
+      <details><summary>Has Reef been audited?</summary><p>Not by an independent auditor yet; that's the first step to <a href="#beta">leaving beta</a>. On 2 October 2026 every contract had an AI-assisted security review, with no critical or high-severity findings: <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener">read the review</a>. Reef's contracts also passed Foundry fuzz tests on 4 November 2026 (<a href="#contracts">details</a>). None of this is an audit, so only use amounts you're comfortable losing.</p></details>
       <details><summary>Why did my swap fail?</summary><p>Usually the price moved more than your slippage tolerance before it landed, or the 20-minute deadline passed. Nothing is spent except the network fee. Try again, or raise slippage slightly for a fast-moving token. If you're selling a token that takes a tax on every transfer, see the next question.</p></details>
       <details><summary>Can I trade tokens that take a tax on transfers?</summary><p>You can buy them, but you can't sell them through Reef: the sale always fails, whatever slippage you set. Reef's router doesn't include Uniswap's special functions for taxed tokens. Check whether a token has a transfer tax before you buy it on Reef.</p></details>
       <details><summary>Why is my approval for a specific amount?</summary><p>Reef asks for exactly what each trade needs, rather than unlimited spending. It means one extra click for repeat trades, but a token approval can never be used for more than you intended.</p></details>

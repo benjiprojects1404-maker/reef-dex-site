@@ -25,3 +25,6 @@ show_metrics = true
 [profile.ci.invariant]
 runs = 1000
 depth = 200
+
+[profile.ci.fuzz]
+runs = 10000
