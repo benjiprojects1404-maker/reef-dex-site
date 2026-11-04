@@ -7,7 +7,7 @@
 // EVM version), and reports which one reproduces the deployed bytecode exactly.
 //
 // Run from contracts/:   node scripts/vesting/verify-vesting.js
-// Optional:              RPC=https://... node scripts/vesting/verify-vesting.js
+// Optional:              RPC=https://... node scripts/vesting/verify-vesting.js (default: tries community RPCs)
 //                        VESTING=0xabc...,0xdef... (check other addresses)
 //
 // First run installs solc 0.8.20 and the OpenZeppelin versions into scripts/vesting/.cache
@@ -18,7 +18,10 @@ const path = require("path");
 const { execSync } = require("child_process");
 const { ethers } = require("ethers");
 
-const RPC = process.env.RPC || "https://rpc.blockdag.engineering";
+// Tried in order; the first that answers as chain 1404 is used. Override with RPC=...
+const RPCS = process.env.RPC
+  ? [process.env.RPC]
+  : ["https://rpc.community.bdag-us.org", "https://rpc.dagcore.net", "https://rpc.blockdag.engineering"];
 const REEF = "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416";
 const TARGETS = process.env.VESTING
   ? process.env.VESTING.split(",").map((a) => ({ label: a, address: a.trim() }))
@@ -108,8 +111,19 @@ async function main() {
   console.log(`  ${built.length} of ${variants.length} combinations compiled (the rest need a newer compiler and can't be what was deployed).\n`);
   if (!built.length) throw new Error("nothing compiled; check the cache install");
 
-  const provider = new ethers.JsonRpcProvider(RPC);
-  const net = await provider.getNetwork();
+  let provider, RPC, net;
+  for (const url of RPCS) {
+    try {
+      const p = new ethers.JsonRpcProvider(url, undefined, { staticNetwork: true });
+      const id = await Promise.race([p.send("eth_chainId", []), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 10000))]);
+      if (BigInt(id) !== 1404n && !process.env.RPC) throw new Error(`chain id ${BigInt(id)}, not 1404`);
+      provider = p; RPC = url; net = { chainId: BigInt(id) };
+      break;
+    } catch (e) {
+      console.log(`  (skipping ${url}: ${e.shortMessage || e.message})`);
+    }
+  }
+  if (!provider) throw new Error("no RPC answered; set RPC=https://... and try again");
   console.log(`Chain: ${RPC} (chain id ${net.chainId})\n`);
 
   const abi = [
