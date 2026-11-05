@@ -472,7 +472,7 @@ const REEF_CFG = {
   chainName: "BlockDAG",
   presale: "0x030d2466f634022FB93fbdF475ea81faFf2525a0",
   token: "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
-  rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net", "https://rpc.blockdag.engineering"],
+  rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net"],
   explorer: "https://explorer.east.bdag-us.org",
 };
 
@@ -510,6 +510,21 @@ const REEF_CFG = {
     if (/user (rejected|denied)/i.test(m)) return "Request cancelled in your wallet.";
     if (/insufficient funds/i.test(m)) return "Not enough BDAG in your wallet for this amount plus gas.";
     return m.replace(/^execution reverted:?\s*/i, "").replace(/^Error:\s*/, "").replace(/^"|"$/g, "");
+  }
+
+  // When the wallet's own RPC for chain 1404 is down (often the retired rpc.blockdag.engineering saved in older
+  // wallet setups), the page can still read the chain but the wallet can't send. Say so plainly instead of a raw error.
+  async function walletRpcOk() {
+    try { await Promise.race([window.ethereum.request({ method: "eth_blockNumber" }), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]); return true; }
+    catch (e) { return false; }
+  }
+  const RPC_FIX = "In your wallet, edit the BlockDAG network (chain ID 1404), set its RPC URL to <code>https://rpc.community.bdag-us.org</code>, then reload this page.";
+  async function walletErr(e, sentLink) {
+    if (e && (e.code === "ACTION_REJECTED" || e.code === 4001)) return errText(e);
+    if (window.ethereum && !(await walletRpcOk()))
+      return (sentLink ? `Your wallet's BlockDAG connection stopped responding. The transaction may still go through: ${sentLink}. `
+        : "Your wallet's BlockDAG connection isn't responding, so nothing was sent. ") + RPC_FIX;
+    return errText(e);
   }
 
   function makeProvider(url, unbatched) {
@@ -704,7 +719,7 @@ const REEF_CFG = {
       msg("", "info");
       await checkNet();
       await load();
-    } catch (e) { msg(errText(e), "err"); }
+    } catch (e) { msg(await walletErr(e), "err"); }
   }
   async function checkNet() {
     onChain = false; walletSeesCode = false; signer = null;
@@ -743,18 +758,20 @@ const REEF_CFG = {
   async function send(fn, overrides, okText) {
     if (busy) return;
     setBusy(true);
+    let sentLink = null;
     try {
       const c = new ethers.Contract(REEF_CFG.presale, ABI, signer);
       await c[fn].staticCall(overrides || {}); // surfaces the contract's reason before you sign
       msg("Confirm in your wallet…", "info");
       const tx = await c[fn](overrides || {});
+      sentLink = txLink(tx.hash);
       msg(`Waiting for confirmation… ${txLink(tx.hash)}`, "info");
       const r = await tx.wait();
       if (!r || r.status !== 1) throw new Error("The transaction failed on-chain.");
       msg(`${okText} ${txLink(tx.hash)}`, "ok");
       if (fn === "buy") { $("rfAmt").value = ""; $("rfAck").checked = false; }
     } catch (e) {
-      msg(errText(e), "err");
+      msg(await walletErr(e, sentLink), "err");
     } finally {
       setBusy(false);
       await load();

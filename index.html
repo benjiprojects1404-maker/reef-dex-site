@@ -559,7 +559,7 @@ const CHAIN_ID_HEX = "0x57c";
 // node board (bdag.community/chain#nodes): nodes that shut down drop off and new ones appear without
 // a site update. Only nodes the board finds on chain 1404, near the head and with matching block
 // hashes are used for reads. The built-in list below is used until the live list loads, if it
-// can't be loaded, and for the wallet's "add network" prompt. Last reviewed 20 Oct 2026: the community
+// can't be loaded, and for the wallet's "add network" prompt. Last reviewed 5 Nov 2026 (rpc.blockdag.engineering removed: it no longer resolves): the community
 // gateway (rpc.community.bdag-us.org) goes first; the individual nodes are fallbacks.
 const RPC_LIST_URL = "https://www.nodaldex.fyi/api/rpcs";
 const RPC_NAMES = {
@@ -597,7 +597,6 @@ const FALLBACK_RPC_URLS = [
   "https://rpc.escrowhubs.io",
   "https://rpc.brazil.bdag-us.org",
   "https://rpc.bdagexplorer.com",
-  "https://rpc.blockdag.engineering",
 ];
 let RPC_ENDPOINTS = [...FALLBACK_RPC_URLS.map((url) => ({ name: rpcName(url), url })), FORK_ENDPOINT];
 let RPC_URLS = FALLBACK_RPC_URLS.slice();
