@@ -372,7 +372,7 @@ footer a{text-decoration:underline}
         <li><b>Rounding: amounts within 0.001 BDAG of a minimum count.</b> <span class="muted">Reef's router maths can record an add or swap a few millionths of a BDAG under the round number you typed (5,000 can land as 4,999.999&hellip;), so that difference is ignored.</span></li>
         <li><b>First 1,000 wallets are in</b>, ranked by their first qualifying action. <span class="muted">One claim per wallet, at the highest tier it reached. Team wallets are excluded.</span></li>
         <li><b>Size:</b> 2,100,000 REEF shared across all shares, at most 2,100 REEF per share. <span class="muted">1,000 Tier-1 wallets would get 2,100 each; a mix of tiers makes one share smaller. Nothing is split beyond the cap.</span></li>
-        <li><b>Claims open after the pool is live</b> and close <b>Thu Feb 4, 2027, 09:00 (UTC+7)</b>. <span class="muted">Every unclaimed or unallocated REEF then goes to the dead address, never to the team.</span></li>
+        <li><b>Claims open Mon Nov 9, 09:00 (UTC+7)</b> and close <b>Thu Feb 4, 2027, 09:00 (UTC+7)</b>. <span class="muted">Claim from the airdrop card on <a href="/">Reef's home page</a>, with the wallet that's on the list. The list and contract are published after the Nov 6 snapshot; the contract is funded when claims open. Every unclaimed or unallocated REEF then goes to the dead address, never to the team.</span></li>
         <li><b>Check it yourself.</b> <span class="muted">The full list, every amount and proof, and the script that produced them will be published, so anyone can recompute the result from Reef's public on-chain events.</span></li>
       </ol>
     </div>
@@ -399,7 +399,7 @@ footer a{text-decoration:underline}
       <div class="addr"><div class="lbl"><b>Dev vesting</b>12-month cliff (ends 29 Sep 2027), fully vested 28 Sep 2029</div><code data-a="0x5468821749B936ffa6C3aF840841058b026E288f"></code><button>Copy</button></div>
       <div class="addr"><div class="lbl"><b>Treasury vesting</b>6-month cliff (ends 28 Mar 2027), fully vested 28 Sep 2029</div><code data-a="0x8750aC546e0B6234B292F3830958F780E3e304BD"></code><button>Copy</button></div>
       <div class="addr"><div class="lbl"><b>Tester thank-you vesting</b>10,000 REEF in five 2,000 REEF tranches, 9 Nov 2026 to 9 Nov 2027. Anyone can trigger a release; it only pays the beneficiary.</div><code data-a="0x5a316575b4096fE04D6C5bFb8eBe55Fef6A00eff"></code><button>Copy</button></div>
-      <div class="addr"><div class="lbl"><b>Airdrop claim</b>Deployed after the sale</div><span class="pending">Posted here after the Nov 6 snapshot</span><span></span></div>
+      <div class="addr"><div class="lbl"><b>Airdrop claim</b>Claims open Nov 9, 09:00 (UTC+7)</div><span class="pending">Posted here after the Nov 6 snapshot</span><span></span></div>
       <div class="addr"><div class="lbl"><b>REEF/BDAG pool</b>Fixed in advance; empty until launch</div><code data-a="0x1Ea359266c19635c4e92B8dEf5933AbFc6A9182D"></code><button>Copy</button></div>
     </div>
     <p class="muted small" style="margin:10px 0 0">Reef creates every pool at an address calculated from the two tokens, so the REEF/BDAG pool&rsquo;s address is known before it exists. Until launch it holds no liquidity; the presale contract&rsquo;s <code>finalize()</code> is what seeds it, at 225 BDAG per REEF.</p>

@@ -270,6 +270,10 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .adrow input{flex:1;min-width:0;font:inherit;font-size:12.5px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--raised);color:var(--text)}
 .adrow .qbtn{font-size:12.5px;padding:6px 12px}
 .adout{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+.adrow .qbtn.claim{color:var(--coral-text);border-color:var(--coral-soft)}
+.adrow .qbtn.claim:not(:disabled):hover{color:#fff;background:var(--coral);border-color:var(--coral)}
+.adrow .qbtn:disabled{opacity:.5;cursor:not-allowed}
+.adclaimnote{font-size:12px;color:var(--muted);margin-top:6px}
 .adout b{color:var(--text)}
 .adout .ok{color:var(--good)}
 .adout ul{margin:6px 0 0;padding-left:16px}
@@ -462,7 +466,8 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <div class="card" id="airdropCard">
       <h3>REEF airdrop check</h3>
       <p class="hint" style="margin-top:6px">See which of a wallet's Reef actions since 7 Oct match the airdrop rules. This is a self-check, not the final list: places go to the first 1,000 wallets, ranked after the 6 Nov snapshot.</p>
-      <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button></div>
+      <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button><button type="button" class="qbtn claim" id="adClaim" onclick="runAirdropClaim()" disabled aria-describedby="adClaimNote">Claim REEF</button></div>
+      <div class="adclaimnote" id="adClaimNote">Claims open Mon 9 Nov, 09:00 (UTC+7). Claim with the wallet that's on the list.</div>
       <div id="adOut" class="adout" aria-live="polite"></div>
     </div>
     <div class="card">
@@ -1287,6 +1292,89 @@ async function runAirdropCheck() {
     out.textContent = "Couldn't read the chain just now. Please try again in a moment.";
   } finally {
     adRunning = false; btn.disabled = false; btn.textContent = "Check";
+  }
+}
+
+// ---------- REEF airdrop claim ----------
+// The button stays off until all of these are true: the opening time has passed, the contract
+// address is filled in below, the contract says claims are open (pool live, before the deadline)
+// and it holds enough REEF to pay everyone still owed. Funding the contract is what opens claims
+// on-chain, so it's funded at the opening time, not before.
+const AIRDROP_CFG = {
+  address: "",                                     // ReefAirdrop contract, filled in after deployment
+  list: "/reef/airdrop.json",                      // snapshot output: entries with wallet, amount, proof
+  opensAt: Date.parse("2026-11-09T02:00:00Z"),     // Mon 9 Nov 2026, 09:00 UTC+7
+  token: "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
+};
+const AIRDROP_ABI = [
+  "function claimsOpen() view returns (bool)",
+  "function outstanding() view returns (uint256)",
+  "function claimed(address) view returns (bool)",
+  "function claim(address account, uint256 amount, bytes32[] proof)",
+];
+let adList = null, adClaimLive = false, adClaiming = false;
+function adClaimNote(html) { const n = $("#adClaimNote"); if (n) n.innerHTML = html; }
+async function refreshAirdropClaim() {
+  const btn = $("#adClaim");
+  if (!btn || adClaiming) return;
+  adClaimLive = false;
+  if (!AIRDROP_CFG.address || Date.now() < AIRDROP_CFG.opensAt) {
+    btn.disabled = true;
+    adClaimNote("Claims open Mon 9 Nov, 09:00 (UTC+7). Claim with the wallet that's on the list.");
+    return;
+  }
+  try {
+    const live = await tryRpcFallback(async (p) => {
+      const a = new ethers.Contract(AIRDROP_CFG.address, AIRDROP_ABI, p);
+      const t = new ethers.Contract(AIRDROP_CFG.token, ["function balanceOf(address) view returns (uint256)"], p);
+      const [open, owed, bal] = await Promise.all([a.claimsOpen(), a.outstanding(), t.balanceOf(AIRDROP_CFG.address)]);
+      return open && owed > 0n && bal >= owed;
+    });
+    adClaimLive = live;
+    btn.disabled = !live;
+    adClaimNote(live
+      ? `Claims are open until Thu 4 Feb 2027, 09:00 (UTC+7). Connect the wallet that's on the list. <a href="${EXPLORER}/address/${AIRDROP_CFG.address}" target="_blank" rel="noopener">Contract</a>`
+      : "Claims aren't open yet. Check back shortly; the contract is funded at opening time.");
+  } catch (e) {
+    btn.disabled = true;
+    adClaimNote("Couldn't read the airdrop contract just now. Reload to try again.");
+  }
+}
+async function loadAirdropList() {
+  if (adList) return adList;
+  const r = await fetch(AIRDROP_CFG.list, { cache: "no-cache" });
+  if (!r.ok) throw new Error("list unavailable");
+  const j = await r.json();
+  const map = {};
+  for (const e of j.entries || []) map[e.wallet.toLowerCase()] = e;
+  adList = map;
+  return adList;
+}
+async function runAirdropClaim() {
+  if (adClaiming || !adClaimLive) return;
+  const out = $("#adOut"), btn = $("#adClaim");
+  if (!account) { await connect(); if (!account) { out.textContent = "Connect your wallet to claim."; return; } }
+  if (!isReef1404) { await switchNetwork(); if (!isReef1404) { out.textContent = "Switch your wallet to BlockDAG (chain 1404) to claim."; return; } }
+  adClaiming = true; btn.disabled = true; btn.textContent = "Claiming…";
+  try {
+    const me = ethers.getAddress(account);
+    let entry;
+    try { entry = (await loadAirdropList())[me.toLowerCase()]; }
+    catch (e) { out.textContent = "Couldn't load the airdrop list just now. Please try again in a moment."; return; }
+    if (!entry) { out.innerHTML = `<b>${short(me)} isn't on the airdrop list.</b> If you qualified with a different wallet, connect that one instead. <a href="/reef/#airdrop">Rules</a>`; return; }
+    const a = new ethers.Contract(AIRDROP_CFG.address, AIRDROP_ABI, signer);
+    if (await tryRpcFallback((p) => new ethers.Contract(AIRDROP_CFG.address, AIRDROP_ABI, p).claimed(me))) {
+      out.innerHTML = `<b>Already claimed.</b> The ${escHtml(entry.amountREEF)} REEF for ${short(me)} has been sent.`; return;
+    }
+    out.textContent = `Confirm in your wallet to claim ${entry.amountREEF} REEF.`;
+    const tx = await a.claim(me, entry.amount, entry.proof);
+    out.innerHTML = `Claim sent. Waiting for confirmation&hellip; <a href="${EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">tx</a>`;
+    await tx.wait();
+    out.innerHTML = `<span class="ok"><b>&#10003; ${escHtml(entry.amountREEF)} REEF sent to your wallet.</b></span> <a href="${EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">tx</a>`;
+  } catch (e) {
+    out.textContent = walletErr(e);
+  } finally {
+    adClaiming = false; btn.textContent = "Claim REEF"; refreshAirdropClaim();
   }
 }
 
@@ -2264,6 +2352,8 @@ function init() {
   }
   bindLiqInputs();
   applyShareLink();
+  refreshAirdropClaim();
+  setInterval(refreshAirdropClaim, 60000); // switches on by itself at opening time if the page is left open
 }
 document.addEventListener("DOMContentLoaded", init);
 
