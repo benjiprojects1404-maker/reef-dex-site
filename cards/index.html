@@ -199,7 +199,7 @@ const CFG = {
   factory: "0x9603042044b6B1A1637c508F731ba01219142239",
   wbdag: "0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA",
   tokens: { 0: "0xd95C548B144682f4EF49728944505D8506861B1B", 1: "0x17AEE3EEDA0d12E3A6a9A6078d028B88F9C91752" },
-  rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net", "https://rpc.blockdag.engineering"],
+  rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net"],
   explorer: "https://explorer.east.bdag-us.org",
 };
 (function () {
@@ -220,6 +220,20 @@ const CFG = {
     if (/insufficient funds/i.test(m)) return "Not enough BDAG for 100,000 plus gas.";
     if (/INSUFFICIENT_OUTPUT_AMOUNT/.test(m)) return "The pool moved more than 2% since your quote. Nothing was spent; try again.";
     return m.replace(/^execution reverted:?\s*/i, "");
+  }
+  // When the wallet's own RPC for chain 1404 is down (often the retired rpc.blockdag.engineering saved in older
+  // wallet setups), the page can still read the chain but the wallet can't send. Say so plainly instead of a raw error.
+  async function walletRpcOk() {
+    try { await Promise.race([window.ethereum.request({ method: "eth_blockNumber" }), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]); return true; }
+    catch (e) { return false; }
+  }
+  const RPC_FIX = "In your wallet, edit the BlockDAG network (chain ID 1404), set its RPC URL to <code>https://rpc.community.bdag-us.org</code>, then reload this page.";
+  async function walletErr(e, sentLink) {
+    if (e && (e.code === "ACTION_REJECTED" || e.code === 4001)) return errText(e);
+    if (window.ethereum && !(await walletRpcOk()))
+      return (sentLink ? `Your wallet's BlockDAG connection stopped responding. The transaction may still go through: ${sentLink}. `
+        : "Your wallet's BlockDAG connection isn't responding, so nothing was sent. ") + RPC_FIX;
+    return errText(e);
   }
   const isqrt = (n) => { if (n < 2n) return n; let x = n, y = (x + 1n) / 2n; while (y < x) { x = y; y = (x + n / x) / 2n; } return x; };
   const swapAmount = (r, a) => (isqrt(r * (r * 3988009n + a * 3988000n)) - r * 1997n) / 1994n;
@@ -290,7 +304,7 @@ const CFG = {
         listening = true;
       }
       await checkNet(); await load();
-    } catch (e) { msg(errText(e), "err"); }
+    } catch (e) { msg(await walletErr(e), "err"); }
   }
   async function checkNet() {
     onChain = false; signer = null;
@@ -310,6 +324,7 @@ const CFG = {
   }
   async function mint() {
     if (busy) return; busy = true; render();
+    let sentLink = null;
     try {
       const pool = await poolOf(ro, brand); const q = quote(pool);
       const c = new ethers.Contract(CFG.cards, CARDS_ABI, signer);
@@ -317,11 +332,12 @@ const CFG = {
       await c.mint.staticCall(brand, q.minOut, deadline, { value: PRICE });
       msg("Confirm in your wallet…");
       const tx = await c.mint(brand, q.minOut, deadline, { value: PRICE });
+      sentLink = `<a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">view transaction</a>`;
       msg(`Waiting for confirmation… <a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">View transaction</a>`);
       const r = await tx.wait();
       if (!r || r.status !== 1) throw new Error("The transaction failed on-chain.");
       msg(`Minted. Your card shows its back until the reveal. <a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">View transaction</a>`, "ok");
-    } catch (e) { msg(errText(e), "err"); }
+    } catch (e) { msg(await walletErr(e, sentLink), "err"); }
     finally { busy = false; await load(); }
   }
   function pick(b) { brand = b; $("pickC").setAttribute("aria-pressed", b === 0); $("pickN").setAttribute("aria-pressed", b === 1); render(); }
