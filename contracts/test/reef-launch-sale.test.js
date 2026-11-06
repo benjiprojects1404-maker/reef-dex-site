@@ -31,7 +31,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       lpBeneficiary: lpBen.address, feeRecipient: treasury.address, feeBps: 200n,
       salePrice: 100n * E18, listingPrice: 150n * E18, softCap: 200_000n * E18, hardCap: 1_000_000n * E18,
       maxPerWallet: 400_000n * E18, startTime: now + 100n, endTime: now + 100n + 7n * DAY, lpLockSeconds: 365n * DAY,
-      bondToken: await reefBond.getAddress(), bondAmount: BOND, ...over,
+      bondToken: await reefBond.getAddress(), bondAmount: BOND,
+      reefToken: ethers.ZeroAddress, reefSliceBps: 0n, minReefDepth: 0n, ...over,
     };
     const sale = await (await ethers.getContractFactory("ReefLaunchSale")).deploy(cfg);
     return { sale, cfg };
@@ -52,7 +53,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
         const cfg = { token: await t.getAddress(), router: await router.getAddress(), projectWallet: project.address, lpBeneficiary: lpBen.address,
           feeRecipient: treasury.address, feeBps: 200n, salePrice: 100n * E18, listingPrice: 150n * E18, softCap: 1n, hardCap: 10n * E18 * 1000n,
           maxPerWallet: E18, startTime: now + 100n, endTime: now + 200n, lpLockSeconds: 180n * DAY,
-          bondToken: await reefBond.getAddress(), bondAmount: BOND, ...over };
+          bondToken: await reefBond.getAddress(), bondAmount: BOND,
+          reefToken: ethers.ZeroAddress, reefSliceBps: 0n, minReefDepth: 0n, ...over };
         await expect(F.deploy(cfg)).to.be.revertedWith(msg);
       };
       await bad({ feeBps: 301n }, "fee above 3%");
@@ -66,6 +68,9 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await bad({ salePrice: 10n ** 40n, listingPrice: 10n ** 40n }, "price too high for the cap");
       await bad({ bondToken: ethers.ZeroAddress }, "bond token is zero address");
       await bad({ bondToken: await t.getAddress() }, "bond token is the sale token");
+      await bad({ reefToken: await reefBond.getAddress(), reefSliceBps: 5001n }, "REEF slice above 50%");
+      await bad({ reefToken: await t.getAddress(), reefSliceBps: 2000n }, "bad REEF token");
+      await bad({ reefToken: ethers.ZeroAddress, reefSliceBps: 2000n }, "bad REEF token");
     });
 
     it("publishes every term, and the 2% fee, in one call", async () => {
@@ -360,6 +365,112 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await time.increaseTo(cfg.startTime);
       await sale.connect(a).buy({ value: 300_000n * E18 });
       await expect(sale.settleBond()).to.be.revertedWith("no bond");
+    });
+  });
+
+  describe("TOKEN/REEF routing pool (20% slice)", () => {
+    const deadline = async () => BigInt(await time.latest()) + 600n;
+    // REEF/BDAG pool at 220 BDAG per REEF: 2.2M BDAG with 10,000 REEF
+    async function seedReefPool() {
+      await reefBond.connect(project).approve(await router.getAddress(), ethers.MaxUint256);
+      await router.connect(project).addLiquidityBDAG(await reefBond.getAddress(), 10_000n * E18, 0, 0, project.address, await deadline(), { value: 2_200_000n * E18 });
+    }
+    const sliceCfg = async (over = {}) => ({ reefToken: await reefBond.getAddress(), reefSliceBps: 2000n, minReefDepth: 1_000_000n * E18, ...over });
+    const reserveOf = async (pair, tokenAddr) => {
+      const [r0, r1] = await pair.getReserves();
+      return (await pair.token0()) === tokenAddr ? r0 : r1;
+    };
+    const getOut = (inp, rIn, rOut) => (inp * 997n * rOut) / (rIn * 1000n + inp * 997n);
+    async function runSale(over, beforeFinalize) {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t, await sliceCfg(over));
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 300_000n * E18 });
+      await time.increaseTo(cfg.endTime + 1n);
+      if (beforeFinalize) await beforeFinalize(t);
+      const tx = await sale.finalize();
+      return { t, sale, cfg, tx };
+    }
+
+    it("buys REEF with 20% of the pooled BDAG and opens TOKEN/REEF at the listing price; both LPs locked", async () => {
+      await seedReefPool();
+      const reefPool = await ethers.getContractAt("ReefPair", await factory.getPair(await reefBond.getAddress(), await wbdag.getAddress()));
+      const rB = await reserveOf(reefPool, await wbdag.getAddress()), rR = await reserveOf(reefPool, await reefBond.getAddress());
+      const pooled = 294_000n * E18, slice = 58_800n * E18; // 300k raised, 2% fee, 20% of the rest
+      const out = getOut(slice, rB, rR);
+      const { t, sale, tx } = await runSale();
+      const tokensSlice = (slice * E18) / (150n * E18);
+      await expect(tx).to.emit(sale, "ReefSlice");
+      const tp = await ethers.getContractAt("ReefPair", await factory.getPair(await t.getAddress(), await reefBond.getAddress()));
+      expect(await reserveOf(tp, await reefBond.getAddress())).to.equal(out);
+      expect(await reserveOf(tp, await t.getAddress())).to.equal(tokensSlice);
+      const main = await pairOf(t);
+      expect(await reserveOf(main, await wbdag.getAddress())).to.equal(pooled - slice);
+      expect(await reserveOf(main, await t.getAddress())).to.equal(((pooled - slice) * E18) / (150n * E18));
+      expect(await reefBond.balanceOf(await sale.getAddress())).to.equal(BOND); // the bond is untouched
+      expect(await wbdag.balanceOf(treasury.address)).to.equal(6_000n * E18);
+      expect(await sale.reefLpToken()).to.equal(await tp.getAddress());
+
+      await time.increaseTo(await sale.lpUnlockTime());
+      const lpMain = await main.balanceOf(await sale.getAddress()), lpReef = await tp.balanceOf(await sale.getAddress());
+      expect(lpReef).to.be.gt(0n);
+      await sale.withdrawLP();
+      expect(await main.balanceOf(lpBen.address)).to.equal(lpMain);
+      expect(await tp.balanceOf(lpBen.address)).to.equal(lpReef);
+      // buyers still claim in full
+      await sale.connect(a).claim();
+      expect(await t.balanceOf(a.address)).to.equal(3_000n * E18);
+      // and the router can route TOKEN -> REEF -> BDAG
+      const path = [await t.getAddress(), await reefBond.getAddress(), await wbdag.getAddress()];
+      await t.connect(a).approve(await router.getAddress(), ethers.MaxUint256);
+      const amounts = await router.getAmountsOut(10n * E18, path);
+      expect(amounts[2]).to.be.gt(0n);
+    });
+
+    it("is skipped when the REEF/BDAG pool is under the minimum depth", async () => {
+      await seedReefPool();
+      const { t, sale, tx } = await runSale({ minReefDepth: 3_000_000n * E18 });
+      await expect(tx).to.emit(sale, "ReefSliceSkipped").withArgs(4);
+      expect(await reserveOf(await pairOf(t), await wbdag.getAddress())).to.equal(294_000n * E18);
+      expect(await sale.reefLpToken()).to.equal(ethers.ZeroAddress);
+    });
+
+    it("is skipped, not reverted, if someone pushes the REEF price just before finalize", async () => {
+      await seedReefPool();
+      const { sale, tx } = await runSale({}, async () => {
+        await router.connect(c).swapExactBDAGForTokens(0, [await wbdag.getAddress(), await reefBond.getAddress()], c.address, await deadline(), { value: 300_000n * E18 });
+      });
+      await expect(tx).to.emit(sale, "ReefSliceSkipped").withArgs(5);
+      expect(await sale.finalized()).to.equal(true);
+    });
+
+    it("is skipped if less than a day has passed since the sale was deployed", async () => {
+      await seedReefPool();
+      const now = BigInt(await time.latest());
+      const { sale, tx } = await runSale({ endTime: now + 3_700n });
+      await expect(tx).to.emit(sale, "ReefSliceSkipped").withArgs(3);
+    });
+
+    it("is skipped if there was no REEF/BDAG pool when the sale was deployed", async () => {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t, await sliceCfg());
+      expect(await sale.reefPair()).to.equal(ethers.ZeroAddress);
+      await seedReefPool(); // created after deployment: too late to have an average price
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 300_000n * E18 });
+      await time.increaseTo(cfg.endTime + 1n);
+      await expect(sale.finalize()).to.emit(sale, "ReefSliceSkipped").withArgs(1);
+    });
+
+    it("is skipped if the TOKEN/REEF pool was pre-loaded with tokens", async () => {
+      await seedReefPool();
+      const { sale, tx } = await runSale({}, async (t) => {
+        await factory.createPair(await t.getAddress(), await reefBond.getAddress());
+        await t.connect(project).transfer(await factory.getPair(await t.getAddress(), await reefBond.getAddress()), 100n * E18);
+      });
+      await expect(tx).to.emit(sale, "ReefSliceSkipped").withArgs(6);
     });
   });
 

@@ -133,4 +133,6 @@ The REEF presale contract that ran on 6 Nov 2026, with its fixed terms turned in
 
 - **Project bond** (`bondToken` = REEF, `bondAmount` = 1,000 REEF for Reef launches): must be in the contract before `buy()` takes BDAG. `settleBond()` (anyone) burns it only if buyers reached the soft cap but the pool never opened and they had to refund; otherwise it goes back to the project wallet, when the LP lock ends after a launch, or when refunds open if the soft cap was missed. `bondOutcome()` shows which.
 
-Tests: `npx hardhat test test/reef-launch-sale.test.js` (19). The TOKEN/REEF slice is the next step.
+- **TOKEN/REEF routing pool** (`reefToken`, `reefSliceBps` = 2000, `minReefDepth` = 10M BDAG for Reef launches): at finalize, 20% of the pooled BDAG buys REEF straight from the REEF/BDAG pool and is paired with the token at the same listing price; both LPs are locked and `withdrawLP()` releases both. It is **skipped, never reverted**, when: no REEF/BDAG pool existed at deployment (1), the slice is too small (2), under a day since deployment (3), the REEF pool holds under `minReefDepth` (4), REEF bought would be more than 5% off its average price since deployment, i.e. someone pushed it (5), or the TOKEN/REEF pool was already seeded (6). The reason is in the `ReefSliceSkipped` event; skipped means everything goes to TOKEN/BDAG.
+
+Tests: `npx hardhat test test/reef-launch-sale.test.js` (25). Deployed size 13.3 KB (limit 24 KB).
