@@ -120,3 +120,15 @@ email security@handshakeotc.fyi.
 ## License
 
 MIT.
+
+## Launchpad sale v2 (`contracts/reef/ReefLaunchSale.sol`) — not deployed, pending audit
+
+The REEF presale contract that ran on 6 Nov 2026, with its fixed terms turned into per-sale settings. One contract per launch, no owner.
+
+- **Per-sale settings** (constructor tuple, readable with `terms()`): token, router, project wallet, LP beneficiary, fee recipient, fee (bps, capped at 3%; Reef's launchpad uses 2%), sale price and listing price (BDAG wei per whole token, any decimals), soft cap, hard cap, per-wallet cap, start, end, LP lock (180 days minimum).
+- **Funding first**: the project sends `tokensRequired()` (every claim plus the pool at the hard cap) before `buy()` takes any BDAG.
+- **Finalize** (anyone, after the end or at the hard cap, if the soft cap was reached): the fee goes to the treasury as WBDAG; all the rest of the raise is paired at the listing price; every token not owed to a buyer is burned; the LP stays locked.
+- **Failed sales**: under the soft cap, refunds open at the end; above it but not finalized within 7 days, refunds open then. `returnTokens()` sends the project its tokens back and, like the first refund, disables finalize.
+- Carried over from the REEF presale: pool seeded by direct mint (dust can't block it), a pair with existing liquidity or more than 1% of the launch tokens pre-loaded is refused. New: fee-on-transfer tokens are refused at finalize.
+
+Tests: `npx hardhat test test/reef-launch-sale.test.js` (15). The project REEF bond and the TOKEN/REEF slice are later steps.
