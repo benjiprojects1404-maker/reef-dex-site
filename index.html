@@ -110,6 +110,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .rows b{color:var(--text);font-weight:500}
 .rows b.hot{color:var(--amber)}
 .rows b.warn{color:var(--ember)}
+.pin{font:600 10px "Instrument Sans",sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--coral-text);border:1px solid var(--coral-soft);border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:2px}
 .rows div.sub{padding:0 0 4px;font-size:12px}
 .rows div.sub b{color:var(--muted);font-weight:400;text-align:right;max-width:78%}
 .slip{display:flex;gap:6px;align-items:center;margin-top:2px}
@@ -2211,12 +2212,15 @@ async function loadPoolList() {
       if (isBdag(t0) && !isBdag(t1)) { [t0, t1] = [t1, t0]; [r0, r1] = [r1, r0]; }
       return { addr, t0, t1, r0, r1, t0a, t1a };
     }));
+    // Pin Reef's own REEF/BDAG pool to the top; the rest keep their on-chain order.
+    const isPinned = (r) => r && [r.t0a, r.t1a].some((a) => a.toLowerCase() === AIRDROP_CFG.token.toLowerCase());
+    rows.sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
     list.innerHTML = "";
     for (const row of rows) {
       if (!row) continue;
       const { addr, t0, t1, r0, r1, t0a, t1a } = row;
       const li = el("li");
-      li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}</div><div class="res">${fmt(ethers.formatUnits(r0, t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r1, t1.decimals), 2)} ${t1.symbol}</div>`;
+      li.innerHTML = `<div class="pair">${t0.symbol} / ${t1.symbol}${isPinned(row) ? ' <span class="pin">Reef\'s own token</span>' : ""}</div><div class="res">${fmt(ethers.formatUnits(r0, t0.decimals), 2)} ${t0.symbol} · ${fmt(ethers.formatUnits(r1, t1.decimals), 2)} ${t1.symbol}</div>`;
       li.title = `Pool ${addr}`;
       li.onclick = () => selectPoolPair(t0, t1);
       list.appendChild(li);
