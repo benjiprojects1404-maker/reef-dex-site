@@ -3,6 +3,7 @@
 // Read-only: it never signs or sends anything.
 //
 //   node scripts/airdrop/deploy-args.js [--file scripts/airdrop/out/airdrop.json]
+//   (card round: --file scripts/airdrop/out-cards/airdrop.json; the burn line then uses that round's 472,500 pot)
 //
 // It refuses to print anything if:
 //   - the snapshot isn't final,
@@ -29,7 +30,8 @@ if (!out.entries || !out.entries.length) fail("no entries in the list.");
 
 const sum = out.entries.reduce((s, e) => s + BigInt(e.amount), 0n);
 if (sum !== BigInt(out.totalAllocated)) fail(`entries add up to ${sum}, but totalAllocated says ${out.totalAllocated}.`);
-if (sum > RULES.pot) fail("allocated more than the 2,100,000 REEF pot.");
+const pot = out.pot ? BigInt(out.pot) : RULES.pot; // card round: its own 472,500 hold-back
+if (sum > pot) fail(`allocated more than the ${ethers.formatUnits(pot, 18)} REEF pot.`);
 
 const seen = new Set();
 for (const e of out.entries) {
@@ -48,7 +50,7 @@ out.entries.forEach((e, n) => {
 const reviews = (out.needsReview || []).length;
 const removed = (out.liquidityRemoved || []).length;
 const fmt = (wei) => ethers.formatUnits(wei, 18);
-const burn = RULES.pot - sum;
+const burn = pot - sum;
 
 console.log(`Checked ${out.entries.length} wallets, ${fmt(sum)} REEF. Root and every proof match.`);
 if (reviews || removed) console.log(`NOTE: ${reviews} needsReview item(s), ${removed} liquidityRemoved item(s). Resolve them before deploying.`);
