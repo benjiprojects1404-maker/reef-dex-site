@@ -137,6 +137,18 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .presalebar{background:var(--card);border-bottom:2px solid var(--coral-soft);color:var(--text);font-size:13px;text-align:center;padding:8px 12px;line-height:1.45}
 .presalebar a{color:var(--coral);font-weight:700;text-decoration:underline;white-space:nowrap}
 .presalebar small{color:var(--muted);margin-left:6px}
+/* Use cases + phone banner (6 Nov 2026) */
+.uses{max-width:1080px;margin:8px auto 28px;padding:0 16px}
+.uses h2{font:700 20px "Bricolage Grotesque",sans-serif;margin:0 0 12px}
+.usegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.use{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--text)}
+.use:hover{border-color:var(--line2)}
+.use b{display:block;font:700 16px "Bricolage Grotesque",sans-serif}
+.use span{display:block;font-size:13px;line-height:1.5;color:var(--muted);margin-top:6px}
+.use i{display:block;font-style:normal;font-size:13px;color:var(--coral-text);margin-top:10px;font-weight:600}
+@media (max-width:860px){.usegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.presalebar .adbar,.presalebar small{display:none}.presalebar{font-size:12.5px;padding:7px 12px}.betabar{font-size:11px;padding:5px 10px;line-height:1.4}}
+@media (max-width:420px){.usegrid{grid-template-columns:1fr}}
 .adhint{font-size:12.5px;color:var(--muted);margin:8px 2px 2px;line-height:1.5}
 .adhint b{color:var(--text)}
 .adhint.ok{color:var(--good)}
@@ -491,10 +503,20 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-10-23-pools-search</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-11-06-post-launch</p>
     </div>
   </div>
 </main>
+
+<section class="uses" aria-label="What you can do on Reef">
+  <h2>What you can do on Reef</h2>
+  <div class="usegrid">
+    <a class="use" href="/?from=bdag&amp;to=0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416"><b>Trade a token</b><span>Swap any token with a BDAG pool. You see the full fee and the minimum you'll get before you sign.</span><i>Open the swap &rarr;</i></a>
+    <a class="use" href="/docs/#liquidity"><b>Provide liquidity</b><span>Add both sides of a pool and earn 0.25% of its trades. Impermanent loss can outweigh the fees.</span><i>How liquidity works &rarr;</i></a>
+    <a class="use" href="/launch/"><b>Launch a token</b><span>Deploy a token, open its BDAG pool and lock the liquidity, so buyers can check it themselves.</span><i>Launch guide &rarr;</i></a>
+    <a class="use" href="/pay/"><b>Get paid</b><span>Send someone a link or QR code for BDAG, REEF, NOCAP or COOKED. Wallet to wallet, nothing held.</span><i>Make a payment link &rarr;</i></a>
+  </div>
+</section>
 
 <div class="footer-wrap" style="max-width:1080px;margin:0 auto;padding:0 16px 48px">
   <p style="font-size:13px;margin:0 0 14px"><a href="/docs/" style="text-decoration:underline">Docs</a> · <a href="/launch/" style="text-decoration:underline">Launch a token</a> · <a href="/pairs/" style="text-decoration:underline">Pairs</a> · <a href="/pay/" style="text-decoration:underline">Get paid</a> · <a href="/developers/" style="text-decoration:underline">Developers</a> · <a href="/overview.pdf" target="_blank" rel="noopener" style="text-decoration:underline">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener" style="text-decoration:underline">Undercurrent Works</a></p>
