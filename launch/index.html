@@ -172,7 +172,7 @@ footer p{margin:0 0 6px}
         <li><b>BDAG for gas, and for the BDAG side of your pool.</b> Deploying and adding liquidity cost a little gas. The pool itself needs as much BDAG as you want to pair with your token.</li>
         <li><b>A plan for the numbers:</b> total supply, how much goes into the pool, how much you keep (and whether you lock or vest that), and the starting price.</li>
       </ul>
-      <div class="note"><b>Use one wallet throughout.</b> Deploy the token, create the pool and lock the LP from the same wallet. It keeps the story simple for buyers to check, and it's what the airdrop's Tier 3 looks for.</div>
+      <div class="note"><b>Use one wallet throughout.</b> Deploy the token, create the pool and lock the LP from the same wallet. It keeps the story simple for buyers to check.</div>
     </section>
 
     <section id="token">
@@ -236,9 +236,8 @@ contract MyToken is ERC20 {
 
     <section id="airdrop">
       <h2>REEF airdrop, Tier 3</h2>
-      <p>During the REEF airdrop window (Wed 7 Oct 09:00 to Fri 6 Nov 09:00, UTC+7), deploying your own token and creating its first Reef pair with at least <b>25,000 BDAG of your own liquidity</b> counts as Tier 3, which is worth 10 shares. The action is credited to the wallet that signed it, and only BDAG pairs count.</p>
-      <p>Places go to the first 1,000 wallets by their first qualifying action, and the final list is worked out from on-chain events after 6 Nov. The <a href="/">airdrop check</a> on Reef's main page shows which of a wallet's actions match the rules so far. See the <a href="/reef/#airdrop">full airdrop rules</a>.</p>
-      <div class="note"><b>Don't launch a token just for the airdrop.</b> A token with a pool is a public thing that other people may buy. Launch because you mean it.</div>
+      <p><b>This window has closed.</b> During the REEF airdrop window (Wed 7 Oct 09:00 to Fri 6 Nov 09:00, UTC+7), deploying your own token and creating its first Reef pair with at least 25,000 BDAG of your own liquidity counted as Tier 3 (10 shares). The final list from the 6 Nov snapshot is <a href="/reef/airdrop.csv">published</a>, and listed wallets claim on <a href="/">Reef's home page</a> from Mon 9 Nov, 09:00 (UTC+7). See the <a href="/reef/#airdrop">airdrop rules</a>.</p>
+      <p>Launching a token with a locked BDAG pool is still the best way to give buyers something they can check, airdrop or not.</p>
     </section>
 
     <section id="nocap">
@@ -255,7 +254,7 @@ contract MyToken is ERC20 {
     <section id="faq">
       <h2>Questions</h2>
       <details><summary>Does Reef charge a listing fee?</summary><p>No. There's no listing and no fee to create a pool. You pay normal network gas, and traders pay the 0.30% swap fee.</p></details>
-      <details><summary>Can I pair my token with something other than BDAG?</summary><p>Yes, any two tokens can have a pool. A BDAG pair is the easiest for people to reach, and it's the only kind that counts for the REEF airdrop.</p></details>
+      <details><summary>Can I pair my token with something other than BDAG?</summary><p>Yes, any two tokens can have a pool. A BDAG pair is the easiest for people to reach.</p></details>
       <details><summary>Can I add more liquidity later?</summary><p>Yes. Anyone can add to an existing pool at the current price. New LP tokens you receive aren't locked unless you lock them too.</p></details>
       <details><summary>Can Reef remove my pool or token?</summary><p>No. Pools are permissionless contracts. Reef's site may hide a pair from its own lists, but the pool keeps existing on-chain.</p></details>
       <details><summary>Will Reef promote my token?</summary><p>No. Reef doesn't endorse tokens. If you'd like help with a launch (token, pool, lock, site), that's a separate paid service: <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a>.</p></details>

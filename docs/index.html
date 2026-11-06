@@ -217,13 +217,13 @@ footer p{margin:0 0 6px}
       <h3>Routing through BDAG</h3>
       <p>If two tokens don't share a pool, but both have a pool with BDAG, Reef routes the trade through BDAG automatically (token A → BDAG → token B). You pay the 0.30% fee on each step.</p>
       <h3>Slippage and deadline</h3>
-      <p>Prices can move between when you press swap and when your transaction lands. <b>Slippage tolerance</b> (default 0.5%, change it with the settings icon) is the most you'll let the price move against you. If it moves further, the swap cancels and nothing is spent except the network fee. Every swap also has a 20-minute deadline, so a transaction stuck in the queue can't fill hours later at a stale price.</p>
+      <p>Prices can move between when you press swap and when your transaction lands. <b>Slippage tolerance</b> (default 0.5%, change it with the settings icon) is the most you'll let the price move against you. Before you sign, the swap details show the fee in tokens (and its split between liquidity providers and the treasury) and the <b>minimum received</b>; if the price moves past that, the swap cancels and nothing is spent except the network fee. Keep slippage low: a high tolerance makes it easier for bots to trade just before you (front-running), and you'd still only get the minimum. Every swap also has a 20-minute deadline, so a transaction stuck in the queue can't fill hours later at a stale price.</p>
       <h3>Tokens with a transfer tax</h3>
       <p>Some tokens take a percentage every time they move. Reef can buy these, but selling them through Reef always fails. Check for a transfer tax before you buy.</p>
       <h3>Price impact warnings</h3>
       <p>A big trade in a small pool moves the price a lot. Reef shows a warning at 3% impact, a stronger one at 10%, and asks you to tap twice to confirm. At 30% or more it tells you to reduce the amount. Splitting a large trade into smaller ones usually gets a better average price.</p>
       <h3>Chart, trades and badges</h3>
-      <p>For a direct pair, Reef shows a price chart and recent trades read straight from the pool's own on-chain events, with no third-party price feed. Some pools also show a <b>liquidity lock</b> badge (the LP tokens are held in a time-lock) or a <b>TWAP</b> badge (a time-averaged price oracle is running for that pool).</p>
+      <p>For a direct pair, Reef shows a price chart and recent trades read straight from the pool's own on-chain events, with no third-party price feed. Reef's main pools also have their own pages with depth, 24h volume, recent swaps and the share of LP locked or burned: <a href="/pairs/">Pairs</a>. Some pools also show a <b>liquidity lock</b> badge (the LP tokens are held in a time-lock) or a <b>TWAP</b> badge (a time-averaged price oracle is running for that pool).</p>
     </section>
 
     <section id="liquidity">
@@ -369,13 +369,21 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
         <li><code>addLiquidity</code>, <code>addLiquidityBDAG</code>, <code>removeLiquidity</code>, <code>removeLiquidityBDAG</code></li>
         <li><code>getAmountsOut</code> for quotes</li>
       </ul>
+      <h3>Data API, widget and links</h3>
+      <ul>
+        <li><b>Free read-only API:</b> <code>GET https://reefdex.fyi/api/v1/pairs</code> (every BDAG pool) and <code>/api/v1/pairs/&lt;token or pool address&gt;</code> (one pool plus 24h volume). JSON, open CORS, cached 60 seconds.</li>
+        <li><b>Pool widget:</b> a one-line iframe, <code>https://reefdex.fyi/embed/pair/?t=&lt;token&gt;</code>.</li>
+        <li><b>Swap links:</b> <code>https://reefdex.fyi/?from=bdag&amp;to=&lt;token&gt;&amp;amount=1000</code> opens the swap card pre-filled.</li>
+        <li><b>Payment links:</b> <a href="/pay/">reefdex.fyi/pay/</a> makes a BDAG, REEF, NOCAP or COOKED payment request with a QR code; payment goes wallet to wallet.</li>
+      </ul>
+      <p>Details and examples: <a href="/developers/">Reef for developers</a>.</p>
       <p>Reef is also a liquidity source for the <a href="https://nodaldex.fyi" target="_blank" rel="noopener">Nodal</a> aggregator, so a pool on Reef is reachable from there too.</p>
       <p>Building on Reef or listing it somewhere? Get in touch on X: <a href="https://x.com/benji107" target="_blank" rel="noopener">@benji107</a>.</p>
     </section>
 
     <section id="reef-token">
       <h2>$REEF</h2>
-      <p>$REEF is Reef's own token. The official contract address and presale details will be published here and on X when the presale opens. Until then, treat any "$REEF" you see elsewhere as fake.</p>
+      <p>$REEF is Reef's own token: 21,000,000 minted once, no owner, no mint. The only contract is <code>0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416</code>; treat any other "REEF" as fake. The presale closed on 6 Nov 2026 and seeded the REEF/BDAG pool with every BDAG raised (LP locked until 6 Nov 2027); unsold REEF was burned. Presale buyers claim on the <a href="/reef/">REEF page</a>, and airdrop wallets claim on Reef's home page from Mon 9 Nov, 09:00 (UTC+7). Supply, locks and every address: <a href="/reef/#tokenomics">REEF tokenomics</a>. Live pool data: <a href="/pairs/reef/">REEF/BDAG pair page</a>.</p>
       <div class="note"><b>REEF-LP is not $REEF.</b> When you provide liquidity on Reef, you receive pool-share tokens called REEF-LP, for any pool. They are not the $REEF token.</div>
       <h3>Does holding $REEF pay me anything?</h3>
       <p>No. $REEF does not pay holders any share of Reef's fees or revenue. If you want income from Reef, that comes from providing liquidity: LPs in the REEF/BDAG pool earn 0.25% of every trade in it, like any other pool. A time-limited reward for REEF/BDAG liquidity providers is being considered, but it isn't promised.</p>
