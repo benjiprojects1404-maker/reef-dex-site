@@ -2,7 +2,7 @@
   "_note": "Inputs for the REEF airdrop snapshot. Team wallets are excluded from the airdrop. BENJI: add every other wallet you control (deployers, MetaMask accounts, test wallets) before the final run.",
   "rpcs": [
     "https://rpc.community.bdag-us.org",
-    "https://rpc.blockdag.engineering"
+    "https://rpc.dagcore.net"
   ],
   "explorer": "https://explorer.east.bdag-us.org",
   "factory": "0x9603042044b6B1A1637c508F731ba01219142239",

@@ -2,9 +2,10 @@
 // REEF airdrop snapshot: reads Reef's public on-chain events and produces the airdrop list,
 // amounts and Merkle proofs. Anyone can run it and should get the same result.
 //
-//   node scripts/airdrop/snapshot.js [--out scripts/airdrop/out] [--allow-open]
+//   node scripts/airdrop/snapshot.js [--out scripts/airdrop/out] [--allow-open] [--rpc <url>]
 //
 // --allow-open lets you do a dry run before the window has closed (the result is NOT final).
+// --rpc <url> uses only that RPC (run once per RPC and compare the Merkle roots); default: the first working RPC in config.json.
 // The script only reads the chain. It never signs or sends anything.
 
 const fs = require("fs");
@@ -33,7 +34,8 @@ const BURN = EV.getEvent("Burn").topicHash;
 const log = (...a) => console.error(...a);
 
 async function provider() {
-  for (const url of cfg.rpcs) {
+  const only = opt("--rpc");
+  for (const url of only ? [only] : cfg.rpcs) {
     try {
       const p = new ethers.JsonRpcProvider(url, 1404, { staticNetwork: true });
       await p.getBlockNumber();
