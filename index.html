@@ -110,6 +110,8 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 80px;display:grid;grid-tem
 .rows b{color:var(--text);font-weight:500}
 .rows b.hot{color:var(--amber)}
 .rows b.warn{color:var(--ember)}
+.rows div.sub{padding:0 0 4px;font-size:12px}
+.rows div.sub b{color:var(--muted);font-weight:400;text-align:right;max-width:78%}
 .slip{display:flex;gap:6px;align-items:center;margin-top:2px}
 .slip button{border:1px solid var(--line2);background:var(--card);color:var(--muted);font:600 12px "Instrument Sans",sans-serif;padding:6px 10px;border-radius:9px;cursor:pointer}
 .slip button.on{background:var(--tide);border-color:var(--tide);color:#fff}
@@ -347,6 +349,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
           <button data-bp="300" onclick="setSlip(300)">3%</button>
           <input id="slipCustom" type="text" inputmode="decimal" placeholder="Custom %">
         </div>
+        <div class="hint" style="margin-top:8px">Keep this as low as works. A high tolerance lets bots trade just before you (front-running) and you'd still get only the minimum. 0.5% suits most swaps; raise it only if a swap keeps failing.</div>
       </div>
 
       <div class="field">
@@ -1885,6 +1888,12 @@ function setSwapInfo(info) {
   renderQuoteAge();
   if (!info) { box.innerHTML = ""; renderImpactWarn(null); syncSwapBtn(); return; }
   const hops = info.path.length > 2 ? " (via WBDAG)" : "";
+  const nHops = info.path.length - 1;
+  const keep = 997n ** BigInt(nHops), whole = 1000n ** BigInt(nHops);
+  const feeAmt = info.amountIn - (info.amountIn * keep) / whole;           // what the 0.30% per hop costs, in the token you pay
+  const nice = (v, d) => Number(ethers.formatUnits(v, d)).toLocaleString("en-US", { maximumFractionDigits: 6 });
+  const feeTxt = `${nHops > 1 ? "0.30% per hop" : "0.30%"} \u2248 ${nice(feeAmt, tokFrom.decimals)} ${escHtml(tokFrom.symbol)}`;
+  const minTxt = nice(info.amountOut - (info.amountOut * BigInt(slippageBp)) / 10000n, tokTo.decimals);
   const ip = info.impactPct;
   const impactRow = ip == null ? "" :
     `<div><span>Price impact</span><b class="${ip >= HIGH_IMPACT_PCT ? "warn" : ip >= WARN_IMPACT_PCT ? "hot" : ""}">${fmtImpact(ip)}</b></div>`;
@@ -1892,8 +1901,11 @@ function setSwapInfo(info) {
     <div><span>Rate</span><b>1 ${tokFrom.symbol} = ${fmtPrice(info.rate)} ${tokTo.symbol}</b></div>
     ${impactRow}
     <div><span>Route</span><b>${info.path.length - 1} hop${info.path.length > 2 ? "s" : ""}${hops}</b></div>
-    <div><span>Fee</span><b class="hot">0.30% per hop</b></div>
-    <div><span>Slippage</span><b>${(slippageBp / 100).toFixed(2)}%</b></div>`;
+    <div><span>Fee</span><b class="hot">${feeTxt}</b></div>
+    <div class="sub"><span>of which</span><b>0.25% to liquidity providers, 0.05% to Reef's treasury${info.path.length > 2 ? " (per hop)" : ""}</b></div>
+    <div><span>Slippage</span><b>${(slippageBp / 100).toFixed(2)}%</b></div>
+    <div><span>Minimum received</span><b>${minTxt} ${escHtml(tokTo.symbol)}</b></div>
+    <div class="sub"><span></span><b>If the price moves past this before your swap confirms, it cancels and nothing is spent but gas.</b></div>`;
   renderImpactWarn(info);
   syncSwapBtn();
 }
