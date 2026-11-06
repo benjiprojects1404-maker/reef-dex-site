@@ -465,9 +465,10 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   <div class="col side">
     <div class="card" id="airdropCard">
       <h3>REEF airdrop check</h3>
-      <p class="hint" style="margin-top:6px">Check shows which of a wallet's Reef actions matched the airdrop rules. The final list from the 6 Nov snapshot is <a href="/reef/airdrop.csv">published</a>: 20 wallets, 79,800 REEF. COOKED &times; NOCAP card mints until Sat 14 Nov get a second round.</p>
+      <p class="hint" style="margin-top:6px">Check shows which of a wallet's Reef actions matched the airdrop rules. The final list from the 6 Nov snapshot is <a href="/reef/airdrop.csv">published</a>: 20 wallets, 79,800 REEF. <a href="/cards/">COOKED &times; NOCAP card</a> mints until Sat 14 Nov get a second round.</p>
       <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button><button type="button" class="qbtn claim" id="adClaim" onclick="runAirdropClaim()" disabled aria-describedby="adClaimNote">Claim REEF</button></div>
       <div class="adclaimnote" id="adClaimNote">Claims open Mon 9 Nov, 09:00 (UTC+7). Claim with the wallet that's on the list.</div>
+      <p class="hint" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">Also on Reef: <a href="/cards/">COOKED &times; NOCAP cards</a> (a mint counts for the second airdrop round until Sat 14 Nov) &middot; <a href="/launch/">Launch your own token</a> with a locked BDAG pool.</p>
       <div id="adOut" class="adout" aria-live="polite"></div>
     </div>
     <div class="card">
