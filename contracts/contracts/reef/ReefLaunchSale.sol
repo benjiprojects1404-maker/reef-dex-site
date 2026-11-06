@@ -36,9 +36,9 @@ interface IWBDAGLike {
 ///         fixed in the constructor and readable on-chain.
 ///
 ///         How a sale runs:
-///           1. The project sends tokensRequired() of its token to this contract. buy()
-///              refuses BDAG until it is fully funded, so the pool and every claim are covered
-///              before anyone pays.
+///           1. The project sends tokensRequired() of its token, and its bond (bondAmount of
+///              REEF), to this contract. buy() refuses BDAG until both are in, so the pool and
+///              every claim are covered before anyone pays.
 ///           2. Buyers call buy() with BDAG between startTime and endTime. They get nothing yet.
 ///           3. When the sale ends or reaches the hard cap, ANYONE can call finalize(), as long
 ///              as the soft cap was reached. It sends feeBps of the raise to feeRecipient (as
@@ -53,6 +53,11 @@ interface IWBDAGLike {
 ///           - soft cap reached but not finalized within REFUND_DELAY: refunds open then.
 ///         Once refunds open, the first refund (or returnTokens()) disables finalize() for good,
 ///         and returnTokens() sends the project's tokens back to projectWallet.
+///
+///         The project bond is burned only if buyers reached the soft cap but the pool never
+///         opened (they had to take refunds). Otherwise it goes back to projectWallet: when
+///         the LP lock ends after a launch, or when refunds open if the soft cap was missed.
+///         See bondOutcome() and settleBond().
 ///
 ///         Prices are in BDAG wei per ONE whole token (10**decimals units), so any token
 ///         decimals and fractional prices work. Fee-on-transfer tokens are refused at finalize.
@@ -83,6 +88,8 @@ contract ReefLaunchSale is ReentrancyGuard {
         uint256 startTime;
         uint256 endTime;
         uint256 lpLockSeconds; // at least MIN_LP_LOCK
+        address bondToken; // REEF; the project's bond is held in this token
+        uint256 bondAmount; // e.g. 1,000 REEF; 0 = no bond
     }
 
     // ---- configuration (set once in the constructor, never changed) ----
@@ -101,6 +108,8 @@ contract ReefLaunchSale is ReentrancyGuard {
     uint256 public endTime;
     uint256 public lpLockSeconds;
     uint256 public unit; // 10 ** token decimals
+    IERC20 public bondToken;
+    uint256 public bondAmount;
 
     // ---- state ----
     uint256 public totalRaised;
@@ -109,6 +118,7 @@ contract ReefLaunchSale is ReentrancyGuard {
     bool public finalized;
     bool public refunding;
     bool public tokensReturned;
+    bool public bondSettled;
     address public lpToken;
     uint256 public lpUnlockTime;
 
@@ -118,6 +128,8 @@ contract ReefLaunchSale is ReentrancyGuard {
     event Refunded(address indexed buyer, uint256 amountBDAG);
     event TokensReturned(address indexed to, uint256 amount);
     event LPWithdrawn(uint256 amount, address to);
+    event BondReturned(address indexed to, uint256 amount);
+    event BondBurned(uint256 amount);
 
     constructor(Config memory c) {
         require(c.token != address(0), "token is zero address");
@@ -133,6 +145,10 @@ contract ReefLaunchSale is ReentrancyGuard {
         require(c.startTime >= block.timestamp, "start time is in the past");
         require(c.endTime > c.startTime, "end must be after start");
         require(c.lpLockSeconds >= MIN_LP_LOCK, "LP lock must be at least 180 days");
+        if (c.bondAmount > 0) {
+            require(c.bondToken != address(0), "bond token is zero address");
+            require(c.bondToken != c.token, "bond token is the sale token");
+        }
 
         token = IERC20(c.token);
         router = ILaunchRouterLike(c.router);
@@ -149,6 +165,8 @@ contract ReefLaunchSale is ReentrancyGuard {
         endTime = c.endTime;
         lpLockSeconds = c.lpLockSeconds;
         unit = 10 ** uint256(IERC20Metadata(c.token).decimals());
+        bondToken = IERC20(c.bondToken);
+        bondAmount = c.bondAmount;
 
         require(tokensFor(c.hardCap) > 0 && tokensForPool(c.hardCap) > 0, "price too high for the cap");
     }
@@ -183,6 +201,7 @@ contract ReefLaunchSale is ReentrancyGuard {
         require(block.timestamp <= endTime && !finalized, "sale ended");
         require(msg.value > 0, "send some BDAG");
         require(token.balanceOf(address(this)) >= tokensRequired(), "sale not funded");
+        require(isBonded(), "project bond not posted");
 
         uint256 newTotal = totalRaised + msg.value;
         require(newTotal <= hardCap, "exceeds hard cap");
@@ -286,6 +305,42 @@ contract ReefLaunchSale is ReentrancyGuard {
         emit TokensReturned(projectWallet, amount);
     }
 
+    // -------------------------------------------------------------------- bond
+
+    /// @notice True once the project's bond is in this contract (always true with no bond).
+    function isBonded() public view returns (bool) {
+        return bondAmount == 0 || bondToken.balanceOf(address(this)) >= bondAmount;
+    }
+
+    /// @notice What will happen to the bond: 0 = still locked, 1 = goes back to the project,
+    ///         2 = burned. It is burned only when buyers reached the soft cap but the pool never
+    ///         opened, so they had to take refunds (for example the pair was pre-loaded or the
+    ///         token takes a transfer fee). After a launch it returns when the LP lock ends; if
+    ///         the soft cap was simply missed, it returns as soon as refunds open.
+    function bondOutcome() public view returns (uint8) {
+        if (finalized) return block.timestamp >= lpUnlockTime ? 1 : 0;
+        if (!refundsOpen()) return 0;
+        return (totalRaised > 0 && totalRaised >= softCap) ? 2 : 1;
+    }
+
+    /// @notice Anyone can call it once bondOutcome() is decided. Moves the whole bond-token
+    ///         balance, so REEF sent here by mistake follows the bond.
+    function settleBond() external nonReentrant {
+        require(address(bondToken) != address(0), "no bond");
+        require(!bondSettled, "bond already settled");
+        uint8 outcome = bondOutcome();
+        require(outcome != 0, "bond still locked");
+        bondSettled = true;
+        uint256 amount = bondToken.balanceOf(address(this));
+        if (outcome == 2) {
+            if (amount > 0) bondToken.safeTransfer(DEAD, amount);
+            emit BondBurned(amount);
+        } else {
+            if (amount > 0) bondToken.safeTransfer(projectWallet, amount);
+            emit BondReturned(projectWallet, amount);
+        }
+    }
+
     // ----------------------------------------------------------------- LP lock
 
     function withdrawLP() external nonReentrant {
@@ -316,6 +371,7 @@ contract ReefLaunchSale is ReentrancyGuard {
     /// @notice Every sale term in one call, for the sale page.
     function terms() external view returns (Config memory c) {
         c = Config(address(token), address(router), projectWallet, lpBeneficiary, feeRecipient, feeBps,
-            salePrice, listingPrice, softCap, hardCap, maxPerWallet, startTime, endTime, lpLockSeconds);
+            salePrice, listingPrice, softCap, hardCap, maxPerWallet, startTime, endTime, lpLockSeconds,
+            address(bondToken), bondAmount);
     }
 }
