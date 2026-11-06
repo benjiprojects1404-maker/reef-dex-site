@@ -140,6 +140,17 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 /* Use cases + phone banner (6 Nov 2026) */
 .uses{max-width:1080px;margin:8px auto 28px;padding:0 16px}
 .uses h2{font:700 20px "Bricolage Grotesque",sans-serif;margin:0 0 12px}
+.launchban{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 14px;padding:20px 22px;border-radius:18px;border:1px solid var(--coral-soft);background:linear-gradient(120deg,rgba(194,58,94,.16),rgba(10,113,161,.14) 55%,var(--card))}
+.launchban::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--coral),var(--polyp))}
+.launchban .eb{font:600 11px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--coral-text)}
+.launchban h3{font:800 22px/1.2 "Bricolage Grotesque",sans-serif;margin:4px 0 6px}
+.launchban p{margin:0;font-size:14px;line-height:1.5;color:var(--muted);max-width:620px}
+.launchban .acts{display:flex;gap:10px;flex-wrap:wrap}
+.launchban .acts a{display:inline-block;padding:10px 16px;border-radius:11px;font:600 14px "Instrument Sans",sans-serif;text-decoration:none;white-space:nowrap}
+.launchban .acts a.go{background:var(--coral);color:#fff}
+.launchban .acts a.go:hover{filter:brightness(1.1)}
+.launchban .acts a.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+@media (max-width:600px){.launchban{padding:18px 16px 18px 20px}.launchban h3{font-size:19px}.launchban .acts{width:100%}.launchban .acts a{flex:1;text-align:center}}
 .usegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .use{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--text)}
 .use:hover{border-color:var(--line2)}
@@ -503,17 +514,25 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-11-06-uses-gap</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-11-06-launch-banner</p>
     </div>
   </div>
 </main>
 
 <section class="uses" aria-label="What you can do on Reef">
   <h2>What you can do on Reef</h2>
+  <div class="launchban">
+    <div>
+      <div class="eb">Launch on Reef</div>
+      <h3>Launch your token with a locked BDAG pool</h3>
+      <p>Deploy your token, open its BDAG pool and lock the liquidity, so buyers can check it themselves. No listing form and no listing fee. NOCAP's pool is a live example to check.</p>
+    </div>
+    <div class="acts"><a class="go" href="/launch/">Launch guide &rarr;</a><a class="alt" href="/pairs/nocap/">See NOCAP's pool</a></div>
+  </div>
   <div class="usegrid">
     <a class="use" href="/?from=bdag&amp;to=0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416"><b>Trade a token</b><span>Swap any token with a BDAG pool. You see the full fee and the minimum you'll get before you sign.</span><i>Open the swap &rarr;</i></a>
     <a class="use" href="/docs/#liquidity"><b>Provide liquidity</b><span>Add both sides of a pool and earn 0.25% of its trades. Impermanent loss can outweigh the fees.</span><i>How liquidity works &rarr;</i></a>
-    <a class="use" href="/launch/"><b>Launch a token</b><span>Deploy a token, open its BDAG pool and lock the liquidity, so buyers can check it themselves.</span><i>Launch guide &rarr;</i></a>
+    <a class="use" href="/pairs/"><b>Check a pool</b><span>Live depth, 24h volume, recent swaps and how much of the liquidity is locked or burned.</span><i>Pair pages &rarr;</i></a>
     <a class="use" href="/pay/"><b>Get paid</b><span>Send someone a link or QR code for BDAG, REEF, NOCAP or COOKED. Wallet to wallet, nothing held.</span><i>Make a payment link &rarr;</i></a>
   </div>
 </section>
