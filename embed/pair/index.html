@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reef pool widget</title><meta name="robots" content="noindex">
+<style>
+:root{--bg:#0e1f24;--text:#e7f3f5;--muted:#a6c4ca;--line:rgba(150,210,225,.18);--tide:#0a71a1;--coral:#e79bab}
+:root[data-theme="light"]{--bg:#f5fcfd;--text:#0b1f24;--muted:#2a464d;--line:rgba(6,40,46,.16);--coral:#9c2f4a}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}
+body{font:400 14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+.w{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px;max-width:420px}
+.h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.h b{font-size:16px}.h a{color:var(--coral);font-size:12px;text-decoration:none}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.v{font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.btn{display:block;text-align:center;background:var(--tide);color:#fff;text-decoration:none;font-weight:600;padding:9px;border-radius:10px}
+.f{font-size:11px;color:var(--muted);margin-top:8px}
+</style></head><body>
+<div class="w" id="w"><div class="h"><b id="t">Reef pool</b><a href="https://reefdex.fyi/" target="_blank" rel="noopener">reef.dex ↗</a></div>
+<div class="g"><div><div class="k">Pool price</div><div class="v" id="p">…</div></div><div><div class="k">Depth</div><div class="v" id="d">…</div></div><div><div class="k">24h volume</div><div class="v" id="vol">…</div></div></div>
+<a class="btn" id="s" href="https://reefdex.fyi/" target="_blank" rel="noopener">Swap on Reef</a>
+<div class="f" id="f">Live from BlockDAG chain 1404. Not a price feed or advice.</div></div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), t = (q.get("t") || "reef").trim();
+  if (q.get("theme") === "light") document.documentElement.setAttribute("data-theme", "light");
+  var n = function (x, d) { return Number(x).toLocaleString("en-US", { maximumFractionDigits: d }); };
+  fetch("/api/v1/pairs/" + encodeURIComponent(t)).then(function (r) { return r.json(); }).then(function (j) {
+    if (j.error) throw new Error(j.error);
+    document.getElementById("t").textContent = j.symbol + " / BDAG";
+    document.getElementById("p").textContent = n(j.priceBDAG, j.priceBDAG < 1 ? 8 : 4) + " BDAG";
+    document.getElementById("d").textContent = n(j.reserveBDAG, 0) + " BDAG";
+    document.getElementById("vol").textContent = n(j.volume24hBDAG, 0) + " BDAG";
+    var s = document.getElementById("s"); s.href = j.swap; s.textContent = "Swap " + j.symbol + " on Reef";
+  }).catch(function () { document.getElementById("f").textContent = "Couldn't load this pool just now."; });
+})();
+</script></body></html>
