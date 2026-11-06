@@ -1301,7 +1301,7 @@ async function runAirdropCheck() {
 // and it holds enough REEF to pay everyone still owed. Funding the contract is what opens claims
 // on-chain, so it's funded at the opening time, not before.
 const AIRDROP_CFG = {
-  address: "",                                     // ReefAirdrop contract, filled in after deployment
+  address: "0xA08EB30F91f999282dd737a2f0c9FDF469B5Cabb", // ReefAirdrop, deployed 6 Nov 2026
   list: "/reef/airdrop.json",                      // snapshot output: entries with wallet, amount, proof
   opensAt: Date.parse("2026-11-09T02:00:00Z"),     // Mon 9 Nov 2026, 09:00 UTC+7
   token: "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
@@ -1313,6 +1313,7 @@ const AIRDROP_ABI = [
   "function claim(address account, uint256 amount, bytes32[] proof)",
 ];
 let adList = null, adClaimLive = false, adClaiming = false;
+const adAmt = (e) => Number(ethers.formatEther(e.amount)).toLocaleString("en-US", { maximumFractionDigits: 2 });
 function adClaimNote(html) { const n = $("#adClaimNote"); if (n) n.innerHTML = html; }
 async function refreshAirdropClaim() {
   const btn = $("#adClaim");
@@ -1364,13 +1365,13 @@ async function runAirdropClaim() {
     if (!entry) { out.innerHTML = `<b>${short(me)} isn't on the airdrop list.</b> If you qualified with a different wallet, connect that one instead. <a href="/reef/#airdrop">Rules</a>`; return; }
     const a = new ethers.Contract(AIRDROP_CFG.address, AIRDROP_ABI, signer);
     if (await tryRpcFallback((p) => new ethers.Contract(AIRDROP_CFG.address, AIRDROP_ABI, p).claimed(me))) {
-      out.innerHTML = `<b>Already claimed.</b> The ${escHtml(entry.amountREEF)} REEF for ${short(me)} has been sent.`; return;
+      out.innerHTML = `<b>Already claimed.</b> The ${adAmt(entry)} REEF for ${short(me)} has been sent.`; return;
     }
-    out.textContent = `Confirm in your wallet to claim ${entry.amountREEF} REEF.`;
+    out.textContent = `Confirm in your wallet to claim ${adAmt(entry)} REEF.`;
     const tx = await a.claim(me, entry.amount, entry.proof);
     out.innerHTML = `Claim sent. Waiting for confirmation&hellip; <a href="${EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">tx</a>`;
     await tx.wait();
-    out.innerHTML = `<span class="ok"><b>&#10003; ${escHtml(entry.amountREEF)} REEF sent to your wallet.</b></span> <a href="${EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">tx</a>`;
+    out.innerHTML = `<span class="ok"><b>&#10003; ${adAmt(entry)} REEF sent to your wallet.</b></span> <a href="${EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">tx</a>`;
   } catch (e) {
     out.textContent = walletErr(e);
   } finally {

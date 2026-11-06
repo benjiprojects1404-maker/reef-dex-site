@@ -311,15 +311,15 @@ footer a{text-decoration:underline}
       <table class="alloc">
         <thead><tr><th>Bucket</th><th class="num">Share</th><th class="num">REEF</th></tr></thead>
         <tbody>
-          <tr><td><span class="sw" style="background:var(--tide)"></span><b>Liquidity</b><div class="how">Up to 700,000 is paired with every BDAG raised when the pool opens. The remainder (at least 8,750,000) is to be locked in its own vesting contract after launch; its address will be posted here.</div></td><td class="num">45%</td><td class="num">9,450,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--tide)"></span><b>Liquidity</b><div class="how">154,623 REEF was paired with all 34,790,196 BDAG raised when the pool opened on Nov 6. The remaining 9,295,377 is locked in its own vesting contract: nothing until 5 May 2027, then a straight line to 100% on 5 Nov 2029.</div></td><td class="num">45%</td><td class="num">9,450,000</td></tr>
           <tr><td><span class="sw" style="background:var(--polyp)"></span><b>Treasury</b><div class="how">Held in a vesting contract: nothing for 6 months, then a straight line to 100% at 36 months.</div></td><td class="num">25%</td><td class="num">5,250,000</td></tr>
           <tr><td><span class="sw" style="background:var(--amber)"></span><b>Dev</b><div class="how">Held in a vesting contract: nothing for 12 months, then a straight line to 100% at 36 months.</div></td><td class="num">10%</td><td class="num">2,100,000</td></tr>
-          <tr><td><span class="sw" style="background:var(--good)"></span><b>Airdrop</b><div class="how">For the first 1,000 wallets that use Reef during the sale window. Moves into the airdrop claim contract after the sale.</div></td><td class="num">10%</td><td class="num">2,100,000</td></tr>
-          <tr><td><span class="sw" style="background:var(--coral)"></span><b>Presale</b><div class="how">Sold at 150 BDAG each. Anything unsold goes to the dead address, not to the team.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
-          <tr><td><span class="sw" style="background:var(--steel)"></span><b>Marketing</b><div class="how">About 210,000 is set aside to thank the community testers. The remainder is to be locked in vesting after that round.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--good)"></span><b>Airdrop</b><div class="how">79,800 REEF for the 20 qualifying wallets in the main round, claimable from Nov 9. 472,500 is held back for the COOKED &times; NOCAP card round; whatever that round doesn&rsquo;t use is burned. The other 1,547,700 was sent to the dead address on Nov 6.</div></td><td class="num">10%</td><td class="num">2,100,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--coral)"></span><b>Presale</b><div class="how">Sold at 150 BDAG each: 231,935 REEF sold. The unsold 818,065 went to the dead address when the pool launched, not to the team.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
+          <tr><td><span class="sw" style="background:var(--steel)"></span><b>Marketing</b><div class="how">10,000 went to the tester thank-you vesting. 940,000 is locked in vesting (nothing until 5 May 2027, fully vested 5 Nov 2029). 100,000 stays unlocked for future community and marketing use.</div></td><td class="num">5%</td><td class="num">1,050,000</td></tr>
         </tbody>
       </table>
-      <p class="muted small" style="margin:16px 0 0">Both vesting contracts release <b style="color:var(--text)">zero</b> when the cliff ends (no lump sum), then vest in a straight line. Their clocks started when each contract was deployed; anyone can read the exact times on-chain with <code>cliffEnd()</code> and <code>end()</code>. Their source is published, and on 4 Nov 2026 it was checked to compile to exactly the code deployed at both addresses (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/remix" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">source and check</a>). <b style="color:var(--text)">No REEF leaves any team wallet before the pool is live</b> &mdash; not for testers, the airdrop or marketing.</p>
+      <p class="muted small" style="margin:16px 0 0">All the vesting contracts release <b style="color:var(--text)">zero</b> when the cliff ends (no lump sum), then vest in a straight line. Their clocks started when each contract was deployed; anyone can read the exact times on-chain with <code>cliffEnd()</code> and <code>end()</code>. Their source is published, and on 4 Nov 2026 it was checked to compile to exactly the code deployed at the dev and treasury addresses; the liquidity and marketing locks deployed on 6 Nov run the same code (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/remix" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">source and check</a>). <b style="color:var(--text)">No REEF leaves any team wallet before the pool is live</b> &mdash; not for testers, the airdrop or marketing.</p>
     </div>
   </section>
 
@@ -372,8 +372,8 @@ footer a{text-decoration:underline}
         <li><b>Rounding: amounts within 0.001 BDAG of a minimum count.</b> <span class="muted">Reef's router maths can record an add or swap a few millionths of a BDAG under the round number you typed (5,000 can land as 4,999.999&hellip;), so that difference is ignored.</span></li>
         <li><b>First 1,000 wallets are in</b>, ranked by their first qualifying action. <span class="muted">One claim per wallet, at the highest tier it reached. Team wallets are excluded.</span></li>
         <li><b>Size:</b> 2,100,000 REEF shared across all shares, at most 2,100 REEF per share. <span class="muted">1,000 Tier-1 wallets would get 2,100 each; a mix of tiers makes one share smaller. Nothing is split beyond the cap.</span></li>
-        <li><b>Claims open Mon Nov 9, 09:00 (UTC+7)</b> and close <b>Thu Feb 4, 2027, 09:00 (UTC+7)</b>. <span class="muted">Claim from the airdrop card on <a href="/">Reef's home page</a>, with the wallet that's on the list. The list and contract are published after the Nov 6 snapshot; the contract is funded when claims open. Every unclaimed or unallocated REEF then goes to the dead address, never to the team.</span></li>
-        <li><b>Check it yourself.</b> <span class="muted">The full list, every amount and proof, and the script that produced them will be published, so anyone can recompute the result from Reef's public on-chain events.</span></li>
+        <li><b>Claims open Mon Nov 9, 09:00 (UTC+7)</b> and close <b>Thu Feb 4, 2027, 09:00 (UTC+7)</b>. <span class="muted">Claim from the airdrop card on <a href="/">Reef's home page</a>, with the wallet that's on the list. The list and the claim contract are published below; the contract is funded at 09:00 on Nov 9, which is what opens claims. Every unclaimed or unallocated REEF then goes to the dead address, never to the team.</span></li>
+        <li><b>Check it yourself.</b> <span class="muted">The full list (<a href="/reef/airdrop.csv">CSV</a>, or <a href="/reef/airdrop.json">JSON</a> with every Merkle proof) and <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/scripts/airdrop" target="_blank" rel="noopener">the script that produced it</a> are published, so anyone can recompute the result from Reef's public on-chain events.</span></li>
       </ol>
     </div>
   </section>
@@ -399,17 +399,19 @@ footer a{text-decoration:underline}
       <div class="addr"><div class="lbl"><b>Dev vesting</b>12-month cliff (ends 29 Sep 2027), fully vested 28 Sep 2029</div><code data-a="0x5468821749B936ffa6C3aF840841058b026E288f"></code><button>Copy</button></div>
       <div class="addr"><div class="lbl"><b>Treasury vesting</b>6-month cliff (ends 28 Mar 2027), fully vested 28 Sep 2029</div><code data-a="0x8750aC546e0B6234B292F3830958F780E3e304BD"></code><button>Copy</button></div>
       <div class="addr"><div class="lbl"><b>Tester thank-you vesting</b>10,000 REEF in five 2,000 REEF tranches, 9 Nov 2026 to 9 Nov 2027. Anyone can trigger a release; it only pays the beneficiary.</div><code data-a="0x5a316575b4096fE04D6C5bFb8eBe55Fef6A00eff"></code><button>Copy</button></div>
-      <div class="addr"><div class="lbl"><b>Airdrop claim</b>Claims open Nov 9, 09:00 (UTC+7)</div><span class="pending">Posted here after the Nov 6 snapshot</span><span></span></div>
-      <div class="addr"><div class="lbl"><b>REEF/BDAG pool</b>Fixed in advance; empty until launch</div><code data-a="0x1Ea359266c19635c4e92B8dEf5933AbFc6A9182D"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Airdrop claim</b>Claims open Nov 9, 09:00 (UTC+7), close Feb 4, 2027. No owner.</div><code data-a="0xA08EB30F91f999282dd737a2f0c9FDF469B5Cabb"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Liquidity vesting</b>6-month cliff (ends 5 May 2027), fully vested 5 Nov 2029</div><code data-a="0xa3892120BC98e3AFB95730D9Dc37572e1D1A3455"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Marketing vesting</b>6-month cliff (ends 5 May 2027), fully vested 5 Nov 2029</div><code data-a="0xF821AFc03d2aCcdad3Ebfb9b16E8847EeA4eBC46"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>REEF/BDAG pool</b>Live since Nov 6, 2026; LP locked until Nov 6, 2027</div><code data-a="0x1Ea359266c19635c4e92B8dEf5933AbFc6A9182D"></code><button>Copy</button></div>
     </div>
-    <p class="muted small" style="margin:10px 0 0">Reef creates every pool at an address calculated from the two tokens, so the REEF/BDAG pool&rsquo;s address is known before it exists. Until launch it holds no liquidity; the presale contract&rsquo;s <code>finalize()</code> is what seeds it, at 225 BDAG per REEF.</p>
+    <p class="muted small" style="margin:10px 0 0">Reef creates every pool at an address calculated from the two tokens, so the REEF/BDAG pool&rsquo;s address is known before it exists. The presale contract&rsquo;s <code>finalize()</code> seeded it on Nov 6, 2026, at 225 BDAG per REEF.</p>
     <p class="muted small" style="margin:8px 0 0">The presale&rsquo;s source code and exact compiler settings are <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/reef-token" target="_blank" rel="noopener">published on GitHub</a>, with steps to check that they match the code at the presale address. The block explorer can&rsquo;t verify it yet, because its upload limit is smaller than the source file.</p>
     <div class="subh">Allocation wallets</div>
     <div class="addrs">
-      <div class="addr"><div class="lbl"><b>Liquidity</b>Pairs REEF at launch; receives LP after the lock</div><code data-a="0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Liquidity</b>Paired REEF at launch; receives vested REEF and, after the lock, the LP</div><code data-a="0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418"></code><button>Copy</button></div>
       <div class="addr"><div class="lbl"><b>Presale holder</b>Funds the presale contract</div><code data-a="0xdFa06aE38addc9aa11Df033bE457CD6D00153942"></code><button>Copy</button></div>
-      <div class="addr"><div class="lbl"><b>Airdrop holder</b>Funds the airdrop claim contract</div><code data-a="0xC87ac8FDDB6EF32a2fEE40500FBb24E4ea54Acc6"></code><button>Copy</button></div>
-      <div class="addr"><div class="lbl"><b>Marketing</b>Tester thank-yous, then vesting</div><code data-a="0xaFb7f412dE83978188fAc2248e3A5f9A71dCf386"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Airdrop holder</b>Funds the claim contract on Nov 9; holds the card-round REEF</div><code data-a="0xC87ac8FDDB6EF32a2fEE40500FBb24E4ea54Acc6"></code><button>Copy</button></div>
+      <div class="addr"><div class="lbl"><b>Marketing</b>100,000 unlocked; the rest is in vesting</div><code data-a="0xaFb7f412dE83978188fAc2248e3A5f9A71dCf386"></code><button>Copy</button></div>
     </div>
     <div class="subh">Reef DEX</div>
     <div class="addrs">
@@ -848,7 +850,7 @@ const REEF_CFG = {
     var now = Date.now()/1000;
     if (now < START) { box.className = "status"; cd.textContent = "opens in " + span(START-now); }
     else if (now <= END) { box.className = "status live"; txt.innerHTML = "<b>Presale and airdrop window are open</b> <span class=\"tz\">until Fri Nov 6, 09:00 UTC+7 (02:00 UTC), or until it sells out</span>"; cd.textContent = "closes in " + span(END-now); }
-    else { box.className = "status closed"; txt.innerHTML = "<b>The sale window closed Fri Nov 6, 2026, 09:00 UTC+7.</b> <span class=\"tz\">Launch and claim updates are posted on Reef's channels and in the Contracts section below.</span>"; cd.textContent = ""; }
+    else { box.className = "status closed"; txt.innerHTML = "<b>The sale closed Fri Nov 6 and the REEF/BDAG pool is live.</b> <span class=\"tz\">Presale buyers can claim now, below. Airdrop claims open Mon Nov 9, 09:00 UTC+7 on Reef's home page.</span>"; cd.textContent = ""; }
   }
   tick(); setInterval(tick, 1000);
 })();

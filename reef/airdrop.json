@@ -1,0 +1,387 @@
+{
+  "final": true,
+  "window": {
+    "start": 1791338400,
+    "end": 1793930400,
+    "startBlock": 23700076,
+    "endBlock": 27394198
+  },
+  "rules": {
+    "swapMinBDAG": "1000.0",
+    "liqMinBDAG": "5000.0",
+    "launchMinBDAG": "25000.0",
+    "toleranceBDAG": "0.001",
+    "maxWallets": 1000,
+    "potREEF": "2100000.0",
+    "perShareCapREEF": "2100.0",
+    "shares": {
+      "1": 1,
+      "2": 3,
+      "3": 10
+    },
+    "claimDeadline": 1801706400
+  },
+  "merkleRoot": "0x1da60a42218fa858eb0a2d6eb1268b8846c38ecefeea9dbaceb3a7749a697eb2",
+  "perShareREEF": "2100.0",
+  "totalShares": 38,
+  "totalAllocated": "79800000000000000000000",
+  "totalAllocatedREEF": "79800.0",
+  "unallocatedREEF": "2020200.0",
+  "wallets": 20,
+  "qualifiedWallets": 20,
+  "byTier": {
+    "1": 11,
+    "2": 9,
+    "3": 0
+  },
+  "excludedTeamWalletsThatQualified": [
+    "0xcA8358Ebbd82ad678ffB288d5A9b4915F24799B5"
+  ],
+  "needsReview": [
+    {
+      "wallet": "0x26f0934c7b6d7e9a6fd4260ed9b7b40179bd3519",
+      "tx": "0x19fdbd07ce1a78b7386252305d0f5f4be2bcda5e60dd5d327172cb2ec7330d60",
+      "note": "removed liquidity later in the window from a pair it was credited a liquidity add on; check before publishing"
+    }
+  ],
+  "liquidityRemoved": [
+    {
+      "wallet": "0x26f0934C7B6D7e9a6FD4260eD9b7b40179bd3519",
+      "pair": "0x982929ecec5782423cd5a1a1d9d2d3d550688820",
+      "addTx": "0x22e2cbe098837311f352d6288282c150379a84f4c1fab9ea0bb8ef7d104bcd57",
+      "removeTx": "0x19fdbd07ce1a78b7386252305d0f5f4be2bcda5e60dd5d327172cb2ec7330d60",
+      "removedBDAG": "9999.999999999999999999",
+      "note": "removed liquidity later in the window from a pair it was credited a liquidity add on; check before publishing"
+    }
+  ],
+  "entries": [
+    {
+      "rank": 1,
+      "wallet": "0xb2bB32265aba24Fff47e6f3AECae80EED30E5dA1",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xdc90a68cc82b8171b518c6994de29f88f60d342d3508ddab1a4446fc74e00165",
+      "firstBlock": 23841860,
+      "proof": [
+        "0xd6976fe5c18e5e1518a5d108e08171cf5b499e8bc5546c9cbbc5a3c01c02cc9b",
+        "0x278ff8ef20a1139b041d75bb4514f2f4aeb68547106477d4860eff3aa6be9786",
+        "0x8da3d1ce61d75169a87d054a48d90e8dd1950a9c270630ece2c3dee403c24cca",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 2,
+      "wallet": "0xB4Fb0E2d0B8D2A519Fb8e1a46DAFa0C0195BCaD2",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0x848b2b66e4cdd42505f55f1a7062059728b68e9ae614b3c124334345e638ab71",
+      "firstBlock": 23871238,
+      "proof": [
+        "0x7f3d7f24247854f193b76a7600ee325e5519c49fb131da8dfd0a724539131edd",
+        "0xd6be7021ba9e301c109e69e1febde9e5211448c006ab0e2ce141116f761a6680",
+        "0x2ab30a10307b585325a62b974e95b37c3958ab5614a688375d2a9b1b6182a89e",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 3,
+      "wallet": "0x43BdcBB117b5c664a7CDa23879FEB555957fb717",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x57fe9fbb0b18da42b998693f8f8560e8c7b66544defefdd8f1d16d103a3b1c64",
+      "firstBlock": 23877754,
+      "proof": [
+        "0xa1d1408976e66e8a38908c070869d9ad9ee9cb568c10c4db0b0121ad0523fed5",
+        "0xe64044e9a263a7627ab114f1ebc58b8c25f582bcddd0c914a7b25a2966496fdd",
+        "0x02ac9cdbc108dde627cd856ca43e126fde99d0350d621511760c058f5f8691d0",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 4,
+      "wallet": "0x5110Af021cC9D047774bc66DC0E9E34ffca272F1",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x52ea32adeaf173093499e4070b341f2638bed87483dbdcca27610644a14487d9",
+      "firstBlock": 23960966,
+      "proof": [
+        "0xd88e8786654e1bb50cb41a21e9848a8648e8e1048fda88236cef29d8350b7354",
+        "0x278ff8ef20a1139b041d75bb4514f2f4aeb68547106477d4860eff3aa6be9786",
+        "0x8da3d1ce61d75169a87d054a48d90e8dd1950a9c270630ece2c3dee403c24cca",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 5,
+      "wallet": "0x93b603AFDc441EAa82a7898802C22d2601860a33",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0x86f1aa46d63a9f54e4b7d50a7a510ef5437f1b1f3be831477c9ccac52bb6f4de",
+      "firstBlock": 24002418,
+      "proof": [
+        "0xcb203f5d862ba7d63cc5542eb66a60182937d87d50f2f34ae8cbe51b59bbdf5d",
+        "0x762e5f6d6181ebf6461af8e925cb79bb2f77a2423a9be66dda84bd9d4ca96355",
+        "0xd791c44e39adb575c9027914c89050474ccfa1a6e2d8482731bd7f8766656504",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 6,
+      "wallet": "0x6c02dD207e3E7DC70Ee1C0B9DEC4460D492C3Cfe",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x2b0bd81f06a34a8cbb92d1ef52cff7be2b98cb46b0a638c6b45a7aea454c1ec0",
+      "firstBlock": 24004891,
+      "proof": [
+        "0x65c26721aed69303b3ac944d800f6589c9d8f9031e8907d79a23797182d5f896",
+        "0xb8c1c22e24258fa9f6d2c030dfdfb74c6bd5407a9317296b6b7ce8b949da6c79",
+        "0x4e692187117879e05b2ad273568093272230c48f36a1a5959082780e61e6346c",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 7,
+      "wallet": "0xF6685C4A9eA0726eC19672Fd36dD14a99516d87F",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x6e84a965daafe8e8febc0b1f2a461cff4588b957c2a7d12f883de9c2f372fbb0",
+      "firstBlock": 24495189,
+      "proof": [
+        "0xc1a22206bb868788ab14f55b939c5ff462517ea676798ba495217ebcee36cc4e",
+        "0xb97077b536c100a17280343008a9707f14b3b719d73e491ae8809d7b8da0f76c",
+        "0xd791c44e39adb575c9027914c89050474ccfa1a6e2d8482731bd7f8766656504",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 8,
+      "wallet": "0x7e16276259f39f87F1693ab413FbB766F3C6aeD3",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x46c462e2d0e324f1de91312b5abb5440abb7b8d3c109037aaea6a1470d8ba95a",
+      "firstBlock": 24560300,
+      "proof": [
+        "0xbd992b015be790fc351dd2bba451e52a617ac95d3f53bc95f9bea475a4022b38",
+        "0xb97077b536c100a17280343008a9707f14b3b719d73e491ae8809d7b8da0f76c",
+        "0xd791c44e39adb575c9027914c89050474ccfa1a6e2d8482731bd7f8766656504",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 9,
+      "wallet": "0x8B68b5a56C69F48787945957829Ba4531fFB643A",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xe6845827087b88b1d2c15cb209ec85a1121b5f341d0019aa41949061c50d37fd",
+      "firstBlock": 24680356,
+      "proof": [
+        "0xade4a214589398f283a823e47177ef5ed53dcd4e050414dfb4c7560d0875d374",
+        "0xb9cc7180e4788d0f01fee001a0c961b5cc4a697977bc4006d1239f1e0a49fc4b",
+        "0x02ac9cdbc108dde627cd856ca43e126fde99d0350d621511760c058f5f8691d0",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 10,
+      "wallet": "0xCd6dd02C7D07326EcEC0b718eED505c2b8009A7a",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0x3e37f99a3d3490e2c29783085efa082e85537af84fc18357f5b9a50a9ebf8eaf",
+      "firstBlock": 24979506,
+      "proof": [
+        "0xf8bc7c9d6a721bd596448df2981cad3ff2b09d73d41f90e968e798e1e13fddae",
+        "0x36ad141919bc537be11c5d42db7d71ec635366f9104af11509f92335344d631b",
+        "0x8da3d1ce61d75169a87d054a48d90e8dd1950a9c270630ece2c3dee403c24cca",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 11,
+      "wallet": "0xc808c7a78Fd0C2191bCA73e9E9e8e487Aa9A4C28",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xc40a7e6275fa3c08405e046ea9d9e7bff32fa7ad79056602e041d402c3b0a91f",
+      "firstBlock": 25093215,
+      "proof": [
+        "0x6912a474cbdebe13ad13d189508416422ce01406fec57f6b378d020f05d0d458",
+        "0x1531a5b71c33adbad179e66df3c9c33dfabc8da46e2998c245760d0b442d1b5c",
+        "0x4e692187117879e05b2ad273568093272230c48f36a1a5959082780e61e6346c",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 12,
+      "wallet": "0xb3CF844ceaCC2Cb9E50467EB390182C3f6846FF8",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xa0173b88ea7767c38fb1cfac15fab56480da58b8e3badaa9f54ecfbee058772a",
+      "firstBlock": 25405998,
+      "proof": [
+        "0x6b03cba106b47da3261d2cdca85b3c2abed4f4ed2cd14ac2dcf943850bdff764",
+        "0x1531a5b71c33adbad179e66df3c9c33dfabc8da46e2998c245760d0b442d1b5c",
+        "0x4e692187117879e05b2ad273568093272230c48f36a1a5959082780e61e6346c",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 13,
+      "wallet": "0x3505e782EF7366a51107Efb275a76dE2D7F1D659",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0x2ee322c6a4853f619c871f5e53ad2228d9d121804333d3bbfc024822688cbb53",
+      "firstBlock": 25732221,
+      "proof": [
+        "0xfef202132f09f3fbd5daae45d92c93967710bd1dce680f5f12ee158465374fa0",
+        "0x36ad141919bc537be11c5d42db7d71ec635366f9104af11509f92335344d631b",
+        "0x8da3d1ce61d75169a87d054a48d90e8dd1950a9c270630ece2c3dee403c24cca",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 14,
+      "wallet": "0x26f0934C7B6D7e9a6FD4260eD9b7b40179bd3519",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x22e2cbe098837311f352d6288282c150379a84f4c1fab9ea0bb8ef7d104bcd57",
+      "firstBlock": 26600294,
+      "proof": [
+        "0x9975ebe51864db365e9f5f634857451b53ded894fc04d9a4168f5fb3f1aeebd9",
+        "0xe64044e9a263a7627ab114f1ebc58b8c25f582bcddd0c914a7b25a2966496fdd",
+        "0x02ac9cdbc108dde627cd856ca43e126fde99d0350d621511760c058f5f8691d0",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 15,
+      "wallet": "0x9e098f754A676051d7aBBd4fF42bCa14914F9435",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x8b9a050b0895edf4b78be064b32a171ace4621a3df628506b36af3b5cbc79b60",
+      "firstBlock": 26899699,
+      "proof": [
+        "0xc8bb98dea35ed6f8c114739f2aafe6f8778112e199090639c328f27203a84411",
+        "0x762e5f6d6181ebf6461af8e925cb79bb2f77a2423a9be66dda84bd9d4ca96355",
+        "0xd791c44e39adb575c9027914c89050474ccfa1a6e2d8482731bd7f8766656504",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    },
+    {
+      "rank": 16,
+      "wallet": "0xa545b7689039882B796Ee0E282e531E70C543EDF",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xb7a11420d277271e745b1af04db668bb7ac266344efd49a6cf7a515689930158",
+      "firstBlock": 26981636,
+      "proof": [
+        "0x77011da01986da1e3a44ed79c16a17d32dbb7cca410624a956dc51e0f5ff9f70",
+        "0xc28eddbbfca2025058d991007d27e2efa1d0009a36cebfef06054b72ddbfdd6b",
+        "0x2ab30a10307b585325a62b974e95b37c3958ab5614a688375d2a9b1b6182a89e",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 17,
+      "wallet": "0x848C980d0f196bCbe2cD30De1E77c4451687073F",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xeaf8d00eb160022d0e84d650ca5ec27202c74d1808d33de8de2de07d2600479c",
+      "firstBlock": 27037691,
+      "proof": [
+        "0x47c13b99ed7ca01a50c47fb25f369bfa0a2c3312678877684b8c6dcf192120c5",
+        "0xb8c1c22e24258fa9f6d2c030dfdfb74c6bd5407a9317296b6b7ce8b949da6c79",
+        "0x4e692187117879e05b2ad273568093272230c48f36a1a5959082780e61e6346c",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 18,
+      "wallet": "0x0d0a0932C8D63b9bfFe97A517171b5d6C5283006",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0xaec9752fdf806dbafa14fa09af1ca8e9dc5238192fd450d791406b6f208ed2aa",
+      "firstBlock": 27123015,
+      "proof": [
+        "0x7defb867ec6b575c8ad2894db495f029f75f2546d08ad213cd431c596aff7a36",
+        "0xc28eddbbfca2025058d991007d27e2efa1d0009a36cebfef06054b72ddbfdd6b",
+        "0x2ab30a10307b585325a62b974e95b37c3958ab5614a688375d2a9b1b6182a89e",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 19,
+      "wallet": "0xC6D8Fdf92344Ff5Dd73A3D1A1e7475C967C599e4",
+      "tier": 2,
+      "shares": 3,
+      "amount": "6300000000000000000000",
+      "amountREEF": "6300.0",
+      "firstTx": "0x9e126a76670089a54c8aa906b6bde5493eee2ca84b41d3f2db47535700d316c7",
+      "firstBlock": 27320451,
+      "proof": [
+        "0x874a051e882e52f5eaa522bd511fdf79b83cb52596f0f40a609ed1d28f9bcea1",
+        "0xd6be7021ba9e301c109e69e1febde9e5211448c006ab0e2ce141116f761a6680",
+        "0x2ab30a10307b585325a62b974e95b37c3958ab5614a688375d2a9b1b6182a89e",
+        "0xbe51be617889fd30e9e51f0945ae4b0ba770b767743ce87f9b921fa67d267c55",
+        "0x61f04f70ba5d55bded08eaebe588520e0114782eb5442bd9c5ae9d27f2e0c465"
+      ]
+    },
+    {
+      "rank": 20,
+      "wallet": "0x56d9aF1218CCf734b3F4E00849F0C7eaB1C76A89",
+      "tier": 1,
+      "shares": 1,
+      "amount": "2100000000000000000000",
+      "amountREEF": "2100.0",
+      "firstTx": "0xcb012a36d95a58388a3e4942c8b983b80df9025db635b4f5e60922a5e88545fb",
+      "firstBlock": 27364998,
+      "proof": [
+        "0xa8f0867dcf229de2996c4459e32be18a0487b5110ed7dce75df2c96385901965",
+        "0xb9cc7180e4788d0f01fee001a0c961b5cc4a697977bc4006d1239f1e0a49fc4b",
+        "0x02ac9cdbc108dde627cd856ca43e126fde99d0350d621511760c058f5f8691d0",
+        "0x9ce36e6f2dbfdf3be50e4e691572d2a92e5966426c444d90b8548d8340fee9da"
+      ]
+    }
+  ]
+}
