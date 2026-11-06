@@ -19,6 +19,11 @@ interface ILaunchFactoryLike {
 interface ILaunchPairLike {
     function totalSupply() external view returns (uint256);
     function mint(address to) external returns (uint256 liquidity);
+    function token0() external view returns (address);
+    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+    function price0CumulativeLast() external view returns (uint256);
+    function price1CumulativeLast() external view returns (uint256);
+    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external;
 }
 
 interface IWBDAGLike {
@@ -59,6 +64,16 @@ interface IWBDAGLike {
 ///         the LP lock ends after a launch, or when refunds open if the soft cap was missed.
 ///         See bondOutcome() and settleBond().
 ///
+///         REEF routing pool (optional, reefSliceBps of the pooled BDAG, 20% for Reef launches):
+///         at finalize that share of the BDAG buys REEF from the REEF/BDAG pool and is paired
+///         with the token in a TOKEN/REEF pool at the same listing price; both LPs are locked.
+///         It only runs when it is safe, and is SKIPPED (never blocks the launch) when:
+///         there was no REEF/BDAG pool when this sale was deployed, the REEF/BDAG pool holds
+///         less than minReefDepth BDAG, less than a day has passed since deployment, the REEF
+///         price is more than 5% away from its average since deployment (someone pushed it),
+///         or the TOKEN/REEF pool already has liquidity. Skipped means the whole pooled BDAG
+///         goes to TOKEN/BDAG, as without the slice.
+///
 ///         Prices are in BDAG wei per ONE whole token (10**decimals units), so any token
 ///         decimals and fractional prices work. Fee-on-transfer tokens are refused at finalize.
 ///
@@ -72,6 +87,9 @@ contract ReefLaunchSale is ReentrancyGuard {
     uint256 public constant MIN_LP_LOCK = 180 days;
     uint256 public constant REFUND_DELAY = 7 days;
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
+    uint256 public constant MAX_REEF_SLICE_BPS = 5_000; // at most half the pooled BDAG
+    uint256 public constant MAX_SLICE_SLIPPAGE_BPS = 500; // REEF bought within 5% of its average price
+    uint256 public constant MIN_AVERAGE_WINDOW = 1 days;
 
     struct Config {
         address token; // the token being sold (standard ERC-20, no transfer fee)
@@ -90,6 +108,9 @@ contract ReefLaunchSale is ReentrancyGuard {
         uint256 lpLockSeconds; // at least MIN_LP_LOCK
         address bondToken; // REEF; the project's bond is held in this token
         uint256 bondAmount; // e.g. 1,000 REEF; 0 = no bond
+        address reefToken; // REEF, for the TOKEN/REEF routing pool
+        uint256 reefSliceBps; // share of the pooled BDAG for TOKEN/REEF (2000 = 20%); 0 = off
+        uint256 minReefDepth; // BDAG wei the REEF/BDAG pool must hold for the slice to run
     }
 
     // ---- configuration (set once in the constructor, never changed) ----
@@ -110,6 +131,13 @@ contract ReefLaunchSale is ReentrancyGuard {
     uint256 public unit; // 10 ** token decimals
     IERC20 public bondToken;
     uint256 public bondAmount;
+    IERC20 public reefToken;
+    uint256 public reefSliceBps;
+    uint256 public minReefDepth;
+    address public reefPair; // REEF/WBDAG pool, recorded at deployment (zero = no slice)
+    bool public reefIs0;
+    uint256 public reefCumStart; // REEF price accumulator at deployment
+    uint256 public reefObsTime;
 
     // ---- state ----
     uint256 public totalRaised;
@@ -120,6 +148,7 @@ contract ReefLaunchSale is ReentrancyGuard {
     bool public tokensReturned;
     bool public bondSettled;
     address public lpToken;
+    address public reefLpToken; // TOKEN/REEF pool, if the slice ran
     uint256 public lpUnlockTime;
 
     event Purchased(address indexed buyer, uint256 amountBDAG, uint256 totalRaised);
@@ -130,6 +159,10 @@ contract ReefLaunchSale is ReentrancyGuard {
     event LPWithdrawn(uint256 amount, address to);
     event BondReturned(address indexed to, uint256 amount);
     event BondBurned(uint256 amount);
+    event ReefSlice(uint256 bdagIn, uint256 reefBought, uint256 tokensPaired, uint256 lpTokens, address pool);
+    /// reason: 1 off or no REEF pool at deployment, 2 slice too small, 3 under a day since deployment,
+    ///         4 REEF pool under minReefDepth, 5 REEF price more than 5% from its average, 6 TOKEN/REEF pool already seeded
+    event ReefSliceSkipped(uint8 reason);
 
     constructor(Config memory c) {
         require(c.token != address(0), "token is zero address");
@@ -167,6 +200,21 @@ contract ReefLaunchSale is ReentrancyGuard {
         unit = 10 ** uint256(IERC20Metadata(c.token).decimals());
         bondToken = IERC20(c.bondToken);
         bondAmount = c.bondAmount;
+
+        if (c.reefSliceBps > 0) {
+            require(c.reefSliceBps <= MAX_REEF_SLICE_BPS, "REEF slice above 50%");
+            require(c.reefToken != address(0) && c.reefToken != c.token, "bad REEF token");
+            reefToken = IERC20(c.reefToken);
+            reefSliceBps = c.reefSliceBps;
+            minReefDepth = c.minReefDepth;
+            address pool = ILaunchFactoryLike(ILaunchRouterLike(c.router).factory()).getPair(c.reefToken, ILaunchRouterLike(c.router).WBDAG());
+            if (pool != address(0)) {
+                reefPair = pool;
+                reefIs0 = ILaunchPairLike(pool).token0() == c.reefToken;
+                reefCumStart = _reefCumulative();
+                reefObsTime = block.timestamp;
+            }
+        }
 
         require(tokensFor(c.hardCap) > 0 && tokensForPool(c.hardCap) > 0, "price too high for the cap");
     }
@@ -229,22 +277,27 @@ contract ReefLaunchSale is ReentrancyGuard {
         uint256 forPool = tokensForPool(raised);
         require(forPool > 0, "raise too small to pair");
 
+        address wbdag = router.WBDAG();
+        IWBDAGLike(wbdag).deposit{value: raised}();
+        if (fee > 0) IERC20(wbdag).safeTransfer(feeRecipient, fee);
+
+        // Optional TOKEN/REEF pool first; it returns the BDAG it used (0 if skipped).
+        uint256 bdagMain = bdagForPool - _reefSlice(wbdag, bdagForPool);
+        uint256 tokensMain = (bdagMain * unit) / listingPrice;
+
         // Same pool-seeding as the REEF presale: mint directly so dust in the pair can't
         // block the launch, and refuse a pair someone has already given liquidity or loaded
         // with more than 1% of the launch tokens.
-        address wbdag = router.WBDAG();
         ILaunchFactoryLike factory = ILaunchFactoryLike(router.factory());
         address pair = factory.getPair(address(token), wbdag);
         if (pair == address(0)) pair = factory.createPair(address(token), wbdag);
         require(ILaunchPairLike(pair).totalSupply() == 0, "pool already has liquidity");
         uint256 before = token.balanceOf(pair);
-        require(before <= forPool / 100, "pool pre-loaded with tokens");
+        require(before <= tokensMain / 100, "pool pre-loaded with tokens");
 
-        IWBDAGLike(wbdag).deposit{value: raised}();
-        if (fee > 0) IERC20(wbdag).safeTransfer(feeRecipient, fee);
-        IERC20(wbdag).safeTransfer(pair, bdagForPool);
-        token.safeTransfer(pair, forPool);
-        require(token.balanceOf(pair) - before == forPool, "token takes a fee on transfer");
+        IERC20(wbdag).safeTransfer(pair, bdagMain);
+        token.safeTransfer(pair, tokensMain);
+        require(token.balanceOf(pair) - before == tokensMain, "token takes a fee on transfer");
         uint256 liquidity = ILaunchPairLike(pair).mint(address(this));
 
         // Everything left except what buyers are owed goes to the dead address.
@@ -254,7 +307,77 @@ contract ReefLaunchSale is ReentrancyGuard {
 
         lpToken = pair;
         lpUnlockTime = block.timestamp + lpLockSeconds;
-        emit Finalized(raised, fee, bdagForPool, forPool, burn, liquidity, pair);
+        emit Finalized(raised, fee, bdagMain, tokensMain, burn, liquidity, pair);
+    }
+
+    /// @dev Buys REEF with reefSliceBps of the pooled BDAG and seeds TOKEN/REEF at the listing
+    ///      price. Any unsafe condition skips it (returns 0) rather than reverting, so the slice
+    ///      can never block a launch or be used to force refunds.
+    function _reefSlice(address wbdag, uint256 bdagForPool) internal returns (uint256) {
+        if (reefPair == address(0)) return _skip(1);
+        uint256 slice = (bdagForPool * reefSliceBps) / BPS;
+        uint256 tokensSlice = (slice * unit) / listingPrice;
+        if (slice == 0 || tokensSlice == 0) return _skip(2);
+        uint256 out = _reefQuote(slice);
+        if (out == type(uint256).max) return 0; // _reefQuote already emitted the reason
+
+        ILaunchFactoryLike factory = ILaunchFactoryLike(router.factory());
+        address tp = factory.getPair(address(token), address(reefToken));
+        if (tp == address(0)) tp = factory.createPair(address(token), address(reefToken));
+        uint256 beforeT = token.balanceOf(tp);
+        if (ILaunchPairLike(tp).totalSupply() != 0 || beforeT > tokensSlice / 100) return _skip(6);
+
+        // Buy REEF straight from the pool (exact-in, the pool's own 0.30% maths).
+        IERC20(wbdag).safeTransfer(reefPair, slice);
+        uint256 reefBefore = reefToken.balanceOf(address(this)); // the bond may also be REEF
+        ILaunchPairLike(reefPair).swap(reefIs0 ? out : 0, reefIs0 ? 0 : out, address(this), "");
+        uint256 got = reefToken.balanceOf(address(this)) - reefBefore;
+
+        reefToken.safeTransfer(tp, got);
+        token.safeTransfer(tp, tokensSlice);
+        require(token.balanceOf(tp) - beforeT == tokensSlice, "token takes a fee on transfer");
+        uint256 lp = ILaunchPairLike(tp).mint(address(this));
+        reefLpToken = tp;
+        emit ReefSlice(slice, got, tokensSlice, lp, tp);
+        return slice;
+    }
+
+    /// @dev REEF out for `slice` BDAG, or type(uint256).max (after emitting why) if the REEF
+    ///      pool is too thin, the average window too short, or the price too far from average.
+    function _reefQuote(uint256 slice) internal returns (uint256) {
+        uint256 elapsed = block.timestamp - reefObsTime;
+        if (elapsed < MIN_AVERAGE_WINDOW) { _skip(3); return type(uint256).max; }
+        (uint112 r0, uint112 r1, ) = ILaunchPairLike(reefPair).getReserves();
+        (uint256 rB, uint256 rR) = reefIs0 ? (uint256(r1), uint256(r0)) : (uint256(r0), uint256(r1));
+        if (rB < minReefDepth || rR == 0) { _skip(4); return type(uint256).max; }
+        uint256 out = (slice * 997 * rR) / (rB * 1000 + slice * 997);
+        uint256 avg;
+        unchecked { avg = (_reefCumulative() - reefCumStart) / elapsed; } // BDAG per REEF, UQ112x112
+        if (avg == 0 || out == 0 || out * BPS < ((slice << 112) / avg) * (BPS - MAX_SLICE_SLIPPAGE_BPS)) {
+            _skip(5);
+            return type(uint256).max;
+        }
+        return out;
+    }
+
+    function _skip(uint8 reason) internal returns (uint256) {
+        emit ReefSliceSkipped(reason);
+        return 0;
+    }
+
+    /// @dev The REEF/WBDAG pool's cumulative REEF price (BDAG per REEF, UQ112x112) as of now,
+    ///      extrapolated for this block the way the pool itself does.
+    function _reefCumulative() internal view returns (uint256 cum) {
+        ILaunchPairLike p = ILaunchPairLike(reefPair);
+        cum = reefIs0 ? p.price0CumulativeLast() : p.price1CumulativeLast();
+        (uint112 r0, uint112 r1, uint32 last) = p.getReserves();
+        uint32 ts = uint32(block.timestamp % 2 ** 32);
+        if (last != ts && r0 != 0 && r1 != 0) {
+            unchecked {
+                uint32 el = ts - last;
+                cum += (reefIs0 ? (uint256(r1) << 112) / r0 : (uint256(r0) << 112) / r1) * el;
+            }
+        }
     }
 
     // ---------------------------------------------------------------- claiming
@@ -347,9 +470,16 @@ contract ReefLaunchSale is ReentrancyGuard {
         require(finalized, "not finalized yet");
         require(block.timestamp >= lpUnlockTime, "LP still locked");
         uint256 amount = IERC20(lpToken).balanceOf(address(this));
-        require(amount > 0, "no LP to withdraw");
-        IERC20(lpToken).safeTransfer(lpBeneficiary, amount);
-        emit LPWithdrawn(amount, lpBeneficiary);
+        uint256 amountReef = reefLpToken == address(0) ? 0 : IERC20(reefLpToken).balanceOf(address(this));
+        require(amount + amountReef > 0, "no LP to withdraw");
+        if (amount > 0) {
+            IERC20(lpToken).safeTransfer(lpBeneficiary, amount);
+            emit LPWithdrawn(amount, lpBeneficiary);
+        }
+        if (amountReef > 0) {
+            IERC20(reefLpToken).safeTransfer(lpBeneficiary, amountReef);
+            emit LPWithdrawn(amountReef, lpBeneficiary);
+        }
     }
 
     // ------------------------------------------------------------------- views
@@ -372,6 +502,6 @@ contract ReefLaunchSale is ReentrancyGuard {
     function terms() external view returns (Config memory c) {
         c = Config(address(token), address(router), projectWallet, lpBeneficiary, feeRecipient, feeBps,
             salePrice, listingPrice, softCap, hardCap, maxPerWallet, startTime, endTime, lpLockSeconds,
-            address(bondToken), bondAmount);
+            address(bondToken), bondAmount, address(reefToken), reefSliceBps, minReefDepth);
     }
 }
