@@ -7,7 +7,8 @@ const DEAD = "0x000000000000000000000000000000000000dEaD";
 const DAY = 86400n;
 
 describe("ReefLaunchSale (launchpad v2)", () => {
-  let owner, project, lpBen, treasury, a, b, c, wbdag, factory, router;
+  let owner, project, lpBen, treasury, a, b, c, wbdag, factory, router, reefBond;
+  const BOND = 1_000n * E18;
 
   beforeEach(async () => {
     [owner, project, lpBen, treasury, a, b, c] = await ethers.getSigners();
@@ -15,6 +16,7 @@ describe("ReefLaunchSale (launchpad v2)", () => {
     wbdag = await (await ethers.getContractFactory("contracts/reef/WBDAG.sol:WBDAG")).deploy();
     factory = await (await ethers.getContractFactory("ReefFactory")).deploy(owner.address);
     router = await (await ethers.getContractFactory("ReefRouter")).deploy(await factory.getAddress(), await wbdag.getAddress());
+    reefBond = await (await ethers.getContractFactory("MockLaunchToken")).connect(project).deploy("Reef", "REEF", 18, 100_000n * E18);
   });
 
   async function newToken(decimals = 18, supply = 10_000_000n) {
@@ -28,7 +30,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       token: await token.getAddress(), router: await router.getAddress(), projectWallet: project.address,
       lpBeneficiary: lpBen.address, feeRecipient: treasury.address, feeBps: 200n,
       salePrice: 100n * E18, listingPrice: 150n * E18, softCap: 200_000n * E18, hardCap: 1_000_000n * E18,
-      maxPerWallet: 400_000n * E18, startTime: now + 100n, endTime: now + 100n + 7n * DAY, lpLockSeconds: 365n * DAY, ...over,
+      maxPerWallet: 400_000n * E18, startTime: now + 100n, endTime: now + 100n + 7n * DAY, lpLockSeconds: 365n * DAY,
+      bondToken: await reefBond.getAddress(), bondAmount: BOND, ...over,
     };
     const sale = await (await ethers.getContractFactory("ReefLaunchSale")).deploy(cfg);
     return { sale, cfg };
@@ -36,6 +39,7 @@ describe("ReefLaunchSale (launchpad v2)", () => {
 
   async function fund(token, sale) {
     await token.connect(project).transfer(await sale.getAddress(), await sale.tokensRequired());
+    if ((await sale.bondAmount()) > 0n) await reefBond.connect(project).transfer(await sale.getAddress(), await sale.bondAmount());
   }
   const pairOf = async (token) => ethers.getContractAt("ReefPair", await factory.getPair(await token.getAddress(), await wbdag.getAddress()));
 
@@ -47,7 +51,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
         const now = BigInt(await time.latest());
         const cfg = { token: await t.getAddress(), router: await router.getAddress(), projectWallet: project.address, lpBeneficiary: lpBen.address,
           feeRecipient: treasury.address, feeBps: 200n, salePrice: 100n * E18, listingPrice: 150n * E18, softCap: 1n, hardCap: 10n * E18 * 1000n,
-          maxPerWallet: E18, startTime: now + 100n, endTime: now + 200n, lpLockSeconds: 180n * DAY, ...over };
+          maxPerWallet: E18, startTime: now + 100n, endTime: now + 200n, lpLockSeconds: 180n * DAY,
+          bondToken: await reefBond.getAddress(), bondAmount: BOND, ...over };
         await expect(F.deploy(cfg)).to.be.revertedWith(msg);
       };
       await bad({ feeBps: 301n }, "fee above 3%");
@@ -59,6 +64,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await bad({ lpLockSeconds: 180n * DAY - 1n }, "LP lock must be at least 180 days");
       await bad({ startTime: 1n }, "start time is in the past");
       await bad({ salePrice: 10n ** 40n, listingPrice: 10n ** 40n }, "price too high for the cap");
+      await bad({ bondToken: ethers.ZeroAddress }, "bond token is zero address");
+      await bad({ bondToken: await t.getAddress() }, "bond token is the sale token");
     });
 
     it("publishes every term, and the 2% fee, in one call", async () => {
@@ -68,6 +75,8 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       expect(terms.feeBps).to.equal(200n);
       expect(terms.hardCap).to.equal(cfg.hardCap);
       expect(terms.feeRecipient).to.equal(treasury.address);
+      expect(terms.bondToken).to.equal(await reefBond.getAddress());
+      expect(terms.bondAmount).to.equal(BOND);
       expect(await sale.MAX_FEE_BPS()).to.equal(300n);
       // 10,000 tokens for buyers + 980,000 BDAG / 150 for the pool
       expect(await sale.tokensRequired()).to.equal(10_000n * E18 + (980_000n * E18 * E18) / (150n * E18));
@@ -84,6 +93,9 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await t.connect(project).transfer(await sale.getAddress(), (await sale.tokensRequired()) - 1n);
       await expect(sale.connect(a).buy({ value: E18 })).to.be.revertedWith("sale not funded");
       await t.connect(project).transfer(await sale.getAddress(), 1n);
+      await expect(sale.connect(a).buy({ value: E18 })).to.be.revertedWith("project bond not posted");
+      await reefBond.connect(project).transfer(await sale.getAddress(), BOND);
+      expect(await sale.isBonded()).to.equal(true);
       await expect(sale.connect(a).buy({ value: 0 })).to.be.revertedWith("send some BDAG");
       await sale.connect(a).buy({ value: 400_000n * E18 });
       await expect(sale.connect(a).buy({ value: 1n })).to.be.revertedWith("exceeds per-wallet cap");
@@ -284,6 +296,70 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await expect(rej.refund(await sale.getAddress())).to.be.revertedWith("refund failed");
       await sale.connect(a).refund();
       expect(await ethers.provider.getBalance(await sale.getAddress())).to.equal(10n * E18);
+    });
+  });
+
+  describe("project bond", () => {
+    const outcome = { locked: 0n, returned: 1n, burned: 2n };
+
+    it("after a good launch, is held until the LP unlocks, then goes back to the project", async () => {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t);
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 300_000n * E18 });
+      expect(await sale.bondOutcome()).to.equal(outcome.locked);
+      await expect(sale.settleBond()).to.be.revertedWith("bond still locked");
+      await time.increaseTo(cfg.endTime + 1n);
+      await sale.finalize();
+      await expect(sale.settleBond()).to.be.revertedWith("bond still locked");
+      await time.increaseTo(await sale.lpUnlockTime());
+      expect(await sale.bondOutcome()).to.equal(outcome.returned);
+      const before = await reefBond.balanceOf(project.address);
+      await expect(sale.connect(c).settleBond()).to.emit(sale, "BondReturned").withArgs(project.address, BOND);
+      expect((await reefBond.balanceOf(project.address)) - before).to.equal(BOND);
+      await expect(sale.settleBond()).to.be.revertedWith("bond already settled");
+    });
+
+    it("if the soft cap is simply missed, goes back to the project when the sale ends", async () => {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t);
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 100_000n * E18 });
+      await time.increaseTo(cfg.endTime + 1n);
+      expect(await sale.bondOutcome()).to.equal(outcome.returned);
+      await sale.settleBond();
+      expect(await reefBond.balanceOf(await sale.getAddress())).to.equal(0n);
+    });
+
+    it("is burned if buyers reached the soft cap but the launch was blocked and they had to refund", async () => {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t);
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 300_000n * E18 });
+      // the project seeds its own pool first, so the launch can't open at the sale's price
+      await t.connect(project).approve(await router.getAddress(), ethers.MaxUint256);
+      await router.connect(project).addLiquidityBDAG(await t.getAddress(), 100n * E18, 0, 0, project.address, BigInt(await time.latest()) + 600n, { value: 100n * E18 });
+      await time.increaseTo(cfg.endTime + 1n);
+      await expect(sale.finalize()).to.be.revertedWith("pool already has liquidity");
+      expect(await sale.bondOutcome()).to.equal(outcome.locked); // still inside the 7-day finalize window
+      await time.increaseTo(cfg.endTime + 7n * DAY + 1n);
+      expect(await sale.bondOutcome()).to.equal(outcome.burned);
+      const deadBefore = await reefBond.balanceOf(DEAD);
+      await expect(sale.connect(c).settleBond()).to.emit(sale, "BondBurned").withArgs(BOND);
+      expect((await reefBond.balanceOf(DEAD)) - deadBefore).to.equal(BOND);
+      await sale.connect(a).refund(); // buyers still get their BDAG back
+    });
+
+    it("a sale can run with no bond", async () => {
+      const t = await newToken();
+      const { sale, cfg } = await newSale(t, { bondToken: ethers.ZeroAddress, bondAmount: 0n });
+      await fund(t, sale);
+      await time.increaseTo(cfg.startTime);
+      await sale.connect(a).buy({ value: 300_000n * E18 });
+      await expect(sale.settleBond()).to.be.revertedWith("no bond");
     });
   });
 

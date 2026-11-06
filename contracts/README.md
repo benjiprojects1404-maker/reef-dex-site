@@ -131,4 +131,6 @@ The REEF presale contract that ran on 6 Nov 2026, with its fixed terms turned in
 - **Failed sales**: under the soft cap, refunds open at the end; above it but not finalized within 7 days, refunds open then. `returnTokens()` sends the project its tokens back and, like the first refund, disables finalize.
 - Carried over from the REEF presale: pool seeded by direct mint (dust can't block it), a pair with existing liquidity or more than 1% of the launch tokens pre-loaded is refused. New: fee-on-transfer tokens are refused at finalize.
 
-Tests: `npx hardhat test test/reef-launch-sale.test.js` (15). The project REEF bond and the TOKEN/REEF slice are later steps.
+- **Project bond** (`bondToken` = REEF, `bondAmount` = 1,000 REEF for Reef launches): must be in the contract before `buy()` takes BDAG. `settleBond()` (anyone) burns it only if buyers reached the soft cap but the pool never opened and they had to refund; otherwise it goes back to the project wallet, when the LP lock ends after a launch, or when refunds open if the soft cap was missed. `bondOutcome()` shows which.
+
+Tests: `npx hardhat test test/reef-launch-sale.test.js` (19). The TOKEN/REEF slice is the next step.
