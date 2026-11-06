@@ -28,6 +28,8 @@ const TARGETS = process.env.VESTING
   : [
       { label: "Dev vesting (12-month cliff, 36 months)", address: "0x5468821749B936ffa6C3aF840841058b026E288f" },
       { label: "Treasury vesting (6-month cliff, 36 months)", address: "0x8750aC546e0B6234B292F3830958F780E3e304BD" },
+      { label: "Liquidity vesting (6-month cliff, 36 months; deployed 6 Nov 2026)", address: "0xa3892120BC98e3AFB95730D9Dc37572e1D1A3455" },
+      { label: "Marketing vesting (6-month cliff, 36 months; deployed 6 Nov 2026)", address: "0xF821AFc03d2aCcdad3Ebfb9b16E8847EeA4eBC46" },
     ];
 
 // The deployed vesting contracts match with 5.6.x/5.7.0 (Remix pulled the latest OpenZeppelin in Sep 2026).

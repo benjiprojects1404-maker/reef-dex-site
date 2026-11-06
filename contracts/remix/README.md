@@ -8,6 +8,22 @@ try to compile them.
 |---|---|---|
 | `ReefVesting.sol`: dev vesting | `0x5468821749B936ffa6C3aF840841058b026E288f` | 12-month cliff, 36 months |
 | `ReefVesting.sol`: treasury vesting | `0x8750aC546e0B6234B292F3830958F780E3e304BD` | 6-month cliff, 36 months |
+| `ReefVesting.sol`: liquidity vesting | `0xa3892120BC98e3AFB95730D9Dc37572e1D1A3455` | 6-month cliff, 36 months (deployed 6 Nov 2026) |
+| `ReefVesting.sol`: marketing vesting | `0xF821AFc03d2aCcdad3Ebfb9b16E8847EeA4eBC46` | 6-month cliff, 36 months (deployed 6 Nov 2026) |
+
+## Launch-day locks (6 Nov 2026)
+
+Deployed from Remix with the same source, **Solidity 0.8.20, optimizer on (200 runs), EVM berlin**, and verified on the explorer
+(partial match: flattening changes only the metadata stamp). Checked on-chain the same day: runtime code identical to the
+treasury vesting apart from the trailing metadata hash.
+
+| | Liquidity vesting | Marketing vesting |
+|---|---|---|
+| REEF locked | 9,295,376.908 (the liquidity wallet's whole balance after `finalize()`) | 940,000 (100,000 kept unlocked) |
+| Beneficiary | `0xa07C0993E37e50E6DD4Cfd0F190A4c976b273418` (liquidity wallet) | `0xaFb7f412dE83978188fAc2248e3A5f9A71dCf386` (marketing wallet) |
+| Start | 6 Nov 2026 02:57:59 UTC | 6 Nov 2026 03:04:54 UTC |
+| Cliff ends | 5 May 2027 02:57:59 UTC (180 days) | 5 May 2027 03:04:54 UTC (180 days) |
+| Fully vested | 5 Nov 2029 02:57:59 UTC (1,095 days) | 5 Nov 2029 03:04:54 UTC (1,095 days) |
 
 ## Check the source matches the chain
 
