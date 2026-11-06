@@ -1,0 +1,4 @@
+{
+  "_note": "Launchpad sales Reef lists. The sale page at /launch/sale/?id=<id> only runs sales in this list, and only once their on-chain terms match Reef's standard launch terms. Empty until the launchpad is audited and the first project is vetted.",
+  "sales": []
+}

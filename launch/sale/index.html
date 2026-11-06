@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if(/^www\./i.test(location.hostname)){location.replace(location.protocol+"//"+location.hostname.replace(/^www\./i,"")+location.pathname+location.search+location.hash);}</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Token sale · reef.dex</title>
+<meta name="description" content="A token sale on Reef's launchpad: fixed price in BDAG, every BDAG after the disclosed fee goes into locked pools on Reef.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#050f14">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+/* Same design tokens and buy panel as /reef/ */
+:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#a6c4ca;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--accent:var(--polyp);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:400 15px/1.6 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:inherit}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+code{font:500 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+header.top{border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{height:30px;width:auto;display:block}
+.tag{font:600 12px "Instrument Sans",sans-serif;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
+.spacer{flex:1}
+a.btn{display:inline-block;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2);font:600 14px "Instrument Sans",sans-serif;padding:10px 16px;border-radius:11px;text-decoration:none;white-space:nowrap}
+@media (max-width:760px){.topwrap{padding:10px 14px}.logo-mark{height:24px}}
+
+.hero{padding:40px 0 10px}
+.eyebrow{color:var(--accent);font:600 12px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.hero h1{font-size:clamp(32px,5.6vw,52px);font-weight:800;line-height:1.04;margin:10px 0 12px}
+.hero h1 .c{color:var(--coral-text)}
+.lede{font-size:17px;color:var(--muted);max-width:720px;margin:0;white-space:pre-line}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.links a{font-size:13px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;text-decoration:none}
+.links a:hover{color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 0}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font:700 22px/1.2 "Bricolage Grotesque",sans-serif;margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+
+section.block{padding:36px 0 0}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sechead h2{font-size:clamp(24px,3.6vw,30px);font-weight:700;position:relative;padding-bottom:10px}
+.sechead h2::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;border-radius:2px;background:var(--coral)}
+.sechead p{color:var(--muted);margin:0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 0 44px -30px var(--coral-soft);min-width:0}
+.card h3{font-size:18px;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.muted{color:var(--muted)}.small{font-size:13px}
+dl.terms{display:grid;grid-template-columns:auto 1fr;margin:0}
+dl.terms dt,dl.terms dd{padding:10px 0;border-bottom:1px solid var(--line);margin:0}
+dl.terms dt{color:var(--muted);font-size:13px;padding-right:16px}
+dl.terms dd{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+dl.terms dd small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+dl.terms dt:last-of-type,dl.terms dd:last-of-type{border-bottom:0}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+ol.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 50px;background:var(--raised);border:1px solid var(--line);border-radius:14px;font-size:14px}
+ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--coral-soft);color:var(--coral-text);font:700 13px/22px "Bricolage Grotesque",sans-serif;text-align:center}
+ol.steps b{font-weight:600}
+ol.steps .muted{font-size:13px}
+.risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.risk b{color:var(--text)}
+.note{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--polyp);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.note b{color:var(--text)}
+.warn{border-left-color:var(--amber)}
+.addrs{display:grid;gap:8px}
+.addr{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:center;gap:12px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+@media (max-width:700px){.addr{grid-template-columns:minmax(0,1fr)}}
+.addr .lbl{font-size:13px;color:var(--muted)}
+.addr .lbl b{color:var(--text);font-weight:600;display:block;font-size:14px}
+.addr a{text-decoration:none;border-bottom:1px dashed var(--line2)}
+footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+footer a{text-decoration:underline}
+
+/* buy & claim panel (from /reef/) */
+.rf-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+@media (max-width:860px){.rf-grid{grid-template-columns:minmax(0,1fr)}}
+.rf-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.rf-top h3{margin:0}
+.rf-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:5px 10px;border-radius:999px;border:1px solid var(--line)}
+.rf-pill i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:block}
+.rf-pill.ok i{background:var(--good)}.rf-pill.bad i{background:var(--ember)}.rf-pill.wait i{background:var(--amber)}
+.rf-progress{height:12px;border-radius:999px;background:var(--raised);border:1px solid var(--line2);overflow:hidden;margin:8px 0 6px;position:relative}
+.rf-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--tide),var(--polyp));transition:width .6s}
+.rf-progress i{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--amber)}
+.rf-big{font:700 24px/1.2 "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rf-kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;margin-top:14px;font-size:14px}
+.rf-kv dt{color:var(--muted);margin:0}.rf-kv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.rf-field{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.rf-field .row1{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;gap:8px}
+.rf-field .row1 button{border:0;background:transparent;color:var(--accent);font:600 12px "Instrument Sans",sans-serif;cursor:pointer;padding:0}
+.rf-field .row2{display:flex;align-items:center;gap:10px}
+.rf-field input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font:700 26px "Bricolage Grotesque",system-ui,sans-serif}
+.rf-field input::placeholder{color:var(--muted)}
+.rf-unit{font:600 14px "Instrument Sans",sans-serif;color:var(--muted)}
+.rf-get{font-size:13px;color:var(--muted);margin:2px 2px 12px}
+.rf-get b{color:var(--text)}
+.rf-ack{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin:4px 2px 12px;cursor:pointer}
+.rf-ack input{margin-top:3px;accent-color:var(--good)}
+.rf-btn{width:100%;border:0;border-radius:14px;padding:14px;font:600 15px "Instrument Sans",sans-serif;cursor:pointer;background:var(--tide);color:#fff}
+.rf-btn.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.rf-btn:disabled{background:var(--raised);color:var(--muted);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--line)}
+.rf-btn+.rf-btn{margin-top:8px}
+.rf-msg{font-size:13px;margin-top:10px;min-height:1em;word-break:break-word}
+.rf-msg.err{color:var(--ember)}.rf-msg.ok{color:var(--good)}.rf-msg.info{color:var(--muted)}
+.rf-msg a{color:inherit}
+.rf-note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.55}
+.rf-hide{display:none!important}
+.muted a,.rf-note a,.note a{color:var(--coral-text);font-weight:500;text-decoration:underline;text-underline-offset:2px}
+#gone .card{text-align:center;padding:40px 20px}
+</style>
+</head>
+<body>
+
+<div class="betabar">BETA &mdash; unaudited smart contracts on an early-stage chain. US and UK persons may not take part.</div>
+
+<header class="top">
+  <div class="topwrap">
+    <a class="brand" href="/" title="reef.dex"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="reef.dex" width="846" height="175"></a>
+    <span class="tag">Launchpad</span>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Open Reef</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Shown when the id isn't a listed sale -->
+  <section class="block rf-hide" id="gone">
+    <div class="card">
+      <h2 style="font-size:26px">No listed sale here</h2>
+      <p class="muted" id="goneText">Reef only runs sales it has listed. If someone sent you this link with a different contract address, it isn't a Reef sale.</p>
+      <p class="muted small" style="margin:0">Want to launch a token? Start with the <a href="/launch/">launch guide</a>.</p>
+    </div>
+  </section>
+
+  <div id="page" class="rf-hide">
+  <section class="hero">
+    <div class="eyebrow">Token sale on Reef · BlockDAG chain 1404</div>
+    <h1><span id="hName">&hellip;</span> <span class="c" id="hSym"></span></h1>
+    <p class="lede" id="hAbout"></p>
+    <div class="links" id="hLinks"></div>
+    <div class="note warn rf-hide" id="previewNote" style="margin-top:16px"></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Sale price</div><div class="v" id="sPrice">&ndash;</div><div class="s" id="sPriceS">BDAG per token</div></div>
+      <div class="stat"><div class="k">Pool opens at</div><div class="v" id="sList">&ndash;</div><div class="s">BDAG per token, LP locked</div></div>
+      <div class="stat"><div class="k">Launchpad fee</div><div class="v" id="sFee">&ndash;</div><div class="s">of the raise, to Reef's treasury</div></div>
+      <div class="stat"><div class="k">Sale window</div><div class="v" id="sWin">&ndash;</div><div class="s" id="sWinS"></div></div>
+    </div>
+  </section>
+
+  <!-- ==================================================== BUY & CLAIM -->
+  <section class="block" id="buy">
+    <div class="sechead"><h2>Buy &amp; claim</h2><p>Straight to the sale contract. Your wallet signs everything; this page holds nothing.</p></div>
+    <div class="rf-grid">
+      <div class="card">
+        <div class="rf-top"><h3>Sale progress</h3><span class="rf-pill wait" id="rfPhasePill"><i></i><span id="rfPhase">Loading&hellip;</span></span></div>
+        <div class="muted small">Raised</div>
+        <div class="rf-big"><span id="rfRaised">&ndash;</span> <span class="muted small">/ <span id="rfCap">&ndash;</span> BDAG</span></div>
+        <div class="rf-progress"><span id="rfBar"></span><i id="rfSoft" class="rf-hide"></i></div>
+        <div class="muted small"><span id="rfPct">&ndash;</span> of the hard cap<span id="rfSoftTxt"></span></div>
+        <dl class="rf-kv">
+          <dt>Tokens sold</dt><dd id="rfSold">&ndash;</dd>
+          <dt>Your wallet</dt><dd id="rfAcct">Not connected</dd>
+          <dt>You've put in</dt><dd id="rfPaid">&ndash;</dd>
+          <dt>Your tokens</dt><dd id="rfTok">&ndash;</dd>
+          <dt>Your remaining cap</dt><dd id="rfCapLeft">&ndash;</dd>
+        </dl>
+        <p class="rf-note" id="rfPoolNote"></p>
+      </div>
+      <div class="card">
+        <div class="rf-top"><h3 id="rfActTitle">Buy</h3><span class="rf-pill" id="rfNetPill"><i></i><span id="rfNet">Wallet not connected</span></span></div>
+        <div id="rfBuyBox">
+          <div class="rf-field">
+            <div class="row1"><span>You pay</span><span>Balance: <span id="rfBal">&ndash;</span> <button id="rfMax" type="button">Max</button></span></div>
+            <div class="row2"><input id="rfAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="rf-unit">BDAG</span></div>
+          </div>
+          <div class="rf-get" id="rfGet"></div>
+          <label class="rf-ack"><input type="checkbox" id="rfAck"> <span>I've read the terms and risks on this page. I understand the contracts are unaudited and I could lose everything I put in. I am 18 or older and not a US or UK person.</span></label>
+        </div>
+        <button class="rf-btn" id="rfConnect" type="button">Connect wallet</button>
+        <button class="rf-btn rf-hide" id="rfSwitch" type="button">Switch to BlockDAG (chain 1404)</button>
+        <button class="rf-btn rf-hide" id="rfBuy" type="button" disabled>Buy</button>
+        <button class="rf-btn rf-hide" id="rfFinalize" type="button">Launch the pool (finalize)</button>
+        <button class="rf-btn rf-hide" id="rfClaim" type="button">Claim my tokens</button>
+        <button class="rf-btn alt rf-hide" id="rfRefund" type="button">Refund my BDAG</button>
+        <button class="rf-btn alt rf-hide" id="rfReturn" type="button">Send the project its tokens back</button>
+        <button class="rf-btn alt rf-hide" id="rfBond" type="button">Settle the project bond</button>
+        <button class="rf-btn alt rf-hide" id="rfLP" type="button">Release the LP to its beneficiary</button>
+        <div class="rf-msg info" id="rfMsg"></div>
+        <p class="rf-note" id="rfHelp"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================= TERMS -->
+  <section class="block" id="terms">
+    <div class="sechead"><h2>Terms</h2><p>Read from the sale contract. Nobody can change them after deployment.</p></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>The sale</h3>
+        <dl class="terms" id="termsList"></dl>
+        <p class="muted small" style="margin:14px 0 0">Times are shown in your local time zone.</p>
+      </div>
+      <div class="card">
+        <h3>How it works</h3>
+        <ol class="steps" id="howList"></ol>
+      </div>
+    </div>
+    <div class="risk" style="margin-top:16px" id="riskBox"></div>
+  </section>
+
+  <!-- ======================================================= CONTRACTS -->
+  <section class="block" id="contracts">
+    <div class="sechead"><h2>Contracts</h2><p>Chain ID 1404, the community chain. Always check the address, not the name.</p></div>
+    <div class="addrs" id="addrList"></div>
+    <p class="muted small" style="margin:10px 0 0">The sale contract is Reef's launchpad contract (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>). It has no owner and no admin function, and BDAG can only leave it into the pools, as the fee, or back to buyers.</p>
+  </section>
+  </div>
+
+</main>
+
+<footer>
+  <span>Reef launchpad on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice. Reef lists sales after basic checks; that is not an endorsement of the project.</span>
+  <span><a href="/">Open Reef</a> · <a href="/launch/">Launch guide</a> · <a href="https://explorer.east.bdag-us.org/" rel="noopener">Explorer</a></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.17.0/ethers.umd.min.js"></script>
+<script>
+// =====================================================================
+// Reef launchpad: one page for every listed ReefLaunchSale.
+//   /launch/sale/?id=<id>   id from /launch/sales.json
+// Only listed sales run here. A listed sale must also match Reef's standard launch
+// terms on-chain (STANDARD below); if anything differs, buying is switched off.
+// On localhost only, ?sale=0x…&rpc=… previews any sale for testing.
+// =====================================================================
+const LP_CFG = {
+  chainId: 1404,
+  chainName: "BlockDAG",
+  rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.capedag.com", "https://rpc.bdagexplorer.com"],
+  explorer: "https://explorer.east.bdag-us.org",
+  list: "/launch/sales.json",
+};
+const STANDARD = {
+  router: "0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76",
+  feeRecipient: "0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267",
+  feeBps: 200n,
+  reef: "0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416",
+  bondAmount: 1000n * 10n ** 18n,
+  reefSliceBps: 2000n,
+  minReefDepth: 10000000n * 10n ** 18n,
+  minLpLock: 365n * 86400n,
+};
+
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+  const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const GAS_BUFFER = 5n * 10n ** 18n;
+  const ABI = [
+    "function buy() payable", "function finalize()", "function claim()", "function refund()",
+    "function returnTokens()", "function settleBond()", "function withdrawLP()",
+    "function terms() view returns (tuple(address token,address router,address projectWallet,address lpBeneficiary,address feeRecipient,uint256 feeBps,uint256 salePrice,uint256 listingPrice,uint256 softCap,uint256 hardCap,uint256 maxPerWallet,uint256 startTime,uint256 endTime,uint256 lpLockSeconds,address bondToken,uint256 bondAmount,address reefToken,uint256 reefSliceBps,uint256 minReefDepth))",
+    "function totalRaised() view returns (uint256)", "function contributed(address) view returns (uint256)",
+    "function settled(address) view returns (bool)", "function finalized() view returns (bool)",
+    "function refunding() view returns (bool)", "function refundsOpen() view returns (bool)",
+    "function tokensReturned() view returns (bool)", "function bondSettled() view returns (bool)",
+    "function bondOutcome() view returns (uint8)", "function isBonded() view returns (bool)",
+    "function tokensRequired() view returns (uint256)", "function lpToken() view returns (address)",
+    "function reefLpToken() view returns (address)", "function lpUnlockTime() view returns (uint256)",
+    "function reefPair() view returns (address)", "function REFUND_DELAY() view returns (uint256)",
+  ];
+  const ERC20 = ["function balanceOf(address) view returns (uint256)", "function symbol() view returns (string)", "function name() view returns (string)", "function decimals() view returns (uint8)"];
+  const BTNS = ["rfConnect", "rfSwitch", "rfBuy", "rfFinalize", "rfClaim", "rfRefund", "rfReturn", "rfBond", "rfLP"];
+
+  let SALE = null, entry = null, T = null, meta = null, mismatches = [], canTrade = false;
+  let ro = null, wallet = null, signer = null, account = null;
+  let onChain = false, walletSeesCode = false, listening = false, busy = false, st = null;
+
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const num = (v, dp) => Number(v).toLocaleString("en-US", { maximumFractionDigits: dp });
+  const fmtB = (wei, dp = 2) => num(ethers.formatEther(wei), dp);
+  const fmtT = (amt, dp = 4) => num(ethers.formatUnits(amt, meta.decimals), dp);
+  const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+  const same = (a, b) => a && b && a.toLowerCase() === b.toLowerCase();
+  const show = (id, on) => $(id).classList.toggle("rf-hide", !on);
+  const dateFmt = (ts) => new Date(Number(ts) * 1000).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+  const dayFmt = (ts) => new Date(Number(ts) * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  const pct = (bps) => num(Number(bps) / 100, 2) + "%";
+  const days = (s) => num(Number(s) / 86400, 1) + " days";
+  const tokensFor = (bdag) => (bdag * meta.unit) / T.salePrice;
+  const link = (a, label) => `<a href="${LP_CFG.explorer}/address/${a}" target="_blank" rel="noopener"><code>${label || a}</code></a>`;
+  function msg(html, kind) { const m = $("rfMsg"); m.className = "rf-msg " + (kind || "info"); m.innerHTML = html || ""; }
+  function txLink(h) { return `<a href="${LP_CFG.explorer}/tx/${h}" target="_blank" rel="noopener">View transaction</a>`; }
+  function setPhase(text, kind) { $("rfPhase").textContent = text; $("rfPhasePill").className = "rf-pill " + (kind || ""); }
+  function errText(e) {
+    if (e && (e.code === "ACTION_REJECTED" || e.code === 4001)) return "Request cancelled in your wallet.";
+    const m = (e && (e.reason || e.shortMessage || (e.info && e.info.error && e.info.error.message) || e.message)) || "Something went wrong.";
+    if (/user (rejected|denied)/i.test(m)) return "Request cancelled in your wallet.";
+    if (/insufficient funds/i.test(m)) return "Not enough BDAG in your wallet for this amount plus gas.";
+    return m.replace(/^execution reverted:?\s*/i, "").replace(/^Error:\s*/, "").replace(/^"|"$/g, "");
+  }
+  function gone(text) { show("page", false); show("gone", true); if (text) $("goneText").textContent = text; }
+
+  // ------------------------------------------------------------ RPC
+  function makeProvider(url, unbatched) {
+    const opts = { staticNetwork: true };
+    if (unbatched) opts.batchMaxCount = 1;
+    return new ethers.JsonRpcProvider(url, LP_CFG.chainId, opts);
+  }
+  async function pickRpc(skip, unbatched) {
+    const urls = LP_CFG.rpcs.filter((u) => !(skip && skip.includes(u)));
+    if (!urls.length) return null;
+    const attempts = urls.map(async (url) => {
+      const p = makeProvider(url, unbatched);
+      await Promise.race([p.getBlockNumber(), new Promise((_, r) => setTimeout(() => r(new Error("timeout")), 6000))]);
+      p._url = url;
+      return p;
+    });
+    try { return await Promise.any(attempts); } catch (e) { return null; }
+  }
+  async function withRpc(fn) {
+    const tried = [];
+    let last = null;
+    for (const unbatched of [false, true]) {
+      for (let i = 0; i < LP_CFG.rpcs.length; i++) {
+        let prov = (i === 0 && !unbatched) ? ro : null;
+        if (!prov) prov = await pickRpc(tried, unbatched);
+        if (!prov) break;
+        try { const out = await fn(prov); ro = prov; return out; }
+        catch (e) { last = e; if (e && e.fatal) throw e; if (prov._url) tried.push(prov._url); if (prov === ro) ro = null; }
+      }
+      tried.length = 0;
+    }
+    ro = null;
+    throw last || new Error("Couldn't reach a BlockDAG RPC.");
+  }
+
+  // ------------------------------------------------------------ setup
+  async function findSale() {
+    if (LOCAL && qs.get("sale")) {
+      if (qs.get("rpc")) LP_CFG.rpcs = [qs.get("rpc")];
+      return { id: "preview", sale: qs.get("sale"), name: qs.get("name") || "", about: "", links: [], preview: true };
+    }
+    const id = (qs.get("id") || "").trim().toLowerCase();
+    if (!id) return null;
+    const r = await fetch(LP_CFG.list, { cache: "no-store" });
+    if (!r.ok) throw new Error("Couldn't load the list of sales.");
+    const list = (await r.json()).sales || [];
+    return list.find((s) => String(s.id).toLowerCase() === id) || null;
+  }
+
+  async function readTerms(prov) {
+    if ((await prov.getCode(SALE)) === "0x") { const e = new Error("No sale contract found at the listed address on this network."); e.fatal = true; throw e; }
+    const c = new ethers.Contract(SALE, ABI, prov);
+    const t = await c.terms();
+    const tok = new ethers.Contract(t.token, ERC20, prov);
+    const [symbol, name, decimals, delay, required, reefPair] = await Promise.all([tok.symbol(), tok.name(), tok.decimals(), c.REFUND_DELAY(), c.tokensRequired(), c.reefPair()]);
+    return { t, meta: { symbol, name, decimals: Number(decimals), unit: 10n ** BigInt(decimals), delay, required, reefPair } };
+  }
+
+  function checkStandard(t) {
+    const out = [];
+    if (!same(t.router, STANDARD.router)) out.push("it doesn't use Reef's router");
+    if (!same(t.feeRecipient, STANDARD.feeRecipient)) out.push("its fee doesn't go to Reef's treasury");
+    if (t.feeBps !== STANDARD.feeBps) out.push(`its fee is ${pct(t.feeBps)}, not 2%`);
+    if (!same(t.bondToken, STANDARD.reef) || t.bondAmount !== STANDARD.bondAmount) out.push("its project bond isn't 1,000 REEF");
+    if (!same(t.reefToken, STANDARD.reef) || t.reefSliceBps !== STANDARD.reefSliceBps || t.minReefDepth !== STANDARD.minReefDepth) out.push("its REEF pool settings aren't Reef's (20%, 10M BDAG minimum)");
+    if (t.lpLockSeconds < STANDARD.minLpLock) out.push("its LP lock is shorter than 12 months");
+    return out;
+  }
+
+  // ------------------------------------------------------------ static sections
+  function renderStatic() {
+    const t = T, sym = esc(meta.symbol);
+    document.title = `${meta.name} (${meta.symbol}) sale · reef.dex`;
+    $("hName").textContent = entry.name || meta.name;
+    $("hSym").textContent = meta.symbol;
+    $("hAbout").textContent = entry.about || "";
+    $("hLinks").innerHTML = (entry.links || []).filter((l) => /^https:\/\//.test(l.url)).map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener nofollow">${esc(l.label)} ↗</a>`).join("");
+    $("sPrice").textContent = fmtB(t.salePrice, 6);
+    $("sList").textContent = fmtB(t.listingPrice, 6);
+    $("sFee").textContent = pct(t.feeBps);
+    $("sWin").textContent = `${dayFmt(t.startTime)} – ${dayFmt(t.endTime)}`;
+    $("sWinS").textContent = "ends " + dateFmt(t.endTime);
+    $("rfCap").textContent = fmtB(t.hardCap, 0);
+
+    const slice = t.reefSliceBps > 0n;
+    const bond = t.bondAmount > 0n;
+    const rows = [
+      ["Token", `${esc(meta.name)} (${sym})`],
+      ["Sale price", `${fmtB(t.salePrice, 6)} BDAG per ${sym}`],
+      ["Pool opens at", `${fmtB(t.listingPrice, 6)} BDAG per ${sym}`],
+      ["Soft cap", t.softCap > 0n ? `${fmtB(t.softCap, 0)} BDAG<small>below this the sale refunds</small>` : "None"],
+      ["Hard cap", `${fmtB(t.hardCap, 0)} BDAG<small>≈ ${fmtT(tokensFor(t.hardCap), 2)} ${sym} for sale</small>`],
+      ["Per-wallet cap", `${fmtB(t.maxPerWallet, 0)} BDAG`],
+      ["Opens", dateFmt(t.startTime)],
+      ["Closes", `${dateFmt(t.endTime)}<small>or earlier if it hits the hard cap</small>`],
+      ["Launchpad fee", `${pct(t.feeBps)} of the raise<small>to Reef's treasury, taken at launch</small>`],
+      ["Pools", slice ? `${pct(10000n - t.reefSliceBps)} ${sym}/BDAG · ${pct(t.reefSliceBps)} ${sym}/REEF<small>of the BDAG after the fee; REEF pool only if it's safe at launch</small>` : `100% ${sym}/BDAG<small>of the BDAG after the fee</small>`],
+      ["LP lock", `${days(t.lpLockSeconds)} from launch<small>held inside the sale contract</small>`],
+      ["Refunds", `${t.softCap > 0n ? "At the close if under the soft cap; otherwise " : ""}if not launched within ${days(meta.delay)} of the close`],
+      ["Project bond", bond ? `${fmtB(t.bondAmount, 0)} REEF<small>burned if buyers have to refund after reaching the soft cap</small>` : "None"],
+    ];
+    $("termsList").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+
+    const how = [
+      `<b>Buy with BDAG</b> during the window. You receive nothing yet. <span class="muted">Buying only opens once the project has deposited every token the sale needs${bond ? " and its REEF bond" : ""}.</span>`,
+      `<b>Anyone launches the pool</b> once the sale ends or hits the hard cap${t.softCap > 0n ? ", if it reached the soft cap" : ""}. <span class="muted">${pct(t.feeBps)} of the raise goes to Reef's treasury. All the rest is paired with ${sym} at ${fmtB(t.listingPrice, 6)} BDAG each${slice ? `, ${pct(t.reefSliceBps)} of it through a ${sym}/REEF pool` : ""}. Every ${sym} not owed to a buyer goes to the dead address.</span>`,
+      `<b>Claim your ${sym}</b> from the sale contract. <span class="muted">You get what you paid ÷ ${fmtB(t.salePrice, 6)}.</span>`,
+      `<b>LP stays locked</b> in the sale contract for ${days(t.lpLockSeconds)}, then can only go to ${link(t.lpBeneficiary, short(t.lpBeneficiary))}.`,
+      `<b>If the sale fails</b>, every buyer can refund their BDAG in full and the project gets its tokens back. <span class="muted">${t.softCap > 0n ? "That happens at the close if the soft cap wasn't reached, or " : "That happens "}if the pool isn't launched within ${days(meta.delay)} of the close.</span>`,
+    ];
+    if (bond) how.push(`<b>The project's ${fmtB(t.bondAmount, 0)} REEF bond</b> goes back to the project after a good launch (when the LP unlocks) or if the soft cap is missed. <span class="muted">It is burned if buyers reached the soft cap but had to refund because the pool couldn't open.</span>`);
+    $("howList").innerHTML = how.map((h) => `<li>${h}</li>`).join("");
+
+    $("riskBox").innerHTML = `<b>Read this before buying.</b> The pool opening at ${fmtB(t.listingPrice, 6)} BDAG is <b>not</b> a promise that ${sym} will trade there or anywhere near the sale price. The first people who sell will move the price, possibly a long way below what you paid. ` +
+      (slice ? `Part of the liquidity is a ${sym}/REEF pool, so that part moves with REEF's price as well as ${sym}'s. ` : "") +
+      `Reef lists a sale after basic checks on the project; that is not an endorsement, and Reef does not run the project. There is no dollar value here. Only use BDAG you are fully prepared to lose. The contracts are not independently audited.`;
+
+    const addrs = [
+      ["Sale contract", "Buy, claim and refund here only", SALE],
+      [`${sym} token`, meta.name, t.token],
+      ["Project wallet", "Gets the tokens back if the sale fails", t.projectWallet],
+      ["LP beneficiary", "Gets the LP after the lock", t.lpBeneficiary],
+      ["Fee recipient", "Reef's treasury", t.feeRecipient],
+    ];
+    $("addrList").innerHTML = addrs.map(([b, s, a]) => `<div class="addr"><div class="lbl"><b>${esc(b)}</b>${esc(s)}</div>${link(a)}</div>`).join("");
+
+    if (entry.preview || mismatches.length) {
+      $("previewNote").innerHTML = entry.preview
+        ? `<b>Local preview.</b> This sale isn't on Reef's list. ${mismatches.length ? "Differs from Reef's standard terms: " + mismatches.map(esc).join("; ") + "." : "Matches Reef's standard terms."}`
+        : `<b>Buying is switched off.</b> This sale's contract doesn't match Reef's standard launch terms: ${mismatches.map(esc).join("; ")}. Don't send BDAG to it.`;
+      show("previewNote", true);
+    }
+  }
+
+  // ------------------------------------------------------------ live state
+  async function readState(prov) {
+    const c = new ethers.Contract(SALE, ABI, prov);
+    const tok = new ethers.Contract(T.token, ERC20, prov);
+    const [blk, raised, fin, refunding, refundsOpen, returned, bondSettled, bondOutcome, bonded, held, lpToken, reefLp, lpUnlock] = await Promise.all([
+      prov.getBlock("latest"), c.totalRaised(), c.finalized(), c.refunding(), c.refundsOpen(), c.tokensReturned(),
+      c.bondSettled(), c.bondOutcome(), c.isBonded(), tok.balanceOf(SALE), c.lpToken(), c.reefLpToken(), c.lpUnlockTime(),
+    ]);
+    let me = null;
+    if (account) {
+      const [paid, settled, bal] = await Promise.all([c.contributed(account), c.settled(account), prov.getBalance(account)]);
+      me = { paid, settled, bal };
+    }
+    return { now: BigInt(blk.timestamp), raised, fin, refunding, refundsOpen, returned, bondSettled, bondOutcome: Number(bondOutcome),
+      funded: held >= meta.required && bonded, lpToken, reefLp, lpUnlock, me };
+  }
+
+  async function load() {
+    try { st = await withRpc(readState); render(); }
+    catch (e) { setPhase("Can't read the sale", "bad"); msg("Couldn't read the sale just now (tried every node): " + errText(e) + " Reload in a moment.", "err"); }
+  }
+
+  function phase(s) {
+    if (s.fin) return "finalized";
+    if (s.refunding) return "refunding";
+    if (s.refundsOpen) return "refundOpen";
+    const closed = s.now > T.endTime || s.raised >= T.hardCap;
+    if (!closed) return s.now < T.startTime ? "before" : (s.funded ? "live" : "unfunded");
+    return "ended";
+  }
+
+  function render() {
+    const s = st, ph = phase(s), me = s.me, sym = meta.symbol;
+    const p = Number((s.raised * 10000n) / T.hardCap) / 100;
+    $("rfRaised").textContent = fmtB(s.raised, 0);
+    $("rfBar").style.width = Math.min(100, p) + "%";
+    $("rfPct").textContent = (s.raised > 0n && p < 0.01) ? "<0.01%" : num(p, 2) + "%";
+    if (T.softCap > 0n) {
+      const sp = Number((T.softCap * 10000n) / T.hardCap) / 100;
+      $("rfSoft").style.left = `calc(${sp}% - 1px)`; show("rfSoft", true);
+      $("rfSoftTxt").textContent = s.raised >= T.softCap ? " · soft cap reached" : ` · soft cap ${fmtB(T.softCap, 0)} BDAG (marked)`;
+    }
+    $("rfSold").textContent = ["refunding", "refundOpen"].includes(ph) && !s.fin ? "–" : `${fmtT(tokensFor(s.raised), 2)} of ${fmtT(tokensFor(T.hardCap), 2)}`;
+    $("rfAcct").textContent = account ? short(account) : "Not connected";
+    const open = ["before", "unfunded", "live"].includes(ph);
+    if (me) {
+      $("rfPaid").textContent = fmtB(me.paid) + " BDAG";
+      $("rfTok").textContent = me.settled ? (s.fin ? "Claimed" : "Refunded") : `${fmtT(tokensFor(me.paid))} ${sym}`;
+      $("rfCapLeft").textContent = open ? fmtB(T.maxPerWallet - me.paid) + " BDAG" : "–";
+      $("rfBal").textContent = fmtB(me.bal, 2);
+    } else ["rfPaid", "rfTok", "rfCapLeft", "rfBal"].forEach((id) => ($(id).textContent = "–"));
+
+    const labels = {
+      before: ["Opens " + dateFmt(T.startTime), "wait"], unfunded: ["Waiting for the project's deposit", "wait"], live: ["Live", "ok"],
+      ended: ["Closed, pool not launched yet", "wait"], refundOpen: ["Refunds open", "bad"],
+      refunding: ["Sale cancelled, refunds open", "bad"], finalized: ["Pool launched", "ok"],
+    };
+    setPhase(...labels[ph]);
+
+    const ready = !!account && onChain && walletSeesCode;
+    const canRefund = !!me && me.paid > 0n && !me.settled;
+    show("rfConnect", !account);
+    show("rfSwitch", !!account && !onChain);
+    show("rfBuyBox", open);
+    show("rfBuy", open && !!account && onChain);
+    show("rfFinalize", ph === "ended" && ready && s.raised > 0n && s.raised >= T.softCap);
+    show("rfClaim", ph === "finalized" && ready && !!me && me.paid > 0n && !me.settled);
+    show("rfRefund", ["refundOpen", "refunding"].includes(ph) && ready && canRefund);
+    show("rfReturn", ["refundOpen", "refunding"].includes(ph) && ready && !s.returned);
+    show("rfBond", T.bondAmount > 0n && ready && !s.bondSettled && s.bondOutcome !== 0);
+    show("rfLP", s.fin && ready && s.now >= s.lpUnlock);
+    $("rfBond").textContent = s.bondOutcome === 2 ? "Burn the project bond (sale failed)" : "Return the project bond";
+    $("rfAmt").disabled = ph !== "live" || !canTrade; $("rfMax").disabled = ph !== "live" || !ready || !canTrade;
+    $("rfBuy").disabled = busy || ph !== "live" || !ready || !canTrade;
+    $("rfBuy").textContent = !canTrade ? "Buying is switched off" : ph === "live" ? "Buy" : ph === "before" ? "Opens " + dateFmt(T.startTime) : "Waiting for the project's deposit";
+
+    const titles = { before: `Buy ${sym}`, unfunded: `Buy ${sym}`, live: `Buy ${sym}`, ended: "Launch the pool", refundOpen: "Refund", refunding: "Refund", finalized: `Claim your ${sym}` };
+    $("rfActTitle").textContent = titles[ph];
+    const addr = `<code>${SALE}</code>`;
+    const help = {
+      before: `Buying opens ${dateFmt(T.startTime)}. When you buy, check your wallet shows the sale address ${addr}.`,
+      unfunded: "The window is open, but the project hasn't deposited every token the sale needs" + (T.bondAmount > 0n ? " and its REEF bond" : "") + " yet, so buying is paused until it has.",
+      live: `Up to ${fmtB(T.maxPerWallet, 0)} BDAG per wallet. Your ${esc(sym)} is claimable once the sale ends and the pool launches. Check your wallet shows the sale address ${addr} before confirming.`,
+      ended: `The sale has closed. Anyone can launch the pool; if it isn't launched within ${days(meta.delay)} of the close, refunds open.`,
+      refundOpen: (s.raised < T.softCap ? "The sale closed under its soft cap, so it won't launch." : "The pool wasn't launched in time, so the sale is cancelled.") + " Every buyer can take back exactly the BDAG they paid, and anyone can send the project its tokens back.",
+      refunding: "The sale was cancelled. Every buyer can take back exactly the BDAG they paid, at any time.",
+      finalized: `The pool is live. Claim your ${esc(sym)} whenever you like; there is no deadline.`,
+    };
+    $("rfHelp").innerHTML = help[ph];
+    if (s.raised === 0n && ph === "refundOpen") $("rfHelp").textContent = "The sale closed with nothing raised, so there is nothing to launch or refund.";
+    let note = "";
+    if (s.fin) {
+      note = `${esc(sym)}/BDAG pool: ${link(s.lpToken, short(s.lpToken))}`;
+      if (s.reefLp !== ethers.ZeroAddress) note += ` · ${esc(sym)}/REEF pool: ${link(s.reefLp, short(s.reefLp))}`;
+      else if (T.reefSliceBps > 0n) note += " · the REEF pool was skipped at launch, so everything went to the BDAG pool";
+      note += ` · LP locked until ${dateFmt(s.lpUnlock)}`;
+    }
+    $("rfPoolNote").innerHTML = note;
+    renderNet();
+    updateGet();
+  }
+
+  function renderNet() {
+    const pill = $("rfNetPill");
+    if (!account) { pill.className = "rf-pill"; $("rfNet").textContent = "Wallet not connected"; return; }
+    if (!onChain) { pill.className = "rf-pill bad"; $("rfNet").textContent = "Wrong network"; return; }
+    if (!walletSeesCode) { pill.className = "rf-pill bad"; $("rfNet").textContent = "Check your wallet's RPC"; return; }
+    pill.className = "rf-pill ok"; $("rfNet").textContent = "BlockDAG · " + short(account);
+  }
+
+  function parseAmt() {
+    const raw = ($("rfAmt").value || "").trim().replace(/,/g, "");
+    if (!raw) return 0n;
+    try { return ethers.parseEther(raw); } catch (e) { return null; }
+  }
+  function updateGet() {
+    const v = parseAmt();
+    $("rfGet").innerHTML = v === null ? "Enter an amount of BDAG, like <b>1500</b>."
+      : `You receive <b>${fmtT(tokensFor(v))} ${esc(meta.symbol)}</b> to claim after the pool launches (price ${fmtB(T.salePrice, 6)} BDAG each).`;
+  }
+
+  // ------------------------------------------------------------ wallet
+  function walletAppLinks() {
+    const page = location.href.split("#")[0];
+    const mm = "https://link.metamask.io/dapp/" + encodeURI(page.replace(/^https?:\/\//, ""));
+    const tw = "https://link.trustwallet.com/open_url?coin_id=60&url=" + encodeURIComponent(page);
+    const s = 'style="display:inline-block;margin:6px 8px 0 0;padding:8px 12px;border:1px solid currentColor;border-radius:10px;font-weight:600;text-decoration:none"';
+    return '<a ' + s + ' href="' + mm + '">Open in MetaMask</a><a ' + s + ' href="' + tw + '">Open in Trust Wallet</a>';
+  }
+  async function connect() {
+    if (!window.ethereum) {
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) msg("No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks(), "ok");
+      else msg("No wallet found. Install MetaMask or a similar wallet, then reload.", "err");
+      return;
+    }
+    try {
+      const accs = await window.ethereum.request({ method: "eth_requestAccounts" });
+      account = ethers.getAddress(accs[0]);
+      wallet = new ethers.BrowserProvider(window.ethereum);
+      if (!listening && window.ethereum.on) {
+        window.ethereum.on("accountsChanged", (a) => { account = a && a.length ? ethers.getAddress(a[0]) : null; checkNet().then(load); });
+        window.ethereum.on("chainChanged", () => { wallet = new ethers.BrowserProvider(window.ethereum); checkNet().then(load); });
+        listening = true;
+      }
+      msg("", "info");
+      await checkNet();
+      await load();
+    } catch (e) { msg(errText(e), "err"); }
+  }
+  async function checkNet() {
+    onChain = false; walletSeesCode = false; signer = null;
+    if (!account || !wallet) { renderNet(); return; }
+    try { onChain = Number((await wallet.getNetwork()).chainId) === LP_CFG.chainId; } catch (e) { onChain = false; }
+    if (onChain) {
+      signer = await wallet.getSigner(account);
+      try { walletSeesCode = (await wallet.getCode(SALE)) !== "0x"; } catch (e) { walletSeesCode = false; }
+      if (!walletSeesCode) msg(`Your wallet is on chain 1404 but can't see the sale contract. It may be using an RPC on the other chain-1404 network. In your wallet's network settings, set the RPC URL to <code>${LP_CFG.rpcs[0]}</code>, then reload.`, "err");
+    }
+    renderNet();
+  }
+  async function switchNet() {
+    const hex = "0x" + LP_CFG.chainId.toString(16);
+    try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hex }] }); }
+    catch (e) {
+      const code = e && (e.code || (e.data && e.data.originalError && e.data.originalError.code));
+      if (code !== 4902) { msg(errText(e), "err"); return; }
+      try {
+        await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: hex, chainName: LP_CFG.chainName,
+          nativeCurrency: { name: "BlockDAG", symbol: "BDAG", decimals: 18 }, rpcUrls: LP_CFG.rpcs, blockExplorerUrls: [LP_CFG.explorer] }] });
+      } catch (e2) { msg(errText(e2), "err"); return; }
+    }
+    wallet = new ethers.BrowserProvider(window.ethereum);
+    await checkNet(); await load();
+  }
+
+  // ------------------------------------------------------------ actions
+  function setBusy(on) { busy = on; BTNS.forEach((b) => ($(b).disabled = on)); }
+  async function send(fn, overrides, okText) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const c = new ethers.Contract(SALE, ABI, signer);
+      await c[fn].staticCall(overrides || {}); // shows the contract's reason before you sign
+      msg("Confirm in your wallet…", "info");
+      const tx = await c[fn](overrides || {});
+      msg(`Waiting for confirmation… ${txLink(tx.hash)}`, "info");
+      const r = await tx.wait();
+      if (!r || r.status !== 1) throw new Error("The transaction failed on-chain.");
+      msg(`${okText} ${txLink(tx.hash)}`, "ok");
+      if (fn === "buy") { $("rfAmt").value = ""; $("rfAck").checked = false; }
+    } catch (e) { msg(errText(e), "err"); }
+    finally { setBusy(false); await load(); }
+  }
+  async function buy() {
+    if (!st || !st.me || !canTrade) return;
+    const v = parseAmt();
+    if (v === null || v <= 0n) { msg("Enter an amount of BDAG, like 1500.", "err"); return; }
+    const capLeft = T.maxPerWallet - st.me.paid, room = T.hardCap - st.raised;
+    if (v > capLeft) { msg(`That's more than your remaining cap of ${fmtB(capLeft)} BDAG.`, "err"); return; }
+    if (v > room) { msg(`Only ${fmtB(room)} BDAG of the sale is left.`, "err"); return; }
+    if (v > st.me.bal) { msg("Not enough BDAG in your wallet for that amount.", "err"); return; }
+    if (!$("rfAck").checked) { msg("Please tick the box to confirm you've read the terms and risks.", "err"); return; }
+    await send("buy", { value: v }, `Done: ${fmtT(tokensFor(v))} ${meta.symbol} reserved for ${fmtB(v)} BDAG.`);
+  }
+  function setMax() {
+    if (!st || !st.me) return;
+    const cands = [T.maxPerWallet - st.me.paid, T.hardCap - st.raised, st.me.bal > GAS_BUFFER ? st.me.bal - GAS_BUFFER : 0n];
+    let m = cands.reduce((a, b) => (b < a ? b : a));
+    m = (m / 10n ** 12n) * 10n ** 12n;
+    $("rfAmt").value = ethers.formatEther(m).replace(/\.0$/, "");
+    updateGet();
+  }
+
+  $("rfConnect").addEventListener("click", connect);
+  $("rfSwitch").addEventListener("click", switchNet);
+  $("rfBuy").addEventListener("click", buy);
+  $("rfMax").addEventListener("click", setMax);
+  $("rfAmt").addEventListener("input", updateGet);
+  $("rfFinalize").addEventListener("click", () => send("finalize", null, "The pool is launched."));
+  $("rfClaim").addEventListener("click", () => send("claim", null, `Your ${meta.symbol} has been sent to your wallet.`));
+  $("rfRefund").addEventListener("click", () => send("refund", null, "Your BDAG has been refunded."));
+  $("rfReturn").addEventListener("click", () => send("returnTokens", null, "The project's tokens have been sent back to it."));
+  $("rfBond").addEventListener("click", () => send("settleBond", null, "The project bond is settled."));
+  $("rfLP").addEventListener("click", () => send("withdrawLP", null, "The LP has been sent to its beneficiary."));
+
+  (async function init() {
+    try {
+      entry = await findSale();
+      if (!entry) { gone(); return; }
+      if (!ethers.isAddress(entry.sale)) { gone("This listing has no valid contract address yet."); return; }
+      SALE = ethers.getAddress(entry.sale);
+      const r = await withRpc(readTerms);
+      T = r.t; meta = r.meta;
+      mismatches = checkStandard(T);
+      canTrade = mismatches.length === 0 || (entry.preview && LOCAL);
+      show("page", true);
+      renderStatic();
+      await load();
+      setInterval(() => { if (!busy) load(); }, 15000);
+    } catch (e) {
+      if (e && e.fatal) { gone(e.message); return; }
+      show("page", true);
+      setPhase("Can't read the sale", "bad");
+      msg("Couldn't load the sale: " + errText(e) + " Reload in a moment.", "err");
+    }
+  })();
+})();
+</script>
+</body>
+</html>
