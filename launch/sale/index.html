@@ -4,8 +4,8 @@
 <script>if(/^www\./i.test(location.hostname)){location.replace(location.protocol+"//"+location.hostname.replace(/^www\./i,"")+location.pathname+location.search+location.hash);}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Token sale · reef.dex</title>
-<meta name="description" content="A token sale on Reef's launchpad: fixed price in BDAG, every BDAG after the disclosed fee goes into locked pools on Reef.">
+<title>Token sale · Reef Launchpad</title>
+<meta name="description" content="A token sale on Reef Launchpad: fixed price in BDAG, every BDAG after the disclosed fee goes into locked pools on Reef.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#050f14">
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -142,7 +142,7 @@ footer a{text-decoration:underline}
 <header class="top">
   <div class="topwrap">
     <a class="brand" href="/" title="reef.dex"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="reef.dex" width="846" height="175"></a>
-    <span class="tag">Launchpad</span>
+    <span class="tag">Reef Launchpad</span>
     <div class="spacer"></div>
     <a class="btn" href="/">Open Reef</a>
   </div>
@@ -161,7 +161,7 @@ footer a{text-decoration:underline}
 
   <div id="page" class="rf-hide">
   <section class="hero">
-    <div class="eyebrow">Token sale on Reef · BlockDAG chain 1404</div>
+    <div class="eyebrow">Token sale on Reef Launchpad · BlockDAG chain 1404</div>
     <h1><span id="hName">&hellip;</span> <span class="c" id="hSym"></span></h1>
     <p class="lede" id="hAbout"></p>
     <div class="links" id="hLinks"></div>
@@ -239,21 +239,21 @@ footer a{text-decoration:underline}
   <section class="block" id="contracts">
     <div class="sechead"><h2>Contracts</h2><p>Chain ID 1404, the community chain. Always check the address, not the name.</p></div>
     <div class="addrs" id="addrList"></div>
-    <p class="muted small" style="margin:10px 0 0">The sale contract is Reef's launchpad contract (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>). It has no owner and no admin function, and BDAG can only leave it into the pools, as the fee, or back to buyers.</p>
+    <p class="muted small" style="margin:10px 0 0">The sale contract is Reef Launchpad's sale contract (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>). It has no owner and no admin function, and BDAG can only leave it into the pools, as the fee, or back to buyers.</p>
   </section>
   </div>
 
 </main>
 
 <footer>
-  <span>Reef launchpad on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice. Reef lists sales after basic checks; that is not an endorsement of the project.</span>
+  <span>Reef Launchpad on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice. Reef lists sales after basic checks; that is not an endorsement of the project.</span>
   <span><a href="/">Open Reef</a> · <a href="/launch/">Launch guide</a> · <a href="https://explorer.east.bdag-us.org/" rel="noopener">Explorer</a></span>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.17.0/ethers.umd.min.js"></script>
 <script>
 // =====================================================================
-// Reef launchpad: one page for every listed ReefLaunchSale.
+// Reef Launchpad: one page for every listed ReefLaunchSale.
 //   /launch/sale/?id=<id>   id from /launch/sales.json
 // Only listed sales run here. A listed sale must also match Reef's standard launch
 // terms on-chain (STANDARD below); if anything differs, buying is switched off.
@@ -398,7 +398,7 @@ const STANDARD = {
   // ------------------------------------------------------------ static sections
   function renderStatic() {
     const t = T, sym = esc(meta.symbol);
-    document.title = `${meta.name} (${meta.symbol}) sale · reef.dex`;
+    document.title = `${meta.name} (${meta.symbol}) sale · Reef Launchpad`;
     $("hName").textContent = entry.name || meta.name;
     $("hSym").textContent = meta.symbol;
     $("hAbout").textContent = entry.about || "";
