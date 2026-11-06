@@ -1268,6 +1268,16 @@ async function runAirdropCheck() {
   if (!ethers.isAddress(raw)) { out.innerHTML = "Enter a full wallet address (0x followed by 40 characters), or connect your wallet."; return; }
   const wallet = ethers.getAddress(raw);
   adRunning = true; btn.disabled = true; btn.textContent = "Checking…";
+  // The final list is published: answer from it first.
+  try {
+    const entry = (await loadAirdropList())[wallet.toLowerCase()];
+    const opened = Date.now() >= AIRDROP_CFG.opensAt;
+    out.innerHTML = entry
+      ? `<span class="ok"><b>&#10003; On the final list: ${adAmt(entry)} REEF</b></span> (Tier ${entry.tier}, rank ${entry.rank}). ${opened ? "Connect this wallet and press Claim REEF." : "Claim from Mon 9 Nov, 09:00 (UTC+7), with this wallet."}`
+      : `<b>${short(wallet)} isn't on the main-round list.</b> The 6 Nov snapshot is final (<a href="/reef/airdrop.csv">full list</a>). A COOKED &times; NOCAP card mint before Sat 14 Nov, 09:00 (UTC+7) counts for the second round. <a href="/cards/">Cards</a> &middot; <a href="/reef/#airdrop">Rules</a>`;
+    adRunning = false; btn.disabled = false; btn.textContent = "Check";
+    return;
+  } catch (e) { /* list unavailable: fall back to reading the chain */ }
   out.textContent = "Reading Reef's BDAG pools since 7 Oct. This can take a few seconds.";
   try {
     const res = await tryRpcFallback((p) => airdropActions(p, wallet));
@@ -1449,7 +1459,16 @@ async function copySwapLink() {
 }
 async function applyShareLink() {
   const sh = parseShareParams(location.search);
-  if (!sh.present) return;
+  if (!sh.present) {
+    // No shared link: start on the live REEF/BDAG pool, so "You receive" isn't blank.
+    if (!tokTo) {
+      try {
+        const r = resolveShareToken(await loadPoolTokens(), AIRDROP_CFG.token);
+        if (r && !tokTo && !sameToken(r, tokFrom)) { tokTo = r; renderTokButtons(); refreshSwapQuote(); refreshBalances(); }
+      } catch (e) { /* pools not loaded: leave "Select token" */ }
+    }
+    return;
+  }
   let list = [];
   try { list = await loadPoolTokens(); } catch (e) {}
   const f = sh.from ? resolveShareToken(list, sh.from) : null;
