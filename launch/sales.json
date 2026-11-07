@@ -1,4 +1,4 @@
 {
-  "_note": "Launchpad sales Reef lists. The sale page at /launch/sale/?id=<id> only runs sales in this list, and only once their on-chain terms match Reef's standard launch terms. Empty until the launchpad is audited and the first project is vetted.",
+  "_note": "Launchpad sales Reef lists. The sale page at /launch/sale/?id=<id> only runs sales in this list, and only once their on-chain terms match Reef's standard launch terms. Beta: each sale is capped at 5M BDAG (BETA_MAX_HARDCAP on the sale page) unless a single reviewed listing sets \"betaCapOverride\": true. Entry shape: {\"id\", \"sale\", \"name\", \"about\", \"links\": [{\"label\", \"url\"}], \"betaCapOverride\"?}. Empty until the first service client is vetted.",
   "sales": []
 }

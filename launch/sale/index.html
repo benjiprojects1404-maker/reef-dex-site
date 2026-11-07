@@ -137,7 +137,7 @@ footer a{text-decoration:underline}
 </head>
 <body>
 
-<div class="betabar">BETA &mdash; unaudited smart contracts on an early-stage chain. US and UK persons may not take part.</div>
+<div class="betabar">BETA &mdash; unaudited, capped launchpad (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener" style="color:inherit">self-review</a>) on an early-stage chain. US and UK persons may not take part.</div>
 
 <header class="top">
   <div class="topwrap">
@@ -266,6 +266,10 @@ const LP_CFG = {
   explorer: "https://explorer.east.bdag-us.org",
   list: "/launch/sales.json",
 };
+// Beta cap: the most any one sale may raise until the launchpad has an independent review.
+// One number; change it here (or set "betaCapOverride": true on a single reviewed listing).
+const BETA_MAX_HARDCAP = 5000000n * 10n ** 18n; // 5M BDAG
+
 const STANDARD = {
   router: "0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76",
   feeRecipient: "0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267",
@@ -392,6 +396,7 @@ const STANDARD = {
     if (!same(t.bondToken, STANDARD.reef) || t.bondAmount !== STANDARD.bondAmount) out.push("its project bond isn't 1,000 REEF");
     if (!same(t.reefToken, STANDARD.reef) || t.reefSliceBps !== STANDARD.reefSliceBps || t.minReefDepth !== STANDARD.minReefDepth) out.push("its REEF pool settings aren't Reef's (20%, 10M BDAG minimum)");
     if (t.lpLockSeconds < STANDARD.minLpLock) out.push("its LP lock is shorter than 12 months");
+    if (t.hardCap > BETA_MAX_HARDCAP && !(entry && entry.betaCapOverride === true)) out.push(`its hard cap is above the beta limit of ${fmtB(BETA_MAX_HARDCAP, 0)} BDAG`);
     return out;
   }
 
@@ -441,7 +446,7 @@ const STANDARD = {
 
     $("riskBox").innerHTML = `<b>Read this before buying.</b> The pool opening at ${fmtB(t.listingPrice, 6)} BDAG is <b>not</b> a promise that ${sym} will trade there or anywhere near the sale price. The first people who sell will move the price, possibly a long way below what you paid. ` +
       (slice ? `Part of the liquidity is a ${sym}/REEF pool, so that part moves with REEF's price as well as ${sym}'s. ` : "") +
-      `Reef lists a sale after basic checks on the project; that is not an endorsement, and Reef does not run the project. There is no dollar value here. Only use BDAG you are fully prepared to lose. The contracts are not independently audited.`;
+      `Reef lists a sale after basic checks on the project; that is not an endorsement, and Reef does not run the project. There is no dollar value here. Only use BDAG you are fully prepared to lose. <b>Reef Launchpad is an unaudited beta</b>: each sale is capped at ${fmtB(BETA_MAX_HARDCAP, 0)} BDAG until an independent review, and the builder's own <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review and test results</a> are public.`;
 
     const addrs = [
       ["Sale contract", "Buy, claim and refund here only", SALE],

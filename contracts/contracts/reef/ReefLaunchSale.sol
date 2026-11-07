@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 interface ILaunchRouterLike {
     function factory() external view returns (address);
@@ -90,6 +91,7 @@ contract ReefLaunchSale is ReentrancyGuard {
     uint256 public constant MAX_REEF_SLICE_BPS = 5_000; // at most half the pooled BDAG
     uint256 public constant MAX_SLICE_SLIPPAGE_BPS = 500; // REEF bought within 5% of its average price
     uint256 public constant MIN_AVERAGE_WINDOW = 1 days;
+    uint256 public constant MIN_POOL_LIQUIDITY = 1_000; // Reef pools lock the first 1,000 LP units for good
 
     struct Config {
         address token; // the token being sold (standard ERC-20, no transfer fee)
@@ -160,7 +162,7 @@ contract ReefLaunchSale is ReentrancyGuard {
     event BondReturned(address indexed to, uint256 amount);
     event BondBurned(uint256 amount);
     event ReefSlice(uint256 bdagIn, uint256 reefBought, uint256 tokensPaired, uint256 lpTokens, address pool);
-    /// reason: 1 off or no REEF pool at deployment, 2 slice too small, 3 under a day since deployment,
+    /// reason: 1 off or no REEF pool at deployment, 2 slice too small or too small to open a pool, 3 under a day since deployment,
     ///         4 REEF pool under minReefDepth, 5 REEF price more than 5% from its average, 6 TOKEN/REEF pool already seeded
     event ReefSliceSkipped(uint8 reason);
 
@@ -174,6 +176,7 @@ contract ReefLaunchSale is ReentrancyGuard {
         require(c.salePrice > 0, "sale price is zero");
         require(c.listingPrice >= c.salePrice, "listing price below sale price");
         require(c.hardCap > 0 && c.softCap <= c.hardCap, "bad caps");
+        require(c.softCap > 0, "soft cap is zero");
         require(c.maxPerWallet > 0, "per-wallet cap is zero");
         require(c.startTime >= block.timestamp, "start time is in the past");
         require(c.endTime > c.startTime, "end must be after start");
@@ -217,6 +220,11 @@ contract ReefLaunchSale is ReentrancyGuard {
         }
 
         require(tokensFor(c.hardCap) > 0 && tokensForPool(c.hardCap) > 0, "price too high for the cap");
+        // A raise at the soft cap must be able to open the TOKEN/BDAG pool, even with the REEF
+        // slice taken out, so a sale that reaches its soft cap can always launch.
+        uint256 pooledAtSoft = c.softCap - feeOn(c.softCap);
+        uint256 mainAtSoft = pooledAtSoft - (pooledAtSoft * c.reefSliceBps) / BPS;
+        require(Math.sqrt(((mainAtSoft * unit) / c.listingPrice) * mainAtSoft) > MIN_POOL_LIQUIDITY, "soft cap too small to open a pool");
     }
 
     // ------------------------------------------------------------------ maths
@@ -320,6 +328,7 @@ contract ReefLaunchSale is ReentrancyGuard {
         if (slice == 0 || tokensSlice == 0) return _skip(2);
         uint256 out = _reefQuote(slice);
         if (out == type(uint256).max) return 0; // _reefQuote already emitted the reason
+        if (Math.sqrt(tokensSlice * out) <= MIN_POOL_LIQUIDITY) return _skip(2); // too small to open a pool
 
         ILaunchFactoryLike factory = ILaunchFactoryLike(router.factory());
         address tp = factory.getPair(address(token), address(reefToken));
