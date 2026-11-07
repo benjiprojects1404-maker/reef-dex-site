@@ -140,6 +140,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 /* Use cases + phone banner (6 Nov 2026) */
 .uses{max-width:1080px;margin:8px auto 28px;padding:0 16px}
 .uses h2{font:700 20px "Bricolage Grotesque",sans-serif;margin:0 0 12px}
+.footnote{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;line-height:1.7;color:var(--muted);text-align:center}
 .launchban{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 14px;padding:20px 22px;border-radius:18px;border:1px solid var(--coral-soft);background:linear-gradient(120deg,rgba(194,58,94,.16),rgba(10,113,161,.14) 55%,var(--card))}
 .launchban::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--coral),var(--polyp))}
 .launchban .eb{font:600 11px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--coral-text)}
@@ -514,7 +515,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
         <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
       </div>
       <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-11-07-launchpad</p>
+      <p class="hint" style="opacity:.5;margin-top:10px">Build 2026-11-07-footnote</p>
     </div>
   </div>
 </main>
@@ -582,6 +583,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <p>BlockDAG (chain 1404) is a young chain, and public RPC operators have not always agreed on its history &mdash; a node can report the correct chain ID while actually serving a different chain of blocks. Cross-checking endpoints against each other can tell you whether they currently agree; it can't tell you on its own which one is canonical. For anything beyond a small amount, verify independently before relying on a single endpoint.</p>
     </details>
   </div>
+  <footer class="footnote">
+    reef · permissionless dex · trades from your own wallet, nothing held by us · beta software, not independently audited · <a href="https://benjiprojects1404-services.pages.dev/security-review/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline">security review</a> · <a href="https://explorer.east.bdag-us.org/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline">verify router source</a> before trading · <a href="#faq" style="color:inherit;text-decoration:underline">read before you trade</a> · <a href="/overview.pdf" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">overview brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Undercurrent Works</a> · not financial advice · <a href="/developers/" style="color:inherit;text-decoration:underline">embed widget for your site</a>
+  </footer>
 </div>
 
 <!-- Token picker -->
