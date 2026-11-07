@@ -217,9 +217,11 @@ const when = d => d ? d.toLocaleString("en-GB", { day: "numeric", month: "short"
 let act = null;
 
 // 1) The explorer's API, if it has one (Blockscout style): any age, ~50 per page.
-async function transfersApi(addr, pageParams) {
+// Asked once per listed token, so other tokens and LP-token transfers don't crowd them out.
+async function transfersApi(addr, token, pageParams) {
   const u = new URL(CFG.explorer + "/api/v2/addresses/" + addr + "/token-transfers");
   u.searchParams.set("type", "ERC-20");
+  u.searchParams.set("token", token.addr);
   for (const [k, v] of Object.entries(pageParams || {})) if (v != null) u.searchParams.set(k, v);
   const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 8000);
   let j;
@@ -237,6 +239,16 @@ async function transfersApi(addr, pageParams) {
   }
   return { rows, next: j.next_page_params || null };
 }
+// next: null on the first call, then { SYM: page params or null when that token is done }.
+async function apiFetch(addr, next) {
+  const want = TOK.filter(t => !next || next[t.sym]);
+  const res = await Promise.all(want.map(t => transfersApi(addr, t, next ? next[t.sym] : null)));
+  const out = { rows: [], next: { ...(next || {}) } };
+  const seen = new Set();  // in case an explorer ignores the token filter
+  want.forEach((t, i) => { for (const r of res[i].rows) { const k = r.hash + ":" + r.idx; if (!seen.has(k)) { seen.add(k); out.rows.push(r); } } out.next[t.sym] = res[i].next; });
+  return out;
+}
+const more = s => Object.values(s.next || {}).some(Boolean);
 
 // 2) Fallback: read the chain directly, a window of recent blocks at a time.
 let chunk = 5000;
@@ -278,7 +290,7 @@ function renderAct() {
   const s = act, body = $("txBody");
   s.rows.sort((a, b) => b.block - a.block || b.idx - a.idx);
   body.innerHTML = "";
-  if (!s.rows.length) body.innerHTML = `<tr><td colspan="5" class="faint">No REEF, NOCAP or COOKED transfers in this range.</td></tr>`;
+  if (!s.rows.length) body.innerHTML = `<tr><td colspan="5" class="faint">No REEF, NOCAP or COOKED transfers${s.mode === "api" && !more(s) ? "" : " in this range"}.</td></tr>`;
   for (const r of s.rows) {
     const t = BY_SYM[r.sym.toLowerCase()], tr = document.createElement("tr");
     tr.innerHTML = `<td>${esc(when(r.time))}</td><td>${esc(r.sym)}</td><td class="num ${r.dir}">${r.dir === "in" ? "+" : "−"}${esc(fmt(r.raw, t.dec))}</td>
@@ -288,8 +300,8 @@ function renderAct() {
   }
   const n = s.rows.length, w = n === 1 ? "transfer" : "transfers";
   if (s.mode === "api") {
-    $("rangeNote").textContent = s.next ? `Newest ${n} ${w}, from the explorer.` : `All ${n} ${w}, from the explorer.`;
-    $("olderBtn").hidden = !s.next;
+    $("rangeNote").textContent = more(s) ? `Newest ${n} ${w}, from the explorer.` : (n ? `All ${n} ${w}, from the explorer.` : "None ever, according to the explorer.");
+    $("olderBtn").hidden = !more(s);
   } else {
     const span = s.fromTime && s.toTime ? ` (${when(s.fromTime)} to ${when(s.toTime)})` : "";
     $("rangeNote").textContent = `${n} ${w} in blocks ${s.from.toLocaleString("en-GB")} to ${s.latest.toLocaleString("en-GB")}${span}, read from the chain directly. Older transfers: Load older, or the explorer.`;
@@ -318,7 +330,7 @@ async function lookUp(input) {
       $("balBody").append(tr);
     });
     try {
-      const { rows, next } = await transfersApi(addr);
+      const { rows, next } = await apiFetch(addr, null);
       act = { addr, mode: "api", rows, next };
     } catch {
       const latest = await p.getBlockNumber(), from = Math.max(0, latest - WINDOW + 1);
@@ -336,7 +348,7 @@ $("olderBtn").onclick = async () => {
   const s = act; if (!s) return;
   $("olderBtn").disabled = true;
   try {
-    if (s.mode === "api") { const { rows, next } = await transfersApi(s.addr, s.next); s.rows.push(...rows); s.next = next; }
+    if (s.mode === "api") { const { rows, next } = await apiFetch(s.addr, s.next); const seen = new Set(s.rows.map(r => r.hash + ":" + r.idx)); s.rows.push(...rows.filter(r => !seen.has(r.hash + ":" + r.idx))); s.next = next; }
     else { const to = s.from - 1, from = Math.max(0, to - WINDOW + 1); s.rows.push(...await transfersRpc(s.addr, from, to)); s.from = from; s.fromTime = await blockTime(from); }
     renderAct();
   } catch { $("actErr").textContent = "Couldn't load older transfers. Try again."; }
