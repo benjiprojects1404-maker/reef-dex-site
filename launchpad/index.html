@@ -129,6 +129,19 @@ ul.ticks.warn li::before{background:var(--amber)}
 .pcard p b{color:var(--text)}
 a.pbtn{margin-top:auto;align-self:flex-start;display:inline-block;padding:9px 14px;border-radius:11px;font:600 13px "Instrument Sans",sans-serif;text-decoration:none;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
 a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
+dialog.contact{border:1px solid var(--line2);border-radius:20px;background:var(--card);color:var(--text);padding:0;width:min(420px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.45)}
+dialog.contact::backdrop{background:rgba(2,8,11,.6);backdrop-filter:blur(2px)}
+.cbox{padding:22px}
+.cbox h3{font-size:20px;margin:0 0 4px}
+.cbox .subj{font-size:13px;color:var(--muted);margin:0 0 16px}
+.cbox .addr{display:flex;align-items:center;gap:8px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.cbox .addr code{flex:1;font-size:14px}
+.cbox button,.cbox a.copt{font:600 14px "Instrument Sans",sans-serif;border:0;border-radius:11px;cursor:pointer;text-decoration:none;display:block;text-align:center}
+.cbox .copy{padding:7px 12px;background:var(--card);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.cbox a.copt{padding:11px 14px;margin-top:8px;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.cbox a.copt.main{background:var(--coral);color:#fff;box-shadow:none}
+.cbox .close{position:absolute;top:12px;right:12px;width:32px;height:32px;padding:0;background:transparent;color:var(--muted);font-size:22px;line-height:32px}
+.cbox .hint{font-size:12px;color:var(--muted);margin:12px 0 0;text-align:center}
 @media (max-width:600px){.cta a{flex:1;text-align:center}}
 </style>
 </head>
@@ -236,19 +249,19 @@ a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
         <h3>Audit partner</h3>
         <p class="small"><b>You give:</b> Review the Launchpad sale contract (about 360 lines, tests and self-review included) at a discount or for credit.</p>
         <p class="small"><b>You get:</b> An &ldquo;Audited by&rdquo; credit here and on every sale page, your logo below, and a case study.</p>
-        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20audit">Email about this</a>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20audit" data-contact="Reef partner: audit">Email about this</a>
       </div>
       <div class="card pcard">
         <h3>Launch partner</h3>
         <p class="small"><b>You give:</b> Introduce projects that want to launch: communities, KOLs and agencies.</p>
         <p class="small"><b>You get:</b> 25% of the 2% launchpad fee (0.5% of the BDAG raised) on every sale you introduce that launches, paid in BDAG within 7 days.</p>
-        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20launch">Email about this</a>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20launch" data-contact="Reef partner: launch">Email about this</a>
       </div>
       <div class="card pcard">
         <h3>Infrastructure partner</h3>
         <p class="small"><b>You give:</b> Reliable service on chain 1404: an RPC endpoint, explorer, wallet or mining pool.</p>
         <p class="small"><b>You get:</b> A &ldquo;Built with&rdquo; listing with your logo in the docs, on the RPC status page and here.</p>
-        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20infrastructure">Email about this</a>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20infrastructure" data-contact="Reef partner: infrastructure">Email about this</a>
       </div>
     </div>
     <p class="muted small" style="margin:12px 0 0">Partners have no say over listings, the contracts or the fee split, and Reef's token rankings stay purely on-chain. Launch referrals count for sales that launch within 6 months of the first introduction; projects still go through normal vetting. <span id="partnerList">No partners listed yet.</span></p>
@@ -258,7 +271,7 @@ a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
     <div class="sechead"><h2>Launch with Reef Launchpad</h2><p>During the beta, launches are set up as part of Undercurrent Works' build and launch service.</p></div>
     <div class="card">
       <p style="margin-top:0">Tell us about your token: what it is, the team, how much you want to raise and when. We check the token and the project, agree the sale settings with you, then deploy, verify and list the sale. You'll sign short beta terms first. Projects and buyers in the US and UK can't take part.</p>
-      <div class="cta" style="margin-top:6px"><a class="go" href="mailto:benjamin@chordotc.com?subject=Reef%20Launchpad%20enquiry">Email Undercurrent Works</a><a class="alt" href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Services and prices</a></div>
+      <div class="cta" style="margin-top:6px"><a class="go" href="mailto:benjamin@chordotc.com?subject=Reef%20Launchpad%20enquiry" data-contact="Reef Launchpad enquiry">Email Undercurrent Works</a><a class="alt" href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Services and prices</a></div>
       <p class="muted small" style="margin:14px 0 0">Want to launch on your own instead, with no fee? The free <a href="/launch/">launch guide</a> shows how to deploy a token, open its BDAG pool and lock the liquidity yourself.</p>
     </div>
   </section>
@@ -281,6 +294,43 @@ a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
       ? '<div class="salegrid">' + list.map((s) => `<a class="sale" href="/launch/sale/?id=${encodeURIComponent(s.id)}"><b>${esc(s.name)}</b><span>${esc(s.about || "")}</span></a>`).join("") + "</div>"
       : empty;
   } catch (e) { box.innerHTML = empty; }
+})();
+</script>
+<dialog class="contact" id="contactDlg" aria-labelledby="contactTitle">
+  <div class="cbox">
+    <button type="button" class="close" id="contactClose" aria-label="Close">&times;</button>
+    <h3 id="contactTitle">Get in touch</h3>
+    <p class="subj">Subject: <b id="contactSubj"></b></p>
+    <div class="addr"><code id="contactAddr">benjamin@chordotc.com</code><button type="button" class="copy" id="contactCopy">Copy</button></div>
+    <a class="copt main" id="contactGmail" href="#" target="_blank" rel="noopener">Write in Gmail</a>
+    <a class="copt" id="contactMail" href="#">Use my email app</a>
+    <a class="copt" href="https://t.me/benjiprojects1404" target="_blank" rel="noopener">Message on Telegram</a>
+    <p class="hint">Based in Thailand (UTC+7).</p>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  const dlg = document.getElementById("contactDlg");
+  if (!dlg || typeof dlg.showModal !== "function") return; // old browsers keep the plain email link
+  const ADDR = "benjamin@chordotc.com";
+  const subj = document.getElementById("contactSubj"), gmail = document.getElementById("contactGmail"), mail = document.getElementById("contactMail"), copy = document.getElementById("contactCopy");
+  document.querySelectorAll("a[data-contact]").forEach((a) => a.addEventListener("click", (e) => {
+    e.preventDefault();
+    const s = a.getAttribute("data-contact");
+    subj.textContent = s;
+    gmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(ADDR) + "&su=" + encodeURIComponent(s);
+    mail.href = "mailto:" + ADDR + "?subject=" + encodeURIComponent(s);
+    copy.textContent = "Copy";
+    dlg.showModal();
+  }));
+  copy.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(ADDR); copy.textContent = "Copied"; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("contactAddr")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); copy.textContent = "Selected"; }
+  });
+  document.getElementById("contactClose").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }); // click outside closes
+  [gmail, mail].forEach((l) => l.addEventListener("click", () => setTimeout(() => dlg.close(), 300)));
 })();
 </script>
 </body>
