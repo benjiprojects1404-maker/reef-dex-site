@@ -122,6 +122,13 @@ ul.ticks li{position:relative;padding-left:22px}
 ul.ticks li::before{content:"";position:absolute;left:2px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--good)}
 ul.ticks.warn li::before{background:var(--amber)}
 .card h3+p{margin-top:0}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:860px){.pgrid{grid-template-columns:minmax(0,1fr)}}
+.pcard{display:flex;flex-direction:column}
+.pcard p{margin:0 0 10px;color:var(--muted)}
+.pcard p b{color:var(--text)}
+a.pbtn{margin-top:auto;align-self:flex-start;display:inline-block;padding:9px 14px;border-radius:11px;font:600 13px "Instrument Sans",sans-serif;text-decoration:none;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
 @media (max-width:600px){.cta a{flex:1;text-align:center}}
 </style>
 </head>
@@ -222,6 +229,31 @@ ul.ticks.warn li::before{background:var(--amber)}
     <div class="note warn"><b>Why "beta".</b> The sale contract hasn't had an independent audit yet. It has been through extensive testing (random-action fuzzing of every way a sale can go, and a full browser test of the sale page), and the builder's own <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review and results</a> are public, as is the <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>. Fees from the first launches go towards an independent review; the 5M BDAG cap comes off after that. Until then, only use BDAG you're fully prepared to lose.</div>
   </section>
 
+  <section class="block" id="partners">
+    <div class="sechead"><h2>Partners</h2><p>Credited for helping Reef Launchpad grow. Nobody can buy a token placement or a say over the contracts.</p></div>
+    <div class="pgrid">
+      <div class="card pcard">
+        <h3>Audit partner</h3>
+        <p class="small"><b>You give:</b> Review the Launchpad sale contract (about 360 lines, tests and self-review included) at a discount or for credit.</p>
+        <p class="small"><b>You get:</b> An &ldquo;Audited by&rdquo; credit here and on every sale page, your logo below, and a case study.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20audit">Email about this</a>
+      </div>
+      <div class="card pcard">
+        <h3>Launch partner</h3>
+        <p class="small"><b>You give:</b> Introduce projects that want to launch: communities, KOLs and agencies.</p>
+        <p class="small"><b>You get:</b> 25% of the 2% launchpad fee (0.5% of the BDAG raised) on every sale you introduce that launches, paid in BDAG within 7 days.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20launch">Email about this</a>
+      </div>
+      <div class="card pcard">
+        <h3>Infrastructure partner</h3>
+        <p class="small"><b>You give:</b> Reliable service on chain 1404: an RPC endpoint, explorer, wallet or mining pool.</p>
+        <p class="small"><b>You get:</b> A &ldquo;Built with&rdquo; listing with your logo in the docs, on the RPC status page and here.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20infrastructure">Email about this</a>
+      </div>
+    </div>
+    <p class="muted small" style="margin:12px 0 0">Partners have no say over listings, the contracts or the fee split, and Reef's token rankings stay purely on-chain. Launch referrals count for sales that launch within 6 months of the first introduction; projects still go through normal vetting. <span id="partnerList">No partners listed yet.</span></p>
+  </section>
+
   <section class="block" id="apply">
     <div class="sechead"><h2>Launch with Reef Launchpad</h2><p>During the beta, launches are set up as part of Undercurrent Works' build and launch service.</p></div>
     <div class="card">
@@ -234,7 +266,7 @@ ul.ticks.warn li::before{background:var(--amber)}
 
 <footer>
   <span>Reef Launchpad on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice. Reef lists sales after basic checks; that is not an endorsement of any project.</span>
-  <span><a href="/">Open Reef</a> · <a href="/launch/">Launch guide</a> · <a href="/docs/#launchpad">Docs</a> · <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></span>
+  <span><a href="/">Open Reef</a> · <a href="/launch/">Launch guide</a> · <a href="/docs/#launchpad">Docs</a> · <a href="#partners">Partners</a> · <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></span>
 </footer>
 
 <script>
