@@ -393,7 +393,7 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
         <li><b>Free read-only API:</b> <code>GET https://reefdex.fyi/api/v1/pairs</code> (every BDAG pool) and <code>/api/v1/pairs/&lt;token or pool address&gt;</code> (one pool plus 24h volume). JSON, open CORS, cached 60 seconds.</li>
         <li><b>Pool widget:</b> a one-line iframe, <code>https://reefdex.fyi/embed/pair/?t=&lt;token&gt;</code>.</li>
         <li><b>Swap links:</b> <code>https://reefdex.fyi/?from=bdag&amp;to=&lt;token&gt;&amp;amount=1000</code> opens the swap card pre-filled.</li>
-        <li><b>Payment links:</b> <a href="/pay/">reefdex.fyi/pay/</a> makes a BDAG, REEF, NOCAP or COOKED payment request with a QR code; payment goes wallet to wallet.</li>
+        <li><b>Payment links:</b> <a href="/pay/">reefdex.fyi/pay/</a> makes a BDAG, REEF, NOCAP or COOKED payment request with a QR code; payment goes wallet to wallet. The same page shows any address's balances and recent token transfers (read-only).</li>
       </ul>
       <p>Details and examples: <a href="/developers/">Reef for developers</a>.</p>
       <p>Reef is also a liquidity source for the <a href="https://nodaldex.fyi" target="_blank" rel="noopener">Nodal</a> aggregator, so a pool on Reef is reachable from there too.</p>
