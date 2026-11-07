@@ -1,0 +1,14 @@
+{
+  "_note": "Copy to <project>.json and fill in. Prices are BDAG per ONE whole token; amounts are in whole BDAG. Times are UTC+7.",
+  "token": "0x0000000000000000000000000000000000000000",
+  "tokenDecimals": 18,
+  "projectWallet": "0x0000000000000000000000000000000000000000",
+  "lpBeneficiary": "0x0000000000000000000000000000000000000000",
+  "salePriceBDAG": "100",
+  "listingPriceBDAG": "150",
+  "softCapBDAG": "200000",
+  "hardCapBDAG": "1000000",
+  "maxPerWalletBDAG": "100000",
+  "start": "2026-12-01 09:00",
+  "end": "2026-12-15 09:00"
+}
