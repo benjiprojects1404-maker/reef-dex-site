@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if(/^www\./i.test(location.hostname)){location.replace(location.protocol+"//"+location.hostname.replace(/^www\./i,"")+location.pathname+location.search+location.hash);}</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Reef Launchpad</title>
+<meta name="description" content="Fixed-price token sales on BlockDAG chain 1404 that launch straight into locked pools on Reef. A disclosed 2% fee, unsold tokens burned, full refunds if a sale doesn't launch. Unaudited, capped beta.">
+<meta name="theme-color" content="#050f14">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://reefdex.fyi/launchpad/">
+<meta property="og:title" content="Reef Launchpad">
+<meta property="og:description" content="Fixed-price token sales that launch straight into locked pools on Reef. Unaudited, capped beta.">
+<meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=3">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reef Launchpad">
+<meta name="twitter:description" content="Fixed-price token sales that launch straight into locked pools on Reef. Unaudited, capped beta.">
+<meta name="twitter:image" content="https://reefdex.fyi/assets/og-image.jpg?v=3">
+<link rel="canonical" href="https://reefdex.fyi/launchpad/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+/* Same design tokens and buy panel as /reef/ */
+:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#a6c4ca;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--accent:var(--polyp);
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:400 15px/1.6 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:inherit}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+code{font:500 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+header.top{border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{height:30px;width:auto;display:block}
+.tag{font:600 12px "Instrument Sans",sans-serif;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:3px 10px}
+.spacer{flex:1}
+a.btn{display:inline-block;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2);font:600 14px "Instrument Sans",sans-serif;padding:10px 16px;border-radius:11px;text-decoration:none;white-space:nowrap}
+@media (max-width:760px){.topwrap{padding:10px 14px}.logo-mark{height:24px}}
+
+.hero{padding:40px 0 10px}
+.eyebrow{color:var(--accent);font:600 12px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.hero h1{font-size:clamp(32px,5.6vw,52px);font-weight:800;line-height:1.04;margin:10px 0 12px}
+.hero h1 .c{color:var(--coral-text)}
+.lede{font-size:17px;color:var(--muted);max-width:720px;margin:0;white-space:pre-line}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.links a{font-size:13px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;text-decoration:none}
+.links a:hover{color:var(--text)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 0}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font:700 22px/1.2 "Bricolage Grotesque",sans-serif;margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+
+section.block{padding:36px 0 0}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sechead h2{font-size:clamp(24px,3.6vw,30px);font-weight:700;position:relative;padding-bottom:10px}
+.sechead h2::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;border-radius:2px;background:var(--coral)}
+.sechead p{color:var(--muted);margin:0;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 0 44px -30px var(--coral-soft);min-width:0}
+.card h3{font-size:18px;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.muted{color:var(--muted)}.small{font-size:13px}
+dl.terms{display:grid;grid-template-columns:auto 1fr;margin:0}
+dl.terms dt,dl.terms dd{padding:10px 0;border-bottom:1px solid var(--line);margin:0}
+dl.terms dt{color:var(--muted);font-size:13px;padding-right:16px}
+dl.terms dd{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+dl.terms dd small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+dl.terms dt:last-of-type,dl.terms dd:last-of-type{border-bottom:0}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+ol.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 50px;background:var(--raised);border:1px solid var(--line);border-radius:14px;font-size:14px}
+ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--coral-soft);color:var(--coral-text);font:700 13px/22px "Bricolage Grotesque",sans-serif;text-align:center}
+ol.steps b{font-weight:600}
+ol.steps .muted{font-size:13px}
+.risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.risk b{color:var(--text)}
+.note{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--polyp);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.note b{color:var(--text)}
+.warn{border-left-color:var(--amber)}
+.addrs{display:grid;gap:8px}
+.addr{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:center;gap:12px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+@media (max-width:700px){.addr{grid-template-columns:minmax(0,1fr)}}
+.addr .lbl{font-size:13px;color:var(--muted)}
+.addr .lbl b{color:var(--text);font-weight:600;display:block;font-size:14px}
+.addr a{text-decoration:none;border-bottom:1px dashed var(--line2)}
+footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+footer a{text-decoration:underline}
+
+
+.salegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+a.sale{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+a.sale:hover{border-color:var(--coral-soft)}
+a.sale b{font:700 18px "Bricolage Grotesque",sans-serif;display:block}
+a.sale span{font-size:13px;color:var(--muted)}
+.empty{background:var(--card);border:1px dashed var(--line2);border-radius:18px;padding:22px;color:var(--muted);font-size:14px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.cta a{display:inline-block;padding:11px 18px;border-radius:12px;font:600 14px "Instrument Sans",sans-serif;text-decoration:none}
+.cta a.go{background:var(--coral);color:#fff}
+.cta a.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+ul.ticks{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+ul.ticks li{position:relative;padding-left:22px}
+ul.ticks li::before{content:"";position:absolute;left:2px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--good)}
+ul.ticks.warn li::before{background:var(--amber)}
+.card h3+p{margin-top:0}
+@media (max-width:600px){.cta a{flex:1;text-align:center}}
+</style>
+</head>
+<body>
+
+<div class="betabar">BETA &mdash; unaudited, capped launchpad (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener" style="color:inherit">self-review</a>) on an early-stage chain. US and UK persons may not take part.</div>
+
+<header class="top">
+  <div class="topwrap">
+    <a class="brand" href="/" title="reef.dex"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="reef.dex" width="846" height="175"></a>
+    <span class="tag">Reef Launchpad</span>
+    <div class="spacer"></div>
+    <a class="btn" href="/">Open Reef</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Reef Launchpad · beta · BlockDAG chain 1404</div>
+    <h1>Token sales that launch <span class="c">straight into locked pools.</span></h1>
+    <p class="lede">Buyers pay BDAG at a fixed price. When the sale ends, the contract takes a disclosed 2% fee and puts every other BDAG into the token's pools on Reef, locked for 12 months. Unsold tokens are burned. If the sale doesn't launch, everyone gets a full refund.</p>
+    <div class="cta"><a class="go" href="#apply">Launch with Reef Launchpad</a><a class="alt" href="#sales">See live sales</a></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Launchpad fee</div><div class="v">2%</div><div class="s">of the BDAG raised, only if it launches</div></div>
+      <div class="stat"><div class="k">LP lock</div><div class="v">12 months</div><div class="s">held inside the sale contract</div></div>
+      <div class="stat"><div class="k">If it doesn't launch</div><div class="v">Full refund</div><div class="s">every BDAG back to buyers</div></div>
+      <div class="stat"><div class="k">Beta cap</div><div class="v">5M BDAG</div><div class="s">per sale, until an independent review</div></div>
+    </div>
+  </section>
+
+  <section class="block" id="sales">
+    <div class="sechead"><h2>Live sales</h2><p>Only sales Reef has listed. Always check the contract address on the sale page.</p></div>
+    <div id="saleList"><div class="empty">Loading&hellip;</div></div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="sechead"><h2>How a sale works</h2><p>One contract per sale. No owner, no admin, and no way for anyone to take the BDAG.</p></div>
+    <ol class="steps">
+      <li><b>The project deposits first.</b> <span class="muted">Every token buyers will claim, plus the tokens for the pools, plus a 1,000 REEF bond. Buying stays switched off until it's all in.</span></li>
+      <li><b>Buyers pay BDAG at a fixed price</b> during the sale window, up to a per-wallet cap. <span class="muted">They receive nothing yet.</span></li>
+      <li><b>Anyone launches the pool</b> once the sale ends (or hits its hard cap) above its soft cap. <span class="muted">2% goes to Reef's treasury. 80% of the rest opens a TOKEN/BDAG pool; 20% buys REEF for a TOKEN/REEF pool, only when that's safe, otherwise it all goes to TOKEN/BDAG. Every token not owed to a buyer goes to the dead address.</span></li>
+      <li><b>Buyers claim their tokens</b> whenever they like. <span class="muted">The LP stays locked in the sale contract for 12 months, then can only go to the named beneficiary.</span></li>
+      <li><b>If the sale fails, nobody loses BDAG.</b> <span class="muted">Under the soft cap, or not launched within 7 days of closing: every buyer refunds in full, and the project gets its tokens back.</span></li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <div class="grid2">
+      <div class="card">
+        <h3>For buyers</h3>
+        <p class="muted small">What the contract guarantees, and what it can't.</p>
+        <ul class="ticks">
+          <li>BDAG can only go into the pools, to the 2% fee, or back to you as a refund</li>
+          <li>Every sale's terms are fixed at deployment and readable on-chain</li>
+          <li>The pools open at the advertised price and the LP is locked</li>
+          <li>Unsold tokens are burned, never kept by the team</li>
+        </ul>
+        <ul class="ticks warn" style="margin-top:12px">
+          <li>The contracts are not independently audited</li>
+          <li>After launch the token's price can fall well below what you paid</li>
+          <li>Part of the liquidity is a TOKEN/REEF pool, which also moves with REEF</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>For projects</h3>
+        <p class="muted small">A launch your buyers can check for themselves.</p>
+        <ul class="ticks">
+          <li>Sale contract set up, verified and listed with its own sale page</li>
+          <li>Two pools at launch: TOKEN/BDAG, plus TOKEN/REEF when it's safe</li>
+          <li>You set the prices, caps and dates; Reef's standard terms cover the rest</li>
+        </ul>
+        <ul class="ticks warn" style="margin-top:12px">
+          <li>Deposit the sale tokens and a 1,000 REEF bond before it opens</li>
+          <li>Hand out no tokens before launch; the bond is burned if the launch is blocked</li>
+          <li>A standard ERC-20 only, and no promises about price</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="terms">
+    <div class="sechead"><h2>Standard terms</h2><p>The same for every Reef Launchpad sale. The sale page switches buying off if a contract doesn't match them.</p></div>
+    <div class="card">
+      <dl class="terms">
+        <dt>Launchpad fee</dt><dd>2% of the BDAG raised<small>to Reef's treasury, taken only if the sale launches</small></dd>
+        <dt>Pools at launch</dt><dd>80% TOKEN/BDAG · 20% TOKEN/REEF<small>REEF pool only while REEF/BDAG holds 10M+ BDAG and REEF's price is within 5% of its average</small></dd>
+        <dt>LP lock</dt><dd>12 months from launch<small>inside the sale contract</small></dd>
+        <dt>Leftover tokens</dt><dd>Burned<small>sent to the dead address at launch</small></dd>
+        <dt>Project bond</dt><dd>1,000 REEF<small>returned after a good launch or a missed soft cap; burned only if a launch is blocked</small></dd>
+        <dt>Refunds</dt><dd>Full, in BDAG<small>at the close if under the soft cap, or 7 days after if not launched</small></dd>
+        <dt>Beta cap</dt><dd>5,000,000 BDAG per sale<small>until an independent review</small></dd>
+        <dt>Set by each project</dt><dd>Prices, caps, window<small>sale price, opening price (at least the sale price), soft and hard cap, per-wallet cap</small></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="beta">
+    <div class="note warn"><b>Why "beta".</b> The sale contract hasn't had an independent audit yet. It has been through extensive testing (random-action fuzzing of every way a sale can go, and a full browser test of the sale page), and the builder's own <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review and results</a> are public, as is the <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>. Fees from the first launches go towards an independent review; the 5M BDAG cap comes off after that. Until then, only use BDAG you're fully prepared to lose.</div>
+  </section>
+
+  <section class="block" id="apply">
+    <div class="sechead"><h2>Launch with Reef Launchpad</h2><p>During the beta, launches are set up as part of Undercurrent Works' build and launch service.</p></div>
+    <div class="card">
+      <p style="margin-top:0">Tell us about your token: what it is, the team, how much you want to raise and when. We check the token and the project, agree the sale settings with you, then deploy, verify and list the sale. You'll sign short beta terms first. Projects and buyers in the US and UK can't take part.</p>
+      <div class="cta" style="margin-top:6px"><a class="go" href="mailto:benjamin@chordotc.com?subject=Reef%20Launchpad%20enquiry">Email Undercurrent Works</a><a class="alt" href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Services and prices</a></div>
+      <p class="muted small" style="margin:14px 0 0">Want to launch on your own instead, with no fee? The free <a href="/launch/">launch guide</a> shows how to deploy a token, open its BDAG pool and lock the liquidity yourself.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Reef Launchpad on BlockDAG chain 1404 (community chain). Nothing here is financial, legal or tax advice. Reef lists sales after basic checks; that is not an endorsement of any project.</span>
+  <span><a href="/">Open Reef</a> · <a href="/launch/">Launch guide</a> · <a href="/docs/#launchpad">Docs</a> · <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></span>
+</footer>
+
+<script>
+(async function () {
+  const box = document.getElementById("saleList");
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const empty = '<div class="empty"><b style="color:var(--text)">No sales yet.</b> The first launches are for Undercurrent Works clients during the beta. Each listed sale will appear here with a link to its own page.</div>';
+  try {
+    const r = await fetch("/launch/sales.json", { cache: "no-store" });
+    const list = r.ok ? ((await r.json()).sales || []).filter((s) => s && s.id && s.name) : [];
+    box.innerHTML = list.length
+      ? '<div class="salegrid">' + list.map((s) => `<a class="sale" href="/launch/sale/?id=${encodeURIComponent(s.id)}"><b>${esc(s.name)}</b><span>${esc(s.about || "")}</span></a>`).join("") + "</div>"
+      : empty;
+  } catch (e) { box.innerHTML = empty; }
+})();
+</script>
+</body>
+</html>

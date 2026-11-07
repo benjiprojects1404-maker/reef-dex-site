@@ -161,6 +161,7 @@ footer p{margin:0 0 6px}
       <li><a href="#contracts">Contracts</a></li>
       <li><a href="#beta">Leaving beta</a></li>
       <li class="grp">More</li>
+      <li><a href="#launchpad">Reef Launchpad</a></li>
       <li><a href="#builders">For builders</a></li>
       <li><a href="#reef-token">$REEF</a></li>
       <li><a href="#brand">Brand assets</a></li>
@@ -351,6 +352,22 @@ footer p{margin:0 0 6px}
       </ul>
     </section>
 
+    <section id="launchpad">
+      <h2>Reef Launchpad</h2>
+      <p><a href="/launchpad/">Reef Launchpad</a> runs fixed-price token sales that launch straight into locked pools on Reef. It is an <b>unaudited, capped beta</b>: each sale can raise at most 5,000,000 BDAG until the contract has an independent review. The builder's <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review and test results</a> are public.</p>
+      <h3>How a sale runs</h3>
+      <ol>
+        <li>The project deposits every token buyers will claim, the tokens for the pools, and a 1,000 REEF bond. Buying stays off until all of it is in.</li>
+        <li>Buyers pay BDAG at a fixed price during the sale window, up to a per-wallet cap.</li>
+        <li>Once the sale ends (or reaches its hard cap) above its soft cap, anyone can launch it. 2% of the BDAG goes to Reef's treasury; 80% of the rest opens a TOKEN/BDAG pool and 20% buys REEF for a TOKEN/REEF pool. The REEF pool is skipped, with everything going to TOKEN/BDAG, if the REEF/BDAG pool holds under 10M BDAG or REEF's price is more than 5% from its average since the sale was deployed. Tokens not owed to buyers are burned.</li>
+        <li>Buyers claim their tokens with no deadline. The LP stays locked in the sale contract for 12 months, then goes to the named beneficiary.</li>
+        <li>If the sale ends under its soft cap, or isn't launched within 7 days of closing, every buyer refunds their BDAG in full and the project gets its tokens back.</li>
+      </ol>
+      <h3>The project bond</h3>
+      <p>The 1,000 REEF bond goes back to the project when the LP lock ends after a good launch, or straight away if the soft cap is missed. It is burned (sent to the dead address) only if buyers reached the soft cap but the pool couldn't open, for example because the project created the token's pool first.</p>
+      <p>Only sales Reef has listed run on the sale pages, and a sale page switches buying off if the contract's terms differ from the standard ones above. During the beta, launches are set up through <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a>. Projects and buyers in the US and UK can't take part. Launching your own token with no sale and no fee is still free with the <a href="/launch/">launch guide</a>.</p>
+    </section>
+
     <section id="builders">
       <h2>For builders</h2>
       <p>Reef uses the Uniswap V2 interface, so most existing V2 tools and code work once you point them at Reef's Router and Factory. Native BDAG functions use <code>BDAG</code> where Uniswap uses <code>ETH</code>, for example <code>swapExactBDAGForTokens</code> and <code>addLiquidityBDAG</code>.</p>
@@ -388,7 +405,7 @@ console.log("1 BDAG buys", ethers.formatUnits(amounts[1], TOKEN_DECIMALS));</cod
       <h3>Does holding $REEF pay me anything?</h3>
       <p>No. $REEF does not pay holders any share of Reef's fees or revenue. If you want income from Reef, that comes from providing liquidity: LPs in the REEF/BDAG pool earn 0.25% of every trade in it, like any other pool. A time-limited reward for REEF/BDAG liquidity providers is being considered, but it isn't promised.</p>
       <h3>So what is it for?</h3>
-      <p>The plan is for $REEF to act as a trust bond across Reef, Nodal and Handshake, with uses added over time. That's a direction, not a promise, and none of it is live yet. Buy it only if you're comfortable with it being worth nothing.</p>
+      <p>The plan is for $REEF to act as a trust bond across Reef, Nodal and Handshake, with uses added over time. The first is built: projects launching on <a href="#launchpad">Reef Launchpad</a> (beta) post a 1,000 REEF bond, and part of each raise opens a TOKEN/REEF pool. Other uses are a direction, not a promise. Buy it only if you're comfortable with it being worth nothing.</p>
     </section>
 
     <section id="brand">
