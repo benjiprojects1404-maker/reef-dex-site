@@ -60,6 +60,17 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:8px 0 0;font-
 .status .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:none}
 .status.paid{color:var(--text)}.status.paid .dot{background:var(--good)}.status.fail .dot{background:var(--ember)}
 .status a{color:var(--coral-text)}
+h2{font:700 24px "Bricolage Grotesque",sans-serif;margin:34px 0 6px}
+h3{font:700 17px "Bricolage Grotesque",sans-serif;margin:18px 0 6px}
+.btn.small{padding:6px 10px;font-size:13px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.in{color:var(--good)}td.out{color:var(--coral-text)}
+.faint{color:var(--muted)}
+.spacer{flex:1}
 </style></head><body>
 <header class="top"><div class="topwrap"><a class="brand" href="/"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="Reef"><span>Pay</span></a><div class="spacer"></div><a class="openapp" href="/">Open Reef</a></div></header>
 <div class="betabar">No contract, nothing held: a link sends tokens straight from the payer's wallet to the address in it. Payments can't be reversed.</div>
@@ -98,6 +109,22 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:8px 0 0;font-
       <div class="status" id="gStatus"><span class="dot"></span><span id="gStatusText"></span></div>
     </div>
     <p class="note">Making a link doesn't connect a wallet, sign anything or store your details. Everything is in the link itself.</p>
+  </div>
+  <h2 id="activity">Balances and recent transfers</h2>
+  <p class="lede">Check what an address holds and the token payments it has sent and received.</p>
+  <div class="panel">
+    <label for="aAddr">Any BlockDAG address</label>
+    <div class="linkbox"><input id="aAddr" placeholder="0x…" autocomplete="off" spellcheck="false"><button class="btn primary" id="lookBtn">Look up</button></div>
+    <div class="err" id="actErr"></div>
+    <div id="actOut" hidden>
+      <h3>Balances</h3>
+      <div class="tablewrap"><table><thead><tr><th>Token</th><th class="num">Balance</th></tr></thead><tbody id="balBody"></tbody></table></div>
+      <div class="row" style="margin:20px 0 4px"><h3 style="margin:0">Recent token transfers</h3><span class="spacer"></span><button class="btn small" id="csvBtn" disabled>Download CSV</button></div>
+      <p class="note" id="rangeNote" style="margin-top:0"></p>
+      <div class="tablewrap"><table><thead><tr><th>Time</th><th>Token</th><th class="num">Amount</th><th>Counterparty</th><th>Tx</th></tr></thead><tbody id="txBody"></tbody></table></div>
+      <div class="row" style="margin-top:12px"><button class="btn small" id="olderBtn" hidden>Load older</button><a class="btn small" id="explorerLink" target="_blank" rel="noopener">Full history on the explorer</a></div>
+    </div>
+    <p class="note">Read-only: nothing is connected, signed or stored. Transfers cover REEF, NOCAP and COOKED only, matched by contract address. Plain BDAG transfers leave no token record on the chain, so they appear in the balance but not in this list.</p>
   </div>
   <p class="note">Need this built into your own app or shop? <a href="https://benjiprojects1404-services.pages.dev/" target="_blank" rel="noopener">Undercurrent Works</a> builds it. See also <a href="/developers/">Reef for developers</a>.</p>
 </section>
@@ -180,6 +207,149 @@ $("makeBtn").onclick = async () => {
   stopGetWatch = watchPayment($("gStatus"), $("gStatusText"), token, to, amount, block);
 };
 $("copyLink").onclick = () => navigator.clipboard.writeText($("gLink").value).then(() => { $("copyLink").textContent = "Copied"; setTimeout(() => $("copyLink").textContent = "Copy", 1500); });
+
+// ---- Balances and recent transfers (read-only) ----
+const TOK = TOKENS.filter(t => t.addr);
+const BY_ADDR = Object.fromEntries(TOK.map(t => [t.addr.toLowerCase(), t]));
+const WINDOW = 50000;  // blocks searched per step when the explorer can't be used
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const when = d => d ? d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "–";
+let act = null;
+
+// 1) The explorer's API, if it has one (Blockscout style): any age, ~50 per page.
+async function transfersApi(addr, pageParams) {
+  const u = new URL(CFG.explorer + "/api/v2/addresses/" + addr + "/token-transfers");
+  u.searchParams.set("type", "ERC-20");
+  for (const [k, v] of Object.entries(pageParams || {})) if (v != null) u.searchParams.set(k, v);
+  const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 8000);
+  let j;
+  try { const r = await fetch(u, { headers: { accept: "application/json" }, signal: ctl.signal }); if (!r.ok) throw new Error("explorer " + r.status); j = await r.json(); }
+  finally { clearTimeout(timer); }
+  if (!j || !Array.isArray(j.items)) throw new Error("explorer format");
+  const me = addr.toLowerCase(), rows = [];
+  for (const i of j.items) {
+    const t = i.token && i.token.address_hash && BY_ADDR[i.token.address_hash.toLowerCase()];
+    if (!t || !i.total || i.total.value == null || !i.from || !i.to) continue;
+    const dir = i.to.hash.toLowerCase() === me ? "in" : "out";
+    const raw = BigInt(i.total.value);
+    rows.push({ block: Number(i.block_number), idx: Number(i.log_index), hash: i.transaction_hash, sym: t.sym, dir,
+      cp: ethers.getAddress(dir === "in" ? i.from.hash : i.to.hash), raw, time: i.timestamp ? new Date(i.timestamp) : null });
+  }
+  return { rows, next: j.next_page_params || null };
+}
+
+// 2) Fallback: read the chain directly, a window of recent blocks at a time.
+let chunk = 5000;
+async function logsRange(filter, from, to) {
+  const p = await provider(), out = [];
+  let start = from;
+  while (start <= to) {
+    const end = Math.min(to, start + chunk - 1);
+    try {
+      // Raw eth_getLogs, because ethers' getLogs takes only one contract address.
+      const raw = await p.send("eth_getLogs", [{ ...filter, fromBlock: ethers.toQuantity(start), toBlock: ethers.toQuantity(end) }]);
+      for (const l of raw) out.push({ address: l.address, topics: l.topics, data: l.data, hash: l.transactionHash, block: parseInt(l.blockNumber, 16), idx: parseInt(l.logIndex, 16) });
+      start = end + 1;
+    } catch (e) { if (chunk > 250) { chunk = Math.floor(chunk / 2); continue; } throw e; }
+    await sleep(150);
+  }
+  return out;
+}
+async function transfersRpc(addr, from, to) {
+  const addrs = TOK.map(t => t.addr), pad = ethers.zeroPadValue(addr, 32);
+  const [outs, ins] = await Promise.all([
+    logsRange({ address: addrs, topics: [TRANSFER, pad] }, from, to),
+    logsRange({ address: addrs, topics: [TRANSFER, null, pad] }, from, to),
+  ]);
+  const rows = [];
+  for (const [list, dir] of [[outs, "out"], [ins, "in"]]) for (const l of list) {
+    const t = BY_ADDR[l.address.toLowerCase()]; if (!t || l.topics.length < 3) continue;
+    rows.push({ block: l.block, idx: l.idx, hash: l.hash, sym: t.sym, dir, cp: ethers.getAddress("0x" + l.topics[dir === "out" ? 2 : 1].slice(26)), raw: BigInt(l.data), time: null });
+  }
+  const p = await provider(), ts = {};
+  const blocks = [...new Set(rows.map(r => r.block))].sort((a, b) => b - a).slice(0, 60);  // times for the newest 60 blocks shown
+  await Promise.all(blocks.map(async b => { try { ts[b] = new Date((await p.getBlock(b)).timestamp * 1000); } catch {} }));
+  for (const r of rows) r.time = ts[r.block] || null;
+  return rows;
+}
+async function blockTime(b) { try { return new Date((await (await provider()).getBlock(b)).timestamp * 1000); } catch { return null; } }
+
+function renderAct() {
+  const s = act, body = $("txBody");
+  s.rows.sort((a, b) => b.block - a.block || b.idx - a.idx);
+  body.innerHTML = "";
+  if (!s.rows.length) body.innerHTML = `<tr><td colspan="5" class="faint">No REEF, NOCAP or COOKED transfers in this range.</td></tr>`;
+  for (const r of s.rows) {
+    const t = BY_SYM[r.sym.toLowerCase()], tr = document.createElement("tr");
+    tr.innerHTML = `<td>${esc(when(r.time))}</td><td>${esc(r.sym)}</td><td class="num ${r.dir}">${r.dir === "in" ? "+" : "−"}${esc(fmt(r.raw, t.dec))}</td>
+      <td><a class="mono" href="${CFG.explorer}/address/${r.cp}" target="_blank" rel="noopener">${short(r.cp)}</a></td>
+      <td><a class="mono" href="${CFG.explorer}/tx/${esc(r.hash)}" target="_blank" rel="noopener">${esc(r.hash.slice(0, 10))}…</a></td>`;
+    body.append(tr);
+  }
+  const n = s.rows.length, w = n === 1 ? "transfer" : "transfers";
+  if (s.mode === "api") {
+    $("rangeNote").textContent = s.next ? `Newest ${n} ${w}, from the explorer.` : `All ${n} ${w}, from the explorer.`;
+    $("olderBtn").hidden = !s.next;
+  } else {
+    const span = s.fromTime && s.toTime ? ` (${when(s.fromTime)} to ${when(s.toTime)})` : "";
+    $("rangeNote").textContent = `${n} ${w} in blocks ${s.from.toLocaleString("en-GB")} to ${s.latest.toLocaleString("en-GB")}${span}, read from the chain directly. Older transfers: Load older, or the explorer.`;
+    $("olderBtn").hidden = s.from === 0;
+  }
+  $("csvBtn").disabled = !n;
+}
+async function lookUp(input) {
+  $("actErr").textContent = "";
+  let addr;
+  try { addr = ethers.getAddress(input.trim()); } catch { $("actErr").textContent = "That doesn't look like a valid address."; return; }
+  history.replaceState(null, "", location.pathname + "#activity=" + addr);
+  $("lookBtn").disabled = true; $("csvBtn").disabled = true; $("olderBtn").hidden = true; $("actOut").hidden = false;
+  $("explorerLink").href = CFG.explorer + "/address/" + addr;
+  $("balBody").innerHTML = `<tr><td colspan="2" class="faint">Loading…</td></tr>`;
+  $("txBody").innerHTML = `<tr><td colspan="5" class="faint">Loading…</td></tr>`;
+  $("rangeNote").textContent = "";
+  try {
+    const p = await provider();
+    const bals = await Promise.all(TOKENS.map(t => (t.addr ? new ethers.Contract(t.addr, ERC20, p).balanceOf(addr) : p.getBalance(addr)).catch(() => null)));
+    $("balBody").innerHTML = "";
+    TOKENS.forEach((t, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${t.sym} <span class="faint mono">${t.addr ? short(t.addr) : "native"}</span></td><td class="num">${bals[i] === null ? "–" : fmt(bals[i], t.dec)}</td>`;
+      $("balBody").append(tr);
+    });
+    try {
+      const { rows, next } = await transfersApi(addr);
+      act = { addr, mode: "api", rows, next };
+    } catch {
+      const latest = await p.getBlockNumber(), from = Math.max(0, latest - WINDOW + 1);
+      const rows = await transfersRpc(addr, from, latest);
+      act = { addr, mode: "rpc", from, latest, rows, toTime: await blockTime(latest), fromTime: await blockTime(from) };
+    }
+    renderAct();
+  } catch (e) {
+    console.error(e);
+    $("actErr").textContent = "Couldn't read BlockDAG right now. Try again in a moment.";
+  }
+  $("lookBtn").disabled = false;
+}
+$("olderBtn").onclick = async () => {
+  const s = act; if (!s) return;
+  $("olderBtn").disabled = true;
+  try {
+    if (s.mode === "api") { const { rows, next } = await transfersApi(s.addr, s.next); s.rows.push(...rows); s.next = next; }
+    else { const to = s.from - 1, from = Math.max(0, to - WINDOW + 1); s.rows.push(...await transfersRpc(s.addr, from, to)); s.from = from; s.fromTime = await blockTime(from); }
+    renderAct();
+  } catch { $("actErr").textContent = "Couldn't load older transfers. Try again."; }
+  $("olderBtn").disabled = false;
+};
+$("lookBtn").onclick = () => lookUp($("aAddr").value);
+$("aAddr").addEventListener("keydown", e => { if (e.key === "Enter") lookUp($("aAddr").value); });
+$("csvBtn").onclick = () => {
+  const s = act; if (!s) return;
+  const lines = [["time_utc", "block", "direction", "token", "amount", "counterparty", "tx_hash"].join(",")];
+  for (const r of s.rows) lines.push([r.time ? r.time.toISOString() : "", r.block, r.dir, r.sym, ethers.formatUnits(r.raw, BY_SYM[r.sym.toLowerCase()].dec), r.cp, r.hash].join(","));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" })); a.download = `bdag-activity-${s.addr.slice(0, 8)}.csv`; a.click();
+};
+{ const m = location.hash.match(/^#activity=(0x[0-9a-fA-F]{40})$/); if (m) { $("aAddr").value = m[1]; lookUp(m[1]); setTimeout(() => $("activity").scrollIntoView(), 50); } }
 
 async function payerView(q) {
   let to, token, amount, block;
