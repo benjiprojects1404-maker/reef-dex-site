@@ -62,6 +62,9 @@ describe("ReefLaunchSale (launchpad v2)", () => {
       await bad({ projectWallet: ethers.ZeroAddress }, "project wallet is zero address");
       await bad({ listingPrice: 99n * E18 }, "listing price below sale price");
       await bad({ softCap: 10n ** 30n }, "bad caps");
+      await bad({ softCap: 0n }, "soft cap is zero");
+      // a soft-cap raise this small couldn't open a pool (Reef locks the first 1,000 LP units)
+      await bad({ softCap: 1_000n, salePrice: E18, listingPrice: E18 }, "soft cap too small to open a pool");
       await bad({ maxPerWallet: 0n }, "per-wallet cap is zero");
       await bad({ lpLockSeconds: 180n * DAY - 1n }, "LP lock must be at least 180 days");
       await bad({ startTime: 1n }, "start time is in the past");
@@ -167,7 +170,7 @@ describe("ReefLaunchSale (launchpad v2)", () => {
     it("works with 6-decimal tokens and fractional prices", async () => {
       const t = await newToken(6);
       // 0.25 BDAG per token in the sale, 0.4 at listing
-      const { sale, cfg } = await newSale(t, { salePrice: E18 / 4n, listingPrice: (4n * E18) / 10n, softCap: 0n, hardCap: 100_000n * E18 });
+      const { sale, cfg } = await newSale(t, { salePrice: E18 / 4n, listingPrice: (4n * E18) / 10n, softCap: E18, hardCap: 100_000n * E18 });
       await fund(t, sale);
       expect(await sale.tokensRequired()).to.equal(400_000n * 10n ** 6n + 245_000n * 10n ** 6n);
       await time.increaseTo(cfg.startTime);
@@ -281,7 +284,7 @@ describe("ReefLaunchSale (launchpad v2)", () => {
 
     it("a sale with no buyers can hand the tokens back straight after the end", async () => {
       const t = await newToken();
-      const { sale, cfg } = await newSale(t, { softCap: 0n });
+      const { sale, cfg } = await newSale(t);
       await fund(t, sale);
       await time.increaseTo(cfg.endTime + 1n);
       await expect(sale.finalize()).to.be.revertedWith("soft cap not reached");
