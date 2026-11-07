@@ -122,7 +122,7 @@ td.in{color:var(--good)}td.out{color:var(--coral-text)}
       <div class="row" style="margin:20px 0 4px"><h3 style="margin:0">Recent token transfers</h3><span class="spacer"></span><button class="btn small" id="csvBtn" disabled>Download CSV</button></div>
       <p class="note" id="rangeNote" style="margin-top:0"></p>
       <div class="tablewrap"><table><thead><tr><th>Time</th><th>Token</th><th class="num">Amount</th><th>Counterparty</th><th>Tx</th></tr></thead><tbody id="txBody"></tbody></table></div>
-      <div class="row" style="margin-top:12px"><button class="btn small" id="olderBtn" hidden>Load older</button><a class="btn small" id="explorerLink" target="_blank" rel="noopener">Full history on the explorer</a></div>
+      <div class="row" style="margin-top:12px"><button class="btn small" id="olderBtn" hidden>Load older</button><a class="btn small" id="explorerLink" target="_blank" rel="noopener">Full history on the explorer</a><a class="btn small" id="portfolioLink" href="/portfolio/">Liquidity positions</a></div>
     </div>
     <p class="note">Read-only: nothing is connected, signed or stored. Transfers cover REEF, NOCAP and COOKED only, matched by contract address. Plain BDAG transfers leave no token record on the chain, so they appear in the balance but not in this list.</p>
   </div>
@@ -304,6 +304,7 @@ async function lookUp(input) {
   history.replaceState(null, "", location.pathname + "#activity=" + addr);
   $("lookBtn").disabled = true; $("csvBtn").disabled = true; $("olderBtn").hidden = true; $("actOut").hidden = false;
   $("explorerLink").href = CFG.explorer + "/address/" + addr;
+  $("portfolioLink").href = "/portfolio/#address=" + addr;
   $("balBody").innerHTML = `<tr><td colspan="2" class="faint">Loading…</td></tr>`;
   $("txBody").innerHTML = `<tr><td colspan="5" class="faint">Loading…</td></tr>`;
   $("rangeNote").textContent = "";
