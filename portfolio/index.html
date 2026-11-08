@@ -109,6 +109,8 @@ footer a{color:var(--muted)}
 const CFG = { chainId: 1404, explorer: "https://explorer.east.bdag-us.org", factory: "0x9603042044b6B1A1637c508F731ba01219142239",
   rpcs: ["https://rpc.community.bdag-us.org", "https://rpc.capedag.com", "https://rpc.bdagexplorer.com", "https://rpc.dvdmining.com"] };
 const MAX_PAIRS = 300;
+// Pools Reef's own site hides (pair index 1 is the BDAG/CTEST test pool): left out here too. Display-only.
+const HIDDEN_PAIR_INDEXES = new Set([1]);
 const FACTORY = ["function allPairsLength() view returns (uint256)", "function allPairs(uint256) view returns (address)"];
 const PAIR = ["function token0() view returns (address)", "function token1() view returns (address)", "function getReserves() view returns (uint112,uint112,uint32)",
   "function totalSupply() view returns (uint256)", "function balanceOf(address) view returns (uint256)"];
@@ -144,12 +146,13 @@ async function loadPairs(p) {
   const f = new ethers.Contract(CFG.factory, FACTORY, p);
   const total = Number(await f.allPairsLength()), n = Math.min(total, MAX_PAIRS);
   const addrs = await pool([...Array(n).keys()], 6, i => f.allPairs(i));
-  const pairs = await pool(addrs, 6, async a => {
+  const pairs = (await pool(addrs, 6, async (a, idx) => {
+    if (HIDDEN_PAIR_INDEXES.has(idx)) return null;
     const c = new ethers.Contract(a, PAIR, p);
     const [t0, t1] = await Promise.all([c.token0(), c.token1()]);
     const [i0, i1] = await Promise.all([tokenInfo(p, t0), tokenInfo(p, t1)]);
     return { addr: a, c, i0, i1 };
-  });
+  })).filter(Boolean);
   return (pairsCache = { pairs, total });
 }
 
