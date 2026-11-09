@@ -102,9 +102,11 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .tokbtn .dot{width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 50% 22%,#dfe3e9,#6f7680 65%,#141518);flex:none}
 .tokbtn .dot.native{background:radial-gradient(circle at 50% 22%,#eaf6fd,#0a71a1 65%,#06274a)}
 .tokbtn .dot.empty{background:transparent;border:2px dashed var(--coral-soft);box-shadow:0 0 10px -2px var(--coral-soft)}
-.flip{display:grid;place-items:center;width:38px;height:38px;margin:-6px auto;position:relative;border-radius:12px;background:var(--card);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--line2);cursor:pointer;z-index:2;transition:box-shadow .2s}
-.flip:hover,.flip:focus-visible{box-shadow:0 0 0 1px var(--coral-soft),0 0 18px -3px var(--coral-soft)}
-.flip svg{width:16px;height:16px}
+.flip{display:grid;place-items:center;width:40px;height:40px;margin:-6px auto;padding:0;position:relative;border-radius:12px;background:var(--raised);color:var(--info);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--info-line);cursor:pointer;z-index:2;transition:box-shadow .2s,color .2s,transform .2s;-webkit-tap-highlight-color:transparent}
+.flip:hover,.flip:focus-visible{color:var(--text);box-shadow:0 0 0 1px var(--coral-soft),0 0 18px -3px var(--coral-soft)}
+.flip:active{transform:rotate(180deg)}
+.flip svg{width:18px;height:18px}
+@media (max-width:600px){.flip{width:46px;height:46px;margin:-8px auto}.flip svg{width:20px;height:20px}}
 .rows{margin:14px 2px 4px;font-size:13px;color:var(--muted)}
 .rows div{display:flex;justify-content:space-between;padding:4px 0}
 .rows b{color:var(--text);font-weight:500}
@@ -386,7 +388,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
           <button class="tokbtn" id="fromTokBtn" onclick="openPicker('from')"></button>
         </div>
       </div>
-      <button class="flip" onclick="flipTokens()" title="Reverse" type="button">
+      <button class="flip" onclick="flipTokens()" title="Reverse" aria-label="Swap direction: reverse the two tokens" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v16M8 20l-4-4M8 20l4-4M16 20V4M16 4l-4 4M16 4l4 4"/></svg>
       </button>
       <div class="field">
