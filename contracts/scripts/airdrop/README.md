@@ -6,6 +6,7 @@ Implements the rules published at https://reefdex.fyi/reef/#airdrop.
 |---|---|
 | `rules.js` | The rules as pure code: tiers, 0.001 BDAG tolerance, ranking, the 1,000-wallet cap, share maths. |
 | `snapshot.js` | Reads Reef's public events and writes the list, amounts and Merkle proofs to `out/`. Read-only: it never signs anything. |
+| `lp-rules.js`, `lp-reward.js` | The REEF/BDAG LP reward (below): its rules as pure code, and the snapshot that produces its list. |
 | `config.json` | RPCs, addresses, hidden pairs and **team wallets to exclude**. |
 | `../../contracts/reef/ReefAirdrop.sol` | The claim contract. No owner. |
 | `../../test/reef-airdrop.test.js` | Tests for the rules and the contract. |
@@ -46,3 +47,26 @@ Implements the rules published at https://reefdex.fyi/reef/#airdrop.
 - **Activity so far:** 53 swaps and 23 liquidity adds on the two counted BDAG pairs.
 - **Qualifying wallets:** 14 (8 at Tier 1, 6 at Tier 2, none at Tier 3), at 2,100 REEF per share.
 - **Allocated so far:** 54,600 REEF.
+
+## REEF/BDAG LP reward (draft, not announced)
+
+A small, time-limited reward for people who provide liquidity to the REEF/BDAG pool. Nothing is staked:
+LPs keep their LP tokens in their own wallets, and the reward is paid once at the end through a fresh
+deployment of the same `ReefAirdrop` claim contract (no new contract code).
+
+- **Window:** Mon 16 Nov 2026 09:00 to Mon 11 Jan 2027 09:00 (UTC+7), 8 weeks.
+- **Pot:** 5,000 REEF, from the REEF marketing wallet.
+- **How it's shared:** in proportion to LP balance x time held across the window (from the pool's LP `Transfer`
+  events), so adding liquidity just before the end earns almost nothing, and removing it stops the clock.
+- **Not eligible:** the locked launch liquidity (presale contract), contracts, the dead address, and every
+  team wallet in `config.json`.
+- **Cap:** no wallet gets more than 25% of the pot; the excess is shared among the others. Payouts under
+  1 REEF are dropped. Anything not allocated is simply never sent (nothing to burn).
+- **Claims:** close Thu 15 Apr 2027 09:00 (UTC+7); after that, anyone can call `burnExpired()`.
+
+After the window closes:
+
+1. `cd contracts && node scripts/airdrop/lp-reward.js` (once per RPC with `--rpc`; the roots must match).
+2. Review `out-lp/airdrop.json`: `excluded`, `capped`, `droppedUnderMinimum`.
+3. `node scripts/airdrop/deploy-args.js --file scripts/airdrop/out-lp/airdrop.json`.
+4. Deploy `ReefAirdrop` with the printed arguments, then send exactly `totalAllocated` from the marketing wallet.
