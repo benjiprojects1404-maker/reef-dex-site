@@ -4,6 +4,7 @@
 //
 //   node scripts/airdrop/deploy-args.js [--file scripts/airdrop/out/airdrop.json]
 //   (card round: --file scripts/airdrop/out-cards/airdrop.json; the burn line then uses that round's 472,500 pot)
+//   (LP reward: --file scripts/airdrop/out-lp/airdrop.json; uses its own claim deadline, and nothing is burned)
 //
 // It refuses to print anything if:
 //   - the snapshot isn't final,
@@ -51,6 +52,8 @@ const reviews = (out.needsReview || []).length;
 const removed = (out.liquidityRemoved || []).length;
 const fmt = (wei) => ethers.formatUnits(wei, 18);
 const burn = pot - sum;
+const deadline = out.claimDeadline || RULES.claimDeadline; // LP reward has its own
+const burns = !out.unallocated; // LP reward: unallocated REEF is simply never sent
 
 console.log(`Checked ${out.entries.length} wallets, ${fmt(sum)} REEF. Root and every proof match.`);
 if (reviews || removed) console.log(`NOTE: ${reviews} needsReview item(s), ${removed} liquidityRemoved item(s). Resolve them before deploying.`);
@@ -60,10 +63,11 @@ console.log(`  _token          ${cfg.reefToken}`);
 console.log(`  _presale        ${cfg.presale}`);
 console.log(`  _merkleRoot     ${tree.root}`);
 console.log(`  _totalAllocated ${sum.toString()}   (${fmt(sum)} REEF)`);
-console.log(`  _claimDeadline  ${RULES.claimDeadline}`);
+console.log(`  _claimDeadline  ${deadline}`);
 console.log("");
-console.log("Then, from the airdrop holder:");
+console.log(burns ? "Then, from the airdrop holder:" : "Then, from the wallet paying the reward:");
 console.log(`  1. send exactly ${sum.toString()} wei (${fmt(sum)} REEF) to the deployed ReefAirdrop`);
-console.log(`  2. send ${burn.toString()} wei (${fmt(burn)} REEF) to 0x000000000000000000000000000000000000dEaD`);
+if (burns) console.log(`  2. send ${burn.toString()} wei (${fmt(burn)} REEF) to 0x000000000000000000000000000000000000dEaD`);
+else console.log(`  (the other ${fmt(burn)} REEF of the pot isn't allocated, so it's not sent anywhere)`);
 console.log("");
 console.log("After deploying, check on the explorer that totalAllocated() and merkleRoot() show the values above.");
