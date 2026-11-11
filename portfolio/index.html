@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Reef Portfolio</title>
-<meta name="description" content="See what any address holds on Reef: BDAG, tokens with a Reef pool, and liquidity positions with its share of each pool. Read-only, BlockDAG chain 1404.">
+<meta name="description" content="See what any address holds on Reef: BDAG, tokens with a Reef pool, and liquidity positions with LP token balances and its share of each pool. Read-only, BlockDAG chain 1404.">
 <link rel="canonical" href="https://reefdex.fyi/portfolio/">
 <meta property="og:title" content="Reef Portfolio"><meta property="og:description" content="Balances and liquidity positions on Reef, BlockDAG chain 1404. Read-only."><meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=4">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -67,6 +67,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
 th{color:var(--muted);font-weight:500}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.lpof{font-size:12px;margin-top:2px}
+#lpBody td{white-space:normal}
+#lpBody .amt,#lpBody a{white-space:nowrap}
+.addlp{margin-top:6px}
 tr:last-child td{border-bottom:0}
 .faint{color:var(--muted)}
 .stat{font:800 30px "Bricolage Grotesque",sans-serif;margin:2px 0 0}
@@ -78,7 +82,7 @@ footer a{color:var(--muted)}
 <div class="betabar">Read-only: nothing is signed, approved or stored. Balances are read live from BlockDAG chain 1404.</div>
 <main>
   <h1>Reef Portfolio</h1>
-  <p class="lede">See what an address holds on Reef: BDAG, every token with a Reef pool, and its liquidity positions with its share of each pool.</p>
+  <p class="lede">See what an address holds on Reef: BDAG, every token with a Reef pool, and its liquidity positions: LP tokens held, share of each pool, and the tokens they're worth.</p>
   <div class="panel">
     <label for="addr">Any BlockDAG address</label>
     <div class="linkbox"><input id="addr" placeholder="0x…" autocomplete="off" spellcheck="false"><button class="btn primary" id="lookBtn">Look up</button></div>
@@ -95,8 +99,8 @@ footer a{color:var(--muted)}
     <p class="note">The chain has no "list my tokens" call, so this checks every token that has a pool on Reef. Anyone can make a token with any name: check the contract address.</p>
 
     <h2>Liquidity positions</h2>
-    <div class="tablewrap panel" style="padding:6px 10px"><table><thead><tr><th>Pool</th><th class="num">Your share</th><th class="num">Your part of the pool</th></tr></thead><tbody id="lpBody"></tbody></table></div>
-    <p class="note">LP tokens held by this address only. Liquidity locked in a lock contract belongs to the lock, so it shows under the lock's address instead.</p>
+    <div class="tablewrap panel" style="padding:6px 10px"><table><thead><tr><th>Pool</th><th class="num">LP tokens and share</th><th class="num">Your part of the pool</th></tr></thead><tbody id="lpBody"></tbody></table></div>
+    <p class="note">LP tokens (REEF-LP, 18 decimals) are what you receive when you add liquidity, and what you hand back to withdraw it. Each pool has its own LP token contract: the address under the pool name. "Add to wallet" shows that balance in MetaMask and similar wallets. Only LP tokens held by this address count here: liquidity locked in a lock contract belongs to the lock, so it shows under the lock's address instead.</p>
 
     <div class="row"><a class="btn" id="historyLink">Recent transfers in Reef Pay</a><a class="btn" id="explorerLink" target="_blank" rel="noopener">Address on the explorer</a></div>
     <p class="note" id="scanNote"></p>
@@ -120,6 +124,8 @@ const short = a => a.slice(0, 6) + "…" + a.slice(-4);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const fmt = (v, dec) => { if (v > 0n && v < 10n ** BigInt(Math.max(0, dec - 6))) return "<0.000001"; const s = ethers.formatUnits(v, dec); const [i, f = ""] = s.split("."); const ff = f.replace(/0+$/, "").slice(0, 6); return Number(i).toLocaleString("en-GB") + (ff ? "." + ff : ""); };
+// LP amounts are large 18-decimal numbers: 4 decimal places is plenty.
+const fmtLp = v => { const [i, f = ""] = ethers.formatUnits(v, 18).split("."); const ff = f.slice(0, 4).replace(/0+$/, ""); return v > 0n && v < 10n ** 14n ? "<0.0001" : Number(i).toLocaleString("en-GB") + (ff ? "." + ff : ""); };
 const link = a => `<a class="mono" href="${CFG.explorer}/address/${a}" target="_blank" rel="noopener">${short(a)}</a>`;
 let rp = null;
 async function provider() {
@@ -192,8 +198,10 @@ async function lookUp(input) {
     const mine = lp.filter(Boolean);
     $("lpBody").innerHTML = mine.length ? mine.map(m => {
       const pct = Number(m.b * 1000000n / m.ts) / 10000;
-      return `<tr><td>${esc(m.x.i0.sym)} / ${esc(m.x.i1.sym)}<div>${link(m.x.addr)}</div></td><td class="num">${pct < 0.01 ? "<0.01" : pct.toFixed(2)}%</td>
-        <td class="num">${fmt(m.r0 * m.b / m.ts, m.x.i0.dec)} ${esc(m.x.i0.sym)}<br>${fmt(m.r1 * m.b / m.ts, m.x.i1.dec)} ${esc(m.x.i1.sym)}</td></tr>`;
+      const add = window.ethereum ? `<div><button class="btn small addlp" data-pair="${m.x.addr}">Add to wallet</button></div>` : "";
+      return `<tr><td>${esc(m.x.i0.sym)} / ${esc(m.x.i1.sym)}<div>${link(m.x.addr)}</div></td>
+        <td class="num"><span class="amt">${fmtLp(m.b)} REEF-LP</span><div class="faint lpof">${pct < 0.01 ? "<0.01" : pct.toFixed(2)}% of the pool's <span class="amt">${fmtLp(m.ts)}</span></div>${add}</td>
+        <td class="num"><span class="amt">${fmt(m.r0 * m.b / m.ts, m.x.i0.dec)} ${esc(m.x.i0.sym)}</span><br><span class="amt">${fmt(m.r1 * m.b / m.ts, m.x.i1.dec)} ${esc(m.x.i1.sym)}</span></td></tr>`;
     }).join("") : `<tr><td colspan="3" class="faint">No Reef liquidity held by this address.</td></tr>`;
 
     $("scanNote").textContent = total > MAX_PAIRS ? `Checked the first ${MAX_PAIRS} of Reef's ${total} pools.` : `Checked all ${total} Reef pools.`;
@@ -203,6 +211,14 @@ async function lookUp(input) {
   }
   $("lookBtn").disabled = false;
 }
+// Adds a pool's LP token to the visitor's wallet so the balance shows there too. Asks the wallet; signs nothing.
+$("lpBody").addEventListener("click", async e => {
+  const b = e.target.closest(".addlp"); if (!b || !window.ethereum) return;
+  try {
+    const ok = await window.ethereum.request({ method: "wallet_watchAsset", params: { type: "ERC20", options: { address: b.dataset.pair, symbol: "REEF-LP", decimals: 18 } } });
+    b.textContent = ok ? "Added" : "Not added";
+  } catch { b.textContent = "Wallet said no"; }
+});
 $("lookBtn").onclick = () => lookUp($("addr").value);
 $("addr").addEventListener("keydown", e => { if (e.key === "Enter") lookUp($("addr").value); });
 $("walletBtn").onclick = async () => {
