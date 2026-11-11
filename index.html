@@ -411,6 +411,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <div class="adhint" id="shareNote" style="display:none"></div>
       <div class="adhint" id="swapAirdrop" aria-live="polite"></div>
       <div class="impactwarn" id="impactWarn" style="display:none"></div>
+      <div class="impactwarn severe" id="taxWarn" style="display:none"></div>
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
       <div class="msg" id="swapMsg"></div>
@@ -1608,6 +1609,7 @@ async function refreshSwapQuote() {
       }
     } catch (e) { impactPct = null; }
     setSwapInfo({ path, amountIn, amountOut: out, rate, impactPct, quotedAt: Date.now(), tookMs: Date.now() - quoteStarted });
+    renderTaxWarn(my);
     if (account && isReef1404) $("#swapBtn").disabled = false;
     if (path.length === 2) loadChartForPair(path[0], path[1]); else hideChart();
   } catch (e) {
@@ -1924,6 +1926,49 @@ function renderImpactWarn(info) {
   }
   w.classList.toggle("severe", p >= HIGH_IMPACT_PCT);
   w.innerHTML = msg;
+  w.style.display = "";
+}
+// ---------- Transfer-tax tokens ----------
+// Reef's router has no "supporting fee-on-transfer" swap functions, so a token that takes a cut on every
+// transfer can be bought but never sold through Reef (the pool receives less than the swap expects and
+// reverts). The chain can't tell us directly whether a token taxes transfers, so this reads the fee
+// settings tax tokens commonly expose. Any of them set above zero = warn. A token that hides its tax
+// won't be caught, which is why the docs say to check before buying. Read-only; results cached per token.
+const TAX_GETTERS = ["taxFee", "_taxFee", "buyTax", "sellTax", "_buyTax", "_sellTax", "buyFee", "sellFee", "transferTax",
+  "transferFee", "totalFees", "buyTotalFees", "sellTotalFees", "_liquidityFee", "liquidityFee", "marketingFee", "taxRate", "feePercent"];
+// Tokens known to have no transfer tax (Reef's own and its launches' contracts were checked by hand).
+const NO_TAX = new Set(["0xb7a1e198767bf0fd4c1c3805b9757369e1c3f416", "0x17aee3eeda0d12e3a6a9a6078d028b88f9c91752",
+  "0xd95c548b144682f4ef49728944505d8506861b1b", ADDR.WBDAG.toLowerCase()]);
+const taxCache = new Map();
+function taxCheck(token) {
+  if (!token || token.native || !token.address) return Promise.resolve(null);
+  const a = token.address.toLowerCase();
+  if (NO_TAX.has(a)) return Promise.resolve(null);
+  if (!taxCache.has(a)) taxCache.set(a, (async () => {
+    const iface = new ethers.Interface(TAX_GETTERS.map((n) => `function ${n}() view returns (uint256)`));
+    const hits = await Promise.all(TAX_GETTERS.map(async (n) => {
+      try {
+        const r = await ro.call({ to: token.address, data: iface.encodeFunctionData(n) });
+        if (!r || r === "0x" || r.length !== 66) return null; // no such function, or not a single number
+        const v = BigInt(r);
+        return v > 0n && v < 10n ** 6n ? { name: n, value: v } : null; // fee settings are small numbers (percent or basis points)
+      } catch (e) { return null; }
+    }));
+    return hits.find(Boolean) || null;
+  })());
+  return taxCache.get(a);
+}
+async function renderTaxWarn(my) {
+  const w = $("#taxWarn");
+  const [buyHit, sellHit] = await Promise.all([taxCheck(tokTo), taxCheck(tokFrom)]);
+  if (my !== quoteAbort) return;
+  const hit = buyHit || sellHit;
+  if (!hit) { w.style.display = "none"; w.innerHTML = ""; return; }
+  const t = buyHit ? tokTo : tokFrom;
+  const setting = `it reports <code>${escHtml(hit.name)}()</code> = ${hit.value.toString()}`;
+  w.innerHTML = buyHit
+    ? `<b>This token looks like it takes a tax on transfers</b> (${setting}). You can buy ${escHtml(t.symbol)} on Reef, but selling it back through Reef will always fail. Check the token's contract before you buy. <a href="/docs/#taxed" target="_blank" rel="noopener">Why?</a>`
+    : `<b>This token looks like it takes a tax on transfers</b> (${setting}). Selling ${escHtml(t.symbol)} through Reef will fail, whatever slippage you set. <a href="/docs/#taxed" target="_blank" rel="noopener">Why?</a>`;
   w.style.display = "";
 }
 // Keeps the main button's label truthful for the current state (it used to say "Select tokens" even when a swap was ready).

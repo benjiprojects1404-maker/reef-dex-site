@@ -219,8 +219,8 @@ footer p{margin:0 0 6px}
       <p>If two tokens don't share a pool, but both have a pool with BDAG, Reef routes the trade through BDAG automatically (token A → BDAG → token B). You pay the 0.30% fee on each step.</p>
       <h3>Slippage and deadline</h3>
       <p>Prices can move between when you press swap and when your transaction lands. <b>Slippage tolerance</b> (default 0.5%, change it with the settings icon) is the most you'll let the price move against you. Before you sign, the swap details show the fee in tokens (and its split between liquidity providers and the treasury) and the <b>minimum received</b>; if the price moves past that, the swap cancels and nothing is spent except the network fee. Keep slippage low: a high tolerance makes it easier for bots to trade just before you (front-running), and you'd still only get the minimum. Every swap also has a 20-minute deadline, so a transaction stuck in the queue can't fill hours later at a stale price.</p>
-      <h3>Tokens with a transfer tax</h3>
-      <p>Some tokens take a percentage every time they move. Reef can buy these, but selling them through Reef always fails. Check for a transfer tax before you buy.</p>
+      <h3 id="taxed">Tokens with a transfer tax</h3>
+      <p>Some tokens take a percentage every time they move. Reef can buy these, but selling them through Reef always fails: the pool receives less than the swap expects, so the swap cancels. Reef's swap box warns you when a token reports a tax setting (such as <code>sellTax</code> or <code>taxFee</code>) above zero, but a token can hide its tax, so check the contract before you buy.</p>
       <h3>Price impact warnings</h3>
       <p>A big trade in a small pool moves the price a lot. Reef shows a warning at 3% impact, a stronger one at 10%, and asks you to tap twice to confirm. At 30% or more it tells you to reduce the amount. Splitting a large trade into smaller ones usually gets a better average price.</p>
       <h3>Chart, trades and badges</h3>
