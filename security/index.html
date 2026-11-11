@@ -150,6 +150,7 @@ footer p{margin:0 0 6px}
       <li><a href="#review">Security review</a></li>
       <li><a href="#tests">Tests</a></li>
       <li><a href="#control">Admin control</a></li>
+      <li><a href="#pulled">If liquidity is pulled</a></li>
       <li><a href="#not-done">Not done yet</a></li>
       <li><a href="#check">Check it yourself</a></li>
     </ol>
@@ -180,6 +181,17 @@ footer p{margin:0 0 6px}
     <section id="control">
       <h2>Admin control</h2>
       <p>The Router and Factory have no owner: nobody can pause trading, block a wallet, freeze a pool or take your funds. The one privileged role is the Factory's <code>feeToSetter</code>, which only decides where the 0.05% protocol fee goes. It is held by a 2-of-3 multisig (<a href="https://explorer.east.bdag-us.org/address/0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc" target="_blank" rel="noopener"><code>0x4E24&hellip;60fc</code></a>) with three separate hardware-wallet signers, any two of which must approve.</p>
+    </section>
+
+    <section id="pulled">
+      <h2>If a token&rsquo;s liquidity is pulled</h2>
+      <p>Reef is open, like Uniswap: anyone can create a token and a pool, and anyone can add liquidity to a pool. The liquidity in a pool belongs to the wallets that added it, and only they can remove it. Reef can&rsquo;t lock, freeze or reverse it, and nobody else can either. That is the same rule that keeps your own liquidity safe from us.</p>
+      <ul>
+        <li><b>Locked liquidity</b> (REEF, NOCAP and COOKED, for example) is held by a lock contract or the presale contract, or burned, so it canis held by a lock contract or the presale contract and can&rsquo;t be pulled until the lock ends.rsquo;t be pulled until the lock ends (burned liquidity can never be pulled).</li>
+        <li><b>Unlocked liquidity</b> can be removed by its owner at any time, in a single transaction. If that happens, the token&rsquo;s price on Reef can collapse and there may be little left to sell into.</li>
+        <li>A token being listed on Reef, or shown in the Top 5, is not an endorsement. Reef doesn&rsquo;t vet or vouch for tokens.</li>
+      </ul>
+      <p>Before you buy, check the labels on the <a href="/#topCard">Top 5 list</a>: it shows how much of each token&rsquo;s liquidity is locked, and flags <b>&ldquo;LP not locked&rdquo;</b> and <b>&ldquo;Unverified code&rdquo;</b>. For any other token, look it up on the <a href="https://explorer.east.bdag-us.org" target="_blank" rel="noopener">explorer</a> and ask its team how its liquidity is locked.</p>
     </section>
 
     <section id="not-done">
