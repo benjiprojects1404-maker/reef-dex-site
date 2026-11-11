@@ -217,7 +217,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .poolsearch{width:100%;box-sizing:border-box;margin:8px 0 10px;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:var(--raised);color:var(--text);font:inherit;font-size:12.5px}
 .poolsearch:focus{outline:none;border-color:var(--line2)}
 .poolcount{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
-.toplist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;counter-reset:top}
+.toplist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;counter-reset:top}
 .toplist li{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:13px;counter-increment:top}
 .toplist li:hover{border-color:var(--line2)}
 .toplist .safety{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
@@ -227,7 +227,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .toplist li::before{content:counter(top);color:var(--muted);font-size:12px;width:12px;text-align:right}
 .toplist .tk{flex:1;min-width:0}
 .toplist .tk b{display:block}
-.toplist .tk span{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.toplist .tk span{color:var(--muted);font-size:12px;display:block;overflow-wrap:anywhere}
 .toplist .v{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
 .toplist .v b{display:block;color:inherit;font-size:13px}
 .footer{max-width:1080px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
