@@ -8,6 +8,7 @@ const ORACLES = [
 ];
 const RPCS = [
   process.env.RPC_URL,
+  "https://rpc.community.bdag-us.org", // load-balanced community gateway: routes to a healthy, up-to-date node
   "https://rpc.capedag.com",
   "https://rms-bdag-rpc.de/api/rpc-live",
   "https://rpc.dvdmining.com",
