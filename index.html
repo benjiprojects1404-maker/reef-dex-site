@@ -798,9 +798,9 @@ const LP_LOCK_HOLDERS = {
   "0x0000000000000000000000000000000000000000": "burned",
 };
 const EXPLORER_API = "https://explorer.east.bdag-us.org/api/v2";
-// The "Verified code" label stays off until Reef's own contracts are verified on this explorer;
-// switch it on then, so every token is judged the same way.
-const SHOW_CODE_LABEL = false;
+// "Verified code" label: on since 11 Nov 2026, once Reef's own contracts were verified on this explorer,
+// so every token is judged the same way.
+const SHOW_CODE_LABEL = true;
 const TWAP_ABI = [
   "function blockTimestampLast() view returns (uint32)",
   "function consult(address token, uint256 amountIn) view returns (uint256)",
@@ -2350,7 +2350,7 @@ async function loadTopTokens() {
     if (!rows || !rows.top || !rows.top.length) { list.innerHTML = '<div class="empty">No BDAG pools yet.</div>'; return; }
     basis.textContent = rows.byVol ? "· 24h volume" : "· by liquidity";
     $("#topNote").textContent = rows.byVol
-      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Labels show how much of each pool's LP is locked or burned. Not an endorsement: check the contract before trading."
+      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Labels show how much of each pool's LP is locked or burned, and whether the token's source code is verified on the explorer. Not an endorsement: check the contract before trading."
       : "No trades in the last 24 hours, so ranked by BDAG liquidity in each token's pool. Not an endorsement: check the contract before trading.";
     const infos = await Promise.all(rows.top.map((x) => tokenInfo(x.token)));
     const safety = await Promise.all(rows.top.map((x) => topSafety(x).catch(() => ({}))));
