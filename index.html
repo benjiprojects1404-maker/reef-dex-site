@@ -37,14 +37,14 @@
 <style>
 :root{
   --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
-  --text:#e7f3f5;--muted:#a6c4ca;--ctadis:#8fb3ba;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;--info:#7fd0f7;--info-line:rgba(127,208,247,.28);
+  --text:#e7f3f5;--muted:#a6c4ca;--ctadis:#8fb3ba;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;--sfwarn:#e8b86a;--info:#7fd0f7;--info-line:rgba(127,208,247,.28);
   --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
   --bg:var(--ink);
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box
 }
 @media (prefers-color-scheme:light){
   :root:not([data-theme="dark"]) .brand .logo-mark{filter:invert(1) hue-rotate(180deg)}
-  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--info:#0a6a96;--info-line:rgba(10,113,161,.3);--good:#1f8a5a}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--ctadis:#3f5e65;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--info:#0a6a96;--info-line:rgba(10,113,161,.3);--good:#1f8a5a;--sfwarn:#9a6412}
 }
 :root[data-theme="dark"]{--bg:var(--ink);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -219,6 +219,10 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .toplist{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;counter-reset:top}
 .toplist li{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;font-size:13px;counter-increment:top}
 .toplist li:hover{border-color:var(--line2)}
+.toplist .safety{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.toplist .sf{font-size:10.5px;line-height:1;padding:3px 6px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.toplist .sf.ok{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 9%,transparent)}
+.toplist .sf.warn{color:var(--sfwarn);border-color:color-mix(in srgb,var(--sfwarn) 45%,transparent);background:color-mix(in srgb,var(--sfwarn) 9%,transparent)}
 .toplist li::before{content:counter(top);color:var(--muted);font-size:12px;width:12px;text-align:right}
 .toplist .tk{flex:1;min-width:0}
 .toplist .tk b{display:block}
@@ -786,6 +790,17 @@ const HIDDEN_PAIR_INDEXES = new Set([1]);
 const KNOWN_LOCKS = {
   "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1", // NOCAP/BDAG
 };
+// Addresses whose LP tokens count as locked or burned in the Top 5 safety labels. Display-only, like KNOWN_LOCKS.
+const LP_LOCK_HOLDERS = {
+  "0x030d2466f634022fb93fbdf475ea81faff2525a0": "REEF presale lock",
+  "0x5520cc4e80e86e99c5a6a748c506d80f0d274bb1": "NOCAP LP lock",
+  "0x000000000000000000000000000000000000dead": "burned",
+  "0x0000000000000000000000000000000000000000": "burned",
+};
+const EXPLORER_API = "https://explorer.east.bdag-us.org/api/v2";
+// The "Verified code" label stays off until Reef's own contracts are verified on this explorer;
+// switch it on then, so every token is judged the same way.
+const SHOW_CODE_LABEL = false;
 const TWAP_ABI = [
   "function blockTimestampLast() view returns (uint32)",
   "function consult(address token, uint256 amountIn) view returns (uint256)",
@@ -2335,18 +2350,20 @@ async function loadTopTokens() {
     if (!rows || !rows.top || !rows.top.length) { list.innerHTML = '<div class="empty">No BDAG pools yet.</div>'; return; }
     basis.textContent = rows.byVol ? "· 24h volume" : "· by liquidity";
     $("#topNote").textContent = rows.byVol
-      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Not an endorsement: check the contract before trading."
+      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Labels show how much of each pool's LP is locked or burned. Not an endorsement: check the contract before trading."
       : "No trades in the last 24 hours, so ranked by BDAG liquidity in each token's pool. Not an endorsement: check the contract before trading.";
     const infos = await Promise.all(rows.top.map((x) => tokenInfo(x.token)));
+    const safety = await Promise.all(rows.top.map((x) => topSafety(x).catch(() => ({}))));
     list.innerHTML = "";
     rows.top.forEach((x, i) => {
       const t = infos[i];
       const li = el("li");
       const main = rows.byVol ? x.vol : x.liq;
       const mainLabel = rows.byVol ? "BDAG 24h" : "BDAG liquidity";
-      li.innerHTML = `<div class="tk"><b></b><span></span></div><div class="v"><b>${fmt(ethers.formatUnits(main, 18), 0)}</b>${mainLabel}</div>`;
+      li.innerHTML = `<div class="tk"><b></b><span></span><div class="safety"></div></div><div class="v"><b>${fmt(ethers.formatUnits(main, 18), 0)}</b>${mainLabel}</div>`;
       li.querySelector(".tk b").textContent = t.symbol;
       li.querySelector(".tk span").textContent = t.name;
+      renderSafety(li.querySelector(".safety"), safety[i]);
       li.title = `${t.name} · ${x.token}`;
       li.onclick = () => selectPoolPair(t, { ...NATIVE });
       list.appendChild(li);
@@ -2354,6 +2371,42 @@ async function loadTopTokens() {
   } catch (e) {
     list.innerHTML = '<div class="empty">Could not load the ranking right now.</div>';
   } finally { topLoading = false; }
+}
+// Safety labels for a Top 5 row: share of the pool's LP held by known locks or burned, and whether the
+// token's source is verified on the explorer. Facts only; nothing here hides or blocks a token.
+const safetyCache = {};
+async function topSafety(x) {
+  const key = x.pair.toLowerCase();
+  if (safetyCache[key] && Date.now() - safetyCache[key].at < 300000) return safetyCache[key].v;
+  const v = {};
+  try {
+    v.lockPct = await tryRpcFallback(async (p) => {
+      const pair = new ethers.Contract(x.pair, ["function totalSupply() view returns(uint256)", "function balanceOf(address) view returns(uint256)"], p);
+      const [sup, ...bals] = await Promise.all([pair.totalSupply(), ...Object.keys(LP_LOCK_HOLDERS).map((a) => pair.balanceOf(a))]);
+      // The pair's own 1000-wei MINIMUM_LIQUIDITY burn shouldn't read as "locked".
+      const locked = bals.reduce((a, b) => a + b, 0n);
+      const real = locked > 1000n ? locked : 0n;
+      return sup > 0n ? Number((real * 10000n) / sup) / 100 : 0;
+    });
+  } catch (e) {}
+  if (SHOW_CODE_LABEL) try {
+    const r = await fetch(`${EXPLORER_API}/smart-contracts/${x.token}`, { signal: AbortSignal.timeout(6000) });
+    if (r.ok) v.verified = !!(await r.json()).is_verified;
+    else if (r.status === 404) v.verified = false;
+  } catch (e) {}
+  safetyCache[key] = { at: Date.now(), v };
+  return v;
+}
+function renderSafety(box, v) {
+  const add = (cls, text, title) => { const b = el("span"); b.className = "sf " + cls; b.textContent = text; b.title = title; box.appendChild(b); };
+  if (typeof v.lockPct === "number") {
+    if (v.lockPct >= 50) add("ok", `LP ${fmt(v.lockPct, 0)}% locked`, "Share of this pool's LP tokens held by a known lock or burned");
+    else if (v.lockPct > 0) add("warn", `LP ${fmt(v.lockPct, 0)}% locked`, "Most of this pool's LP isn't in a known lock: the holders can remove that liquidity");
+    else add("warn", "LP not locked", "None of this pool's LP is in a known lock or burned: the holders can remove the liquidity at any time");
+  }
+  if (!SHOW_CODE_LABEL) return;
+  if (v.verified === true) add("ok", "Verified code", "The token's source code is verified on the explorer");
+  else if (v.verified === false) add("warn", "Unverified code", "The token's source code isn't verified on the explorer, so what it can do can't be checked");
 }
 async function tokenInfoWrapped(addr) {
   if (addr.toLowerCase() === ADDR.WBDAG.toLowerCase()) return { ...NATIVE };
