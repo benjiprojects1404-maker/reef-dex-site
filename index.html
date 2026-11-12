@@ -790,11 +790,13 @@ const HIDDEN_PAIR_INDEXES = new Set([1]);
 // This never restricts which pairs are tradeable — it only adds a badge when a lock is known.
 const KNOWN_LOCKS = {
   "0x02c50110bdf1af6cfa54302bd6fbb6dd917fa046": "0x5520cC4E80E86E99c5A6A748C506d80f0d274bB1", // NOCAP/BDAG
+  "0xc686f7a1bd36fe099ab66e84983bf089871edc26": "0x7BEae450C08b092317c3d882fB1BA1714C41420F", // Mauro/BDAG (reviewed 12 Nov 2026: fixed beneficiary and release time, release() is the only way out)
 };
 // Addresses whose LP tokens count as locked or burned in the Top 5 safety labels. Display-only, like KNOWN_LOCKS.
 const LP_LOCK_HOLDERS = {
   "0x030d2466f634022fb93fbdf475ea81faff2525a0": "REEF presale lock",
   "0x5520cc4e80e86e99c5a6a748c506d80f0d274bb1": "NOCAP LP lock",
+  "0x7beae450c08b092317c3d882fb1ba1714c41420f": "Mauro LP lock",
   "0x000000000000000000000000000000000000dead": "burned",
   "0x0000000000000000000000000000000000000000": "burned",
 };
