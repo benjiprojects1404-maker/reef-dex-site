@@ -56,7 +56,7 @@ table{width:100%;border-collapse:collapse;font-size:14px} td,th{padding:7px 6px;
 <h2>API</h2>
 <table>
 <tr><th>Endpoint</th><th>Returns</th></tr>
-<tr><td><code>GET /api/v1/pairs</code></td><td>Every BDAG pool on Reef: token, symbol, reserves, pool price in BDAG, share of LP locked or burned.</td></tr>
+<tr><td><code>GET /api/v1/pairs</code></td><td>Every BDAG pool on Reef: token, symbol, reserves, pool price in BDAG, FDV and liquidity in BDAG, share of LP locked or burned.</td></tr>
 <tr><td><code>GET /api/v1/pairs/&lt;id&gt;</code></td><td>One pool, plus 24h volume and number of swaps. <code>&lt;id&gt;</code> is a token address, a pool address, or <code>reef</code>, <code>nocap</code>, <code>cooked</code>.</td></tr>
 </table>
 <pre>curl https://reefdex.fyi/api/v1/pairs/reef</pre>
@@ -65,11 +65,12 @@ table{width:100%;border-collapse:collapse;font-size:14px} td,th{padding:7px 6px;
   "pair": "0x1Ea3…182D", "token": "0xb7a1…f416", "symbol": "REEF", "name": "Reef", "decimals": 18,
   "reserveBDAG": "34398631.39…", "reserveToken": "156390.07…",
   "priceBDAG": 219.95,
+  "totalSupply": "21000000", "fdvBDAG": "4618950000…", "liquidityBDAG": "68797262.78…",
   "lpLockedOrBurnedPct": 99.99, "lpHeldBy": ["REEF presale lock", "dead address"],
   "volume24hBDAG": "508564.27…", "swaps24h": 2, "block": 27415171,
   "swap": "https://reefdex.fyi/?from=bdag&amp;to=0xb7a1…f416"
 }</pre>
-<p class="note"><code>priceBDAG</code> is the rate in that pool's reserves right now, not a market price feed; a real swap gets a worse rate as it gets larger. Amounts are decimal strings so they don't lose precision. Responses allow any origin (CORS), so you can call them from a browser. Please cache on your side too and don't poll more than once a minute.</p>
+<p class="note"><code>priceBDAG</code> is the rate in that pool's reserves right now, not a market price feed; a real swap gets a worse rate as it gets larger. <code>fdvBDAG</code> is total supply × <code>priceBDAG</code>, and <code>liquidityBDAG</code> is both sides of the pool valued in BDAG; when FDV is far above liquidity, treat it as a rough guide. Amounts are decimal strings so they don't lose precision. Responses allow any origin (CORS), so you can call them from a browser. Please cache on your side too and don't poll more than once a minute.</p>
 
 <h2>Pool widget</h2>
 <p>Paste this where you want the card. Change <code>t=</code> to your token's address; add <code>&amp;theme=light</code> for light pages.</p>

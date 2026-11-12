@@ -1,5 +1,5 @@
 // Reef public data API (read-only). Cloudflare Pages Function.
-//   GET /api/v1/pairs               every BDAG pool on Reef: reserves, pool price, LP locked or burned
+//   GET /api/v1/pairs               every BDAG pool on Reef: reserves, pool price, FDV, LP locked or burned
 //   GET /api/v1/pairs/<address>     one pool (by token or pool address, or "reef" / "nocap" / "cooked"), plus 24h volume and swaps
 // Every number is read from BlockDAG chain 1404 through public RPCs and cached for 60 seconds.
 // No keys, no writes, no tracking. CORS is open so any site can use it.
@@ -59,16 +59,21 @@ async function readPairs() {
     return { pair, t0, t1, r0, r1, supply, locked, heldBy: held.filter(([, v]) => v > 0n).map(([h]) => LP_HOLDERS[h]) };
   }).filter((p) => p.t0 === WBDAG || p.t1 === WBDAG);
   const tokens = pools.map((p) => (p.t0 === WBDAG ? p.t1 : p.t0));
-  const meta = await rpc(tokens.flatMap((t) => [call(t, SEL.symbol), call(t, SEL.name), call(t, SEL.decimals)]));
+  const meta = await rpc(tokens.flatMap((t) => [call(t, SEL.symbol), call(t, SEL.name), call(t, SEL.decimals), call(t, SEL.totalSupply)]));
   return pools.map((p, i) => {
-    const token = tokens[i], dec = meta[i * 3 + 2] ? Number(big(meta[i * 3 + 2])) : 18;
+    const token = tokens[i], dec = meta[i * 4 + 2] ? Number(big(meta[i * 4 + 2])) : 18;
     const bdagIs0 = p.t0 === WBDAG;
     const rB = bdagIs0 ? p.r0 : p.r1, rT = bdagIs0 ? p.r1 : p.r0;
     const price = rT > 0n ? Number(rB) / 1e18 / (Number(rT) / 10 ** dec) : null;
+    const supply = meta[i * 4 + 3] ? big(meta[i * 4 + 3]) : null;
+    const fdv = supply !== null && rT > 0n ? supply * rB / rT : null; // total supply x pool price, in BDAG wei
     return {
-      pair: p.pair, token, symbol: str(meta[i * 3]), name: str(meta[i * 3 + 1]), decimals: dec,
+      pair: p.pair, token, symbol: str(meta[i * 4]), name: str(meta[i * 4 + 1]), decimals: dec,
       reserveBDAG: units(rB, 18), reserveToken: units(rT, dec),
       priceBDAG: price, // BDAG per 1 token, from this pool's reserves (not a price feed)
+      totalSupply: supply !== null ? units(supply, dec) : null,
+      fdvBDAG: fdv !== null ? units(fdv, 18) : null, // fully diluted value = total supply x priceBDAG
+      liquidityBDAG: units(rB * 2n, 18), // both sides of the pool, valued in BDAG
       lpLockedOrBurnedPct: p.supply > 0n ? Number((p.locked * 10000n) / p.supply) / 100 : 0, lpHeldBy: p.heldBy,
       page: ALIASES.reef === token ? "https://reefdex.fyi/pairs/reef/" : ALIASES.nocap === token ? "https://reefdex.fyi/pairs/nocap/" : ALIASES.cooked === token ? "https://reefdex.fyi/pairs/cooked/" : null,
       swap: `https://reefdex.fyi/?from=bdag&to=${token}`,
