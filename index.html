@@ -1724,7 +1724,7 @@ async function loadFdvBadge(pairAddr) {
     box.classList.toggle("warn", f.thin);
     box.title = "FDV = total supply x price in this pool. Liquidity = both sides of the pool, in BDAG.";
     box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg>
-      <span><b>FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))} BDAG</b> · liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG · supply ${fmtCompact(ethers.formatUnits(supply, dec))} ${esc(sym)}.
+      <span><b>FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))} BDAG</b> · liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG · supply ${fmtCompact(ethers.formatUnits(supply, dec))} ${escHtml(sym)}.
       ${f.thin ? " Thin liquidity: the FDV is a rough guide only." : ""} FDV = total supply × this pool's price.</span>`;
   } catch (e) { hideFdvBadge(); }
 }
