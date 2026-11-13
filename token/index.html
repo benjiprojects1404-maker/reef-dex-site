@@ -136,7 +136,9 @@ async function callUint(to, sig) {
 async function callAddr(to, sig) {
   const v = await callUint(to, sig); return v === null ? null : "0x" + v.toString(16).padStart(40, "0");
 }
-const getJson = (u) => fetch(u, { signal: AbortSignal.timeout(8000) }).then((r) => (r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error("HTTP " + r.status))));
+const getOnce = (u, ms) => fetch(u, { signal: AbortSignal.timeout(ms) }).then((r) => (r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error("HTTP " + r.status))));
+// The explorer is sometimes slow: one retry with a longer wait before giving up.
+const getJson = (u) => getOnce(u, 10000).catch(() => getOnce(u, 15000));
 
 // ---- the checks ----
 function check(state, title, text) { return { state, title, text }; }
@@ -222,7 +224,7 @@ async function run(id) {
   const fdv = pool.fdvBDAG != null ? Number(pool.fdvBDAG) : null, liq = Number(pool.liquidityBDAG);
   const ratio = fdv && liq ? fdv / liq : null;
   checks.push(ratio === null ? check("na", "FDV: not available", "")
-    : ratio > 100 ? check("warn", "Thin liquidity for its FDV", `FDV is ${compact(fdv)} BDAG but the pool holds ${compact(liq)} BDAG (both sides), about ${compact(ratio)}× less. Large sells would move the price a lot, so treat the FDV as a rough guide.`)
+    : ratio > 100 ? check("warn", "Thin liquidity for its FDV", `FDV is ${compact(fdv)} BDAG but the pool holds ${compact(liq)} BDAG (both sides), about ${Math.round(ratio).toLocaleString("en-US")}× less. Large sells would move the price a lot, so treat the FDV as a rough guide.`)
     : check("ok", "Liquidity in line with FDV", `FDV ${compact(fdv)} BDAG against ${compact(liq)} BDAG of pool liquidity (both sides).`));
 
   const okN = checks.filter((c) => c.state === "ok").length, known = checks.filter((c) => c.state !== "na").length;
