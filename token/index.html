@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Token safety report · Reef</title>
+<meta name="description" content="One-page safety report for any token with a BDAG pool on Reef: verified code, admin powers, transfer tax, LP lock, holder concentration and FDV. Read live from BlockDAG chain 1404.">
+<link rel="canonical" href="https://reefdex.fyi/token/">
+<meta property="og:type" content="website"><meta property="og:url" content="https://reefdex.fyi/token/">
+<meta property="og:title" content="Token safety report · Reef"><meta property="og:description" content="Verified code, admin powers, transfer tax, LP lock, holder concentration and FDV for any token on Reef, read live from chain 1404.">
+<meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=4"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>:root{
+  --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
+  --text:#e7f3f5;--muted:#a6c4ca;--coral-text:#e79bab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#e0a85f;--ember:#e5624a;--good:#3fbf83;
+  --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);
+  --bg:var(--ink);--link:#7fd0f7;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) .logo-mark{filter:invert(1) hue-rotate(180deg)}
+  :root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--link:#0a5f88;--good:#13824f;--amber:#9a6410;--ember:#b33a22}
+}
+:root[data-theme="dark"]{--bg:var(--ink)}
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{margin:0;color:var(--text);font:400 16px/1.65 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  background-color:var(--bg);
+  background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%);
+  background-repeat:no-repeat;background-attachment:fixed}
+a{color:var(--link)}
+header.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top::before{content:"";display:block;height:3px;background:linear-gradient(90deg,transparent,var(--coral) 15%,var(--polyp) 50%,var(--tide) 85%,transparent)}
+.topwrap{max-width:1160px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.logo-mark{height:30px;width:auto;display:block}
+.brand span{font:700 15px "Bricolage Grotesque",sans-serif;color:var(--muted);border-left:1px solid var(--line2);padding-left:10px}
+.topwrap .spacer{flex:1}
+.openapp{background:var(--tide);color:#fff;text-decoration:none;font:600 14px "Instrument Sans",sans-serif;padding:9px 15px;border-radius:11px;white-space:nowrap}
+.betabar{background:var(--raised);border-bottom:1px solid var(--coral-soft);color:var(--muted);font-size:12px;text-align:center;padding:7px 12px}
+main{max-width:860px;margin:0 auto;padding:28px 16px 64px}
+.crumb{font-size:13px;color:var(--muted)} .crumb a{color:var(--muted)}
+h1{font:800 clamp(30px,6vw,46px)/1.05 "Bricolage Grotesque",sans-serif;margin:10px 0 6px}
+h1 small{font-size:.5em;color:var(--muted);font-weight:500}
+.lede{color:var(--muted);margin:0 0 18px;max-width:680px}
+.addrline{font:400 13px "JetBrains Mono",monospace;color:var(--muted);overflow-wrap:anywhere;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0 0 18px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.v{font:700 22px/1.2 "Bricolage Grotesque",sans-serif;margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.s{font-size:13px;color:var(--muted);margin-top:2px}
+h2{font:700 20px "Bricolage Grotesque",sans-serif;margin:26px 0 10px}
+.summary{font:600 15px "Instrument Sans",sans-serif;margin:0 0 12px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.check{display:grid;grid-template-columns:28px 1fr;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.check .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:700 13px "Instrument Sans";margin-top:2px}
+.check.ok .ic{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.check.warn .ic{background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)}
+.check.bad .ic{background:color-mix(in srgb,var(--ember) 20%,transparent);color:var(--ember)}
+.check.na .ic{background:var(--raised);color:var(--muted)}
+.check b{display:block;font-size:15px}
+.check p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.check code{font:400 12.5px "JetBrains Mono",monospace;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+td,th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right} th{color:var(--muted);font-weight:500;font-size:12px}
+td:first-child,th:first-child{text-align:left}
+td code{font:400 12.5px "JetBrains Mono",monospace}
+.tag{display:inline-block;font-size:11.5px;border:1px solid var(--line2);border-radius:999px;padding:0 8px;color:var(--muted);margin-left:6px}
+.cta{display:inline-block;background:var(--tide);color:#fff;text-decoration:none;font:600 15px "Instrument Sans",sans-serif;padding:11px 18px;border-radius:12px;margin:4px 10px 10px 0;border:0;cursor:pointer}
+.cta.alt{background:transparent;border:1px solid var(--line2);color:var(--text)}
+form.find{display:flex;gap:8px;margin:0 0 18px} form.find input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line2);color:var(--text);border-radius:12px;padding:10px 12px;font:400 14px "JetBrains Mono",monospace}
+.note{font-size:13px;color:var(--muted);margin-top:14px}
+.err{color:var(--coral-text)}
+@media (max-width:560px){table .hm{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topwrap">
+  <a class="brand" href="/"><img class="logo-mark" src="/assets/reef-dex-wordmark.png" alt="Reef"><span>Safety report</span></a>
+  <div class="spacer"></div><a class="openapp" href="/">Open Reef</a>
+</div></header>
+<div class="betabar">Facts read live from BlockDAG chain 1404 and its explorer when the page loads. Not an endorsement, a rating or financial advice.</div>
+<main>
+<div class="crumb"><a href="/">Reef</a> · <a href="/pairs/">Pairs</a> · Safety report</div>
+<h1 id="title">Token safety report</h1>
+<p class="lede" id="lede">Paste a token address (or <code>reef</code>, <code>nocap</code>, <code>cooked</code>) to see the facts traders check before buying: verified code, admin powers, transfer tax, LP lock, who holds the supply, and FDV against liquidity.</p>
+<form class="find" id="find"><input id="q" placeholder="0x… token address" autocomplete="off" spellcheck="false"><button class="cta" style="margin:0">Check</button></form>
+<div id="out"></div>
+<p class="note">Every check is a fact read from the chain or the explorer, not a judgement of the people behind a token. A clean report can't rule out every risk, and a warning isn't proof of bad intent. Check the contract yourself before trading. <a href="/security/">How Reef thinks about risk</a></p>
+</main>
+<script>
+"use strict";
+const API = "/api/v1/pairs/";
+const EXP = "https://explorer.east.bdag-us.org";
+const EXP_API = EXP + "/api/v2";
+const RPCS = ["https://rpc.community.bdag-us.org", "https://rpc.capedag.com", "https://rpc.bdagexplorer.com", "https://rpc.dvdmining.com", "https://rpc.escrowhubs.io"];
+const BURN = new Set(["0x0000000000000000000000000000000000000000", "0x000000000000000000000000000000000000dead"]);
+// Same fee settings the swap screen reads to spot transfer-tax tokens.
+const TAX_GETTERS = ["taxFee", "_taxFee", "buyTax", "sellTax", "_buyTax", "_sellTax", "buyFee", "sellFee", "transferTax", "transferFee", "totalFees", "buyTotalFees", "sellTotalFees", "_liquidityFee", "liquidityFee", "marketingFee", "taxRate", "feePercent"];
+// ERC-20 functions any holder can call on their own tokens: not admin powers.
+const STANDARD = new Set(["approve", "transfer", "transferFrom", "increaseAllowance", "decreaseAllowance", "permit", "burn", "burnFrom", "delegate", "delegateBySig"]);
+const RISKY = /^(mint|_?mint|pause|unpause|blacklist|addToBlacklist|setBlacklist|block|setBot|setBots|setFee|setFees|setTax|setTaxes|updateFees|setMaxTx|setMaxWallet|setMaxTransaction|enableTrading|setTrading|excludeFrom|setExcluded|setRouter|setPair|upgradeTo|upgradeToAndCall|setImplementation|rescue|withdraw|setOwner|transferOwnership)/i;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(a);
+function compact(n) {
+  const v = Number(n); if (!isFinite(v)) return "–";
+  const a = Math.abs(v), [d, s] = a >= 1e12 ? [1e12, "T"] : a >= 1e9 ? [1e9, "B"] : a >= 1e6 ? [1e6, "M"] : a >= 1e3 ? [1e3, "K"] : [1, ""];
+  const x = v / d;
+  return (x >= 100 || !s ? x.toLocaleString("en-US", { maximumFractionDigits: s ? 0 : 4 }) : x.toFixed(x >= 10 ? 1 : 2).replace(/\.?0+$/, "")) + s;
+}
+const pct = (x) => (x < 0.01 && x > 0 ? "<0.01" : x >= 10 ? x.toFixed(0) : x.toFixed(x >= 1 ? 1 : 2)) + "%";
+
+// ---- tiny JSON-RPC helper with fallbacks (no wallet, read-only) ----
+async function rpc(method, params) {
+  let last;
+  for (const url of RPCS) {
+    try {
+      const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(6000) });
+      const j = await r.json();
+      if (j.error) return null; // the node answered (e.g. the function doesn't exist): don't ask the others
+      return j.result;
+    } catch (e) { last = e; } // network trouble: try the next node
+  }
+  throw last || new Error("no RPC reachable");
+}
+// Function selectors (first 4 bytes of keccak256 of the signature), precomputed so no RPC has to hash.
+const SEL = {"owner()": "0x8da5cb5b", "unlockTime()": "0x251c1aa3", "taxFee()": "0xa071dcf4", "_taxFee()": "0x3b124fe7", "buyTax()": "0x4f7041a5", "sellTax()": "0xcc1776d3", "_buyTax()": "0x42a11095", "_sellTax()": "0xca9ec199", "buyFee()": "0x47062402", "sellFee()": "0x2b14ca56", "transferTax()": "0x8124f7ac", "transferFee()": "0xacb2ad6f", "totalFees()": "0x13114a9d", "buyTotalFees()": "0xd85ba063", "sellTotalFees()": "0x6a486a8e", "_liquidityFee()": "0x6bc87c3a", "liquidityFee()": "0x98118cb4", "marketingFee()": "0x6b67c4df", "taxRate()": "0x771a3a1d", "feePercent()": "0x7fd6f15c"};
+async function sel(sig) { if (!SEL[sig]) throw new Error("unknown selector " + sig); return SEL[sig]; }
+async function callUint(to, sig) {
+  try { const r = await rpc("eth_call", [{ to, data: await sel(sig) }, "latest"]); return r && r.length === 66 ? BigInt(r) : null; } catch (e) { return null; }
+}
+async function callAddr(to, sig) {
+  const v = await callUint(to, sig); return v === null ? null : "0x" + v.toString(16).padStart(40, "0");
+}
+const getOnce = (u, ms) => fetch(u, { signal: AbortSignal.timeout(ms) }).then((r) => (r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error("HTTP " + r.status))));
+// The explorer is sometimes slow: one retry with a longer wait before giving up.
+const getJson = (u) => getOnce(u, 10000).catch(() => getOnce(u, 15000));
+
+// ---- the checks ----
+function check(state, title, text) { return { state, title, text }; }
+
+async function run(id) {
+  const out = $("out");
+  out.innerHTML = '<p class="muted">Reading the chain and the explorer…</p>';
+  let pool;
+  try { pool = await getJson(API + encodeURIComponent(id)); } catch (e) { pool = null; }
+  if (!pool || !pool.token) {
+    out.innerHTML = `<p class="err">${isAddr(id) ? "No BDAG pool on Reef for that token yet, so there's nothing to report. Reports cover tokens with a Reef BDAG pool." : "That doesn't look like a token address."}</p>`;
+    return;
+  }
+  const token = pool.token, sym = pool.symbol || "token", dec = pool.decimals ?? 18;
+  history.replaceState(null, "", "?a=" + token);
+  document.title = `${sym} safety report · Reef`;
+  $("title").innerHTML = `${esc(sym)} <small>${esc(pool.name || "")}</small>`;
+  $("lede").textContent = `What the chain says about ${sym} right now. Each line links to where you can check it yourself.`;
+
+  const [sc, info, holders] = await Promise.all([
+    getJson(`${EXP_API}/smart-contracts/${token}`).catch(() => undefined),
+    getJson(`${EXP_API}/tokens/${token}`).catch(() => null),
+    getJson(`${EXP_API}/tokens/${token}/holders`).catch(() => null),
+  ]);
+  const checks = [];
+
+  // 1. Verified source
+  const verified = sc === undefined ? null : !!(sc && sc.is_verified);
+  checks.push(verified === null ? check("na", "Source code: couldn't check", "The explorer didn't answer just now.")
+    : verified ? check("ok", "Source code is verified", `Anyone can read exactly what the contract does. <a href="${EXP}/address/${token}?tab=contract" target="_blank" rel="noopener">Read it on the explorer</a>`)
+    : check("bad", "Source code is not verified", "Nobody can check what this token's contract really does. Treat any claims about it with care."));
+
+  // 2. Admin powers
+  if (verified) {
+    const writes = (sc.abi || []).filter((x) => x.type === "function" && x.stateMutability !== "view" && x.stateMutability !== "pure").map((x) => x.name);
+    const extra = writes.filter((n) => !STANDARD.has(n));
+    const risky = extra.filter((n) => RISKY.test(n) && !/^renounce/i.test(n));
+    const owner = (sc.abi || []).some((x) => x.name === "owner" && x.type === "function") ? await callAddr(token, "owner()") : null;
+    const renounced = owner !== null && BURN.has(owner.toLowerCase());
+    const ownerTxt = owner === null ? "" : renounced ? " Ownership is renounced, so nobody can use them." : ` Owner: <a href="${EXP}/address/${owner}" target="_blank" rel="noopener"><code>${short(owner)}</code></a>.`;
+    if (!extra.length) checks.push(check("ok", "No admin functions", "A plain ERC-20: nobody can mint more, pause trading, block wallets or change fees."));
+    else if (risky.length && !renounced) checks.push(check("warn", "Has admin functions", `The contract can: <code>${risky.map(esc).join("</code>, <code>")}</code>.${ownerTxt} These can be legitimate, but they let someone change the rules after you buy.`));
+    else checks.push(check("ok", risky.length ? "Admin functions, but ownership renounced" : "Only minor extra functions", `Extra functions: <code>${extra.map(esc).join("</code>, <code>")}</code>.${ownerTxt}`));
+  } else {
+    checks.push(check("na", "Admin powers: can't check", "Without verified source code, the contract's functions can't be read."));
+  }
+
+  // 3. Transfer tax
+  const taxHits = (await Promise.all(TAX_GETTERS.map(async (n) => { const v = await callUint(token, n + "()"); return v && v > 0n && v < 10n ** 6n ? n : null; }))).filter(Boolean);
+  checks.push(taxHits.length
+    ? check("warn", "Charges a transfer tax", `It exposes fee settings above zero (<code>${taxHits.map(esc).join("</code>, <code>")}</code>). Reef's router can buy tax tokens but can't sell them. <a href="/docs/#taxed">Why</a>`)
+    : check("ok", "No transfer tax found", "None of the common fee settings are set. A token can hide a tax under another name, so a test sell of a small amount is still wise."));
+
+  // 4. LP lock
+  const lockPct = pool.lpLockedOrBurnedPct || 0;
+  const lockers = (pool.lpHolders || []).filter((h) => !BURN.has(h.address.toLowerCase()) && h.pct > 0.01);
+  const dates = await Promise.all(lockers.map(async (h) => ({ ...h, until: await callUint(h.address, "unlockTime()") })));
+  const lockTxt = dates.map((d) => `${esc(d.label)} holds ${pct(d.pct)}${d.until ? `, locked until ${new Date(Number(d.until) * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} (UTC)` : ""}`).join("; ");
+  checks.push(lockPct >= 50
+    ? check("ok", `LP ${pct(lockPct)} locked or burned`, `${lockTxt ? lockTxt + ". " : ""}That share of the pool's liquidity can't be pulled. <a href="${EXP}/address/${pool.pair}" target="_blank" rel="noopener">Pool on the explorer</a>`)
+    : lockPct > 0 ? check("warn", `Only ${pct(lockPct)} of the LP is locked or burned`, "Whoever holds the rest can remove that liquidity at any time.")
+    : check("bad", "LP not locked", "None of the pool's LP is in a known lock or burned: the liquidity can be removed at any time. Locked it in a contract Reef doesn't know yet? Tell us and we'll review it."));
+
+  // 5. Holder concentration
+  const supply = pool.totalSupply ? Number(pool.totalSupply) : null;
+  const items = (holders && holders.items) || [];
+  const poolAddr = pool.pair.toLowerCase();
+  const rows = items.slice(0, 10).map((i) => {
+    const a = i.address.hash, al = a.toLowerCase();
+    const amt = Number(i.value) / 10 ** dec;
+    const label = al === poolAddr ? "Reef BDAG pool" : BURN.has(al) ? "Burned" : i.address.name ? i.address.name : i.address.is_contract ? "Contract" : "Wallet";
+    const kind = al === poolAddr ? "pool" : BURN.has(al) ? "burn" : i.address.is_contract ? "contract" : "wallet";
+    return { a, label, kind, amt, share: supply ? (amt / supply) * 100 : null };
+  });
+  const wallets = rows.filter((r) => r.kind === "wallet" && r.share !== null);
+  const topWallet = wallets[0];
+  const top5w = wallets.slice(0, 5).reduce((s, r) => s + r.share, 0);
+  if (!rows.length) checks.push(check("na", "Holders: couldn't check", "The explorer didn't return the holder list just now."));
+  else if (topWallet && topWallet.share >= 20) checks.push(check("warn", `One wallet holds ${pct(topWallet.share)} of the supply`, `<a href="${EXP}/address/${topWallet.a}" target="_blank" rel="noopener"><code>${short(topWallet.a)}</code></a> could sell a large amount at once. That's common for a creator early on, but worth knowing. See the holder table below.`));
+  else checks.push(check("ok", "No single wallet holds 20% or more", `The top ${Math.min(5, wallets.length)} ordinary wallets hold ${pct(top5w)} together. Pools, burns and contracts are listed separately below.`));
+
+  // 6. FDV vs liquidity
+  const fdv = pool.fdvBDAG != null ? Number(pool.fdvBDAG) : null, liq = Number(pool.liquidityBDAG);
+  const ratio = fdv && liq ? fdv / liq : null;
+  checks.push(ratio === null ? check("na", "FDV: not available", "")
+    : ratio > 100 ? check("warn", "Thin liquidity for its FDV", `FDV is ${compact(fdv)} BDAG but the pool holds ${compact(liq)} BDAG (both sides), about ${Math.round(ratio).toLocaleString("en-US")}× less. Large sells would move the price a lot, so treat the FDV as a rough guide.`)
+    : check("ok", "Liquidity in line with FDV", `FDV ${compact(fdv)} BDAG against ${compact(liq)} BDAG of pool liquidity (both sides).`));
+
+  const okN = checks.filter((c) => c.state === "ok").length, known = checks.filter((c) => c.state !== "na").length;
+  const icon = { ok: "✓", warn: "!", bad: "✕", na: "–" };
+  const share = `${sym} on Reef: ` + checks.filter((c) => c.state !== "na").map((c) => (c.state === "ok" ? "✅ " : "⚠️ ") + c.title.replace(/<[^>]+>/g, "")).join(" · ");
+
+  out.innerHTML = `
+  <p class="addrline">${token} · <a href="${EXP}/token/${token}" target="_blank" rel="noopener">explorer</a></p>
+  <div class="grid">
+    <div class="box"><div class="k">Price</div><div class="v">${pool.priceBDAG != null ? compact(pool.priceBDAG) : "–"} <span class="s">BDAG</span></div><div class="s">in its Reef BDAG pool</div></div>
+    <div class="box"><div class="k">FDV</div><div class="v">${fdv != null ? compact(fdv) : "–"} <span class="s">BDAG</span></div><div class="s">total supply × pool price</div></div>
+    <div class="box"><div class="k">Liquidity</div><div class="v">${compact(liq)} <span class="s">BDAG</span></div><div class="s">both sides of the pool</div></div>
+    <div class="box"><div class="k">Holders</div><div class="v">${info && (info.holders_count ?? info.holders) ? Number(info.holders_count ?? info.holders).toLocaleString("en-US") : "–"}</div><div class="s">supply ${supply ? compact(supply) : "–"} ${esc(sym)}</div></div>
+  </div>
+  <h2>Checks</h2>
+  <p class="summary">${okN} of ${known} checks look good.</p>
+  <ul class="checks">${checks.map((c) => `<li class="check ${c.state}"><span class="ic">${icon[c.state]}</span><div><b>${c.title}</b>${c.text ? `<p>${c.text}</p>` : ""}</div></li>`).join("")}</ul>
+  <div style="margin-top:16px">
+    <a class="cta" href="/?from=bdag&to=${token}">Trade ${esc(sym)} on Reef</a>
+    <a class="cta alt" id="shareX" target="_blank" rel="noopener" href="https://x.com/intent/post?text=${encodeURIComponent(share)}&url=${encodeURIComponent("https://reefdex.fyi/token/?a=" + token)}">Share this report on X</a>
+  </div>
+  <h2>Top holders</h2>
+  ${rows.length ? `<table><thead><tr><th>Holder</th><th class="hm">Type</th><th>${esc(sym)}</th><th>Share</th></tr></thead><tbody>${rows.map((r) => `<tr><td><a href="${EXP}/address/${r.a}" target="_blank" rel="noopener"><code>${short(r.a)}</code></a><span class="tag">${esc(r.label)}</span></td><td class="hm">${r.kind}</td><td>${compact(r.amt)}</td><td>${r.share !== null ? pct(r.share) : "–"}</td></tr>`).join("")}</tbody></table>
+  <p class="note">From the explorer's holder list. "Contract" can be a lock, vesting, presale or another app; open it to see which.</p>` : '<p class="muted">The explorer didn\'t return the holder list just now.</p>'}`;
+}
+
+$("find").addEventListener("submit", (e) => { e.preventDefault(); const v = $("q").value.trim(); if (v) run(v.toLowerCase()); });
+const start = new URLSearchParams(location.search).get("a");
+if (start) { $("q").value = start; run(start.toLowerCase()); }
+</script>
+</body>
+</html>
