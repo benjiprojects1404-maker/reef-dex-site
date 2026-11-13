@@ -27,7 +27,7 @@ contract ReefLocker is ReentrancyGuard {
 
     uint256 public constant MIN_LOCK = 30 days;
     uint256 public constant MAX_LOCK = 3650 days;
-    uint256 public constant MAX_FEE = 10_000 ether; // ceiling on the creation fee, in BDAG
+    uint256 public constant MAX_FEE = 100_000 ether; // ceiling on the creation fee, in BDAG (fixed forever)
 
     address public admin;
     address public pendingAdmin;

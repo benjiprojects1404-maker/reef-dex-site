@@ -229,7 +229,7 @@ describe("ReefLocker", () => {
     const { locker, admin, stranger, bob } = await setup();
     await expect(locker.connect(stranger).setFee(1n)).to.be.revertedWithCustomError(locker, "NotAdmin");
     await expect(locker.connect(stranger).setFeeRecipient(bob.address)).to.be.revertedWithCustomError(locker, "NotAdmin");
-    await expect(locker.connect(admin).setFee(10_001n * E18)).to.be.revertedWithCustomError(locker, "FeeTooHigh");
+    await expect(locker.connect(admin).setFee(100_001n * E18)).to.be.revertedWithCustomError(locker, "FeeTooHigh");
     await expect(locker.connect(admin).setFee(50n * E18)).to.emit(locker, "FeeChanged").withArgs(50n * E18);
     await expect(locker.connect(admin).setFeeRecipient(ethers.ZeroAddress)).to.be.revertedWithCustomError(locker, "ZeroAddress");
     await locker.connect(admin).setFeeRecipient(bob.address);
@@ -251,6 +251,6 @@ describe("ReefLocker", () => {
     const L = await ethers.getContractFactory("ReefLocker");
     await expect(L.deploy(ethers.ZeroAddress, a.address, 0n)).to.be.revertedWithCustomError(L, "ZeroAddress");
     await expect(L.deploy(a.address, ethers.ZeroAddress, 0n)).to.be.revertedWithCustomError(L, "ZeroAddress");
-    await expect(L.deploy(a.address, a.address, 10_001n * E18)).to.be.revertedWithCustomError(L, "FeeTooHigh");
+    await expect(L.deploy(a.address, a.address, 100_001n * E18)).to.be.revertedWithCustomError(L, "FeeTooHigh");
   });
 });

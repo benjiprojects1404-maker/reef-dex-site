@@ -15,7 +15,7 @@ much of a pool's LP is locked and until when, without a manual review per projec
 | Who | Can | Can't |
 |---|---|---|
 | Lock owner | withdraw after the date; extend; hand over | withdraw early; shorten; touch other locks |
-| Admin (Reef's Safe) | set the fee (max 10,000 BDAG) and the fee recipient; hand over admin (two steps) | touch any locked tokens; pause; upgrade; change any lock |
+| Admin (Reef's Safe) | set the fee (max 100,000 BDAG) and the fee recipient; hand over admin (two steps) | touch any locked tokens; pause; upgrade; change any lock |
 | Anyone else | create locks; read everything | anything else |
 
 There is no upgrade path, no pause, no admin withdrawal and no `selfdestruct`. Once deployed, the
