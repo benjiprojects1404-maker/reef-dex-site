@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Get paid in BDAG</title>
-<meta name="description" content="Make a BDAG, REEF, NOCAP or COOKED payment link with a QR code on BlockDAG chain 1404. Payments go straight from the payer's wallet to yours.">
+<meta name="description" content="Make a payment link with a QR code for BDAG or any token with a Reef pool on BlockDAG chain 1404. Payments go straight from the payer's wallet to yours.">
 <link rel="canonical" href="https://reefdex.fyi/pay/">
 <meta property="og:title" content="Get paid in BDAG"><meta property="og:description" content="Payment links with a QR code on BlockDAG chain 1404. Nothing held in between."><meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=4">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -158,6 +158,31 @@ async function provider() {
 }
 for (const t of TOKENS) { const o = document.createElement("option"); o.value = t.sym; o.textContent = t.sym; $("gToken").append(o); }
 
+// Every other token with a BDAG pool on Reef, from Reef's public API. These are named by contract address
+// in links (never by symbol), so a look-alike token calling itself "REEF" can't be passed off in a link.
+const EXTRA = new Map(); // lower-case address -> token
+let extraLoad = null;
+function loadReefTokens() {
+  if (!extraLoad) extraLoad = fetch("/api/v1/pairs", { signal: AbortSignal.timeout(10000) }).then(r => r.json()).then(j => {
+    const core = new Set(TOKENS.filter(t => t.addr).map(t => t.addr.toLowerCase()));
+    const list = (j.pairs || []).filter(p => p.token && !core.has(p.token.toLowerCase()))
+      .map(p => ({ sym: String(p.symbol || "token").slice(0, 16), name: String(p.name || "").slice(0, 40), addr: ethers.getAddress(p.token), dec: Number(p.decimals ?? 18), extra: true }))
+      .sort((a, b) => a.sym.localeCompare(b.sym));
+    if (list.length) {
+      const g = document.createElement("optgroup"); g.label = "More tokens on Reef";
+      for (const t of list) { EXTRA.set(t.addr.toLowerCase(), t); const o = document.createElement("option"); o.value = t.addr; o.textContent = `${t.sym} (${short(t.addr)})`; g.append(o); }
+      $("gToken").append(g);
+    }
+  }).catch(() => {});
+  return extraLoad;
+}
+loadReefTokens();
+// A link's or the form's token: one of the four by symbol, or any Reef pool token by address.
+function findToken(key) {
+  const k = (key || "").trim().toLowerCase();
+  return BY_SYM[k] || EXTRA.get(k) || null;
+}
+
 // Watches for the first Transfer of exactly `amount` of `token` to `to`, from block `fromBlock` on (tokens only).
 function watchPayment(statusEl, textEl, token, to, amount, fromBlock, onPaid) {
   const set = (cls, html) => { statusEl.className = "status" + (cls ? " " + cls : ""); textEl.innerHTML = html; };
@@ -191,14 +216,15 @@ function watchPayment(statusEl, textEl, token, to, amount, fromBlock, onPaid) {
 let stopGetWatch = null;
 $("makeBtn").onclick = async () => {
   $("getErr").textContent = "";
-  let to, amount; const token = BY_SYM[$("gToken").value.toLowerCase()];
+  let to, amount; const token = findToken($("gToken").value);
+  if (!token) { $("getErr").textContent = "Choose a token."; return; }
   try { to = ethers.getAddress($("gTo").value.trim()); } catch { $("getErr").textContent = "That doesn't look like a valid address."; return; }
   try { amount = ethers.parseUnits($("gAmt").value.trim().replace(/,/g, ""), token.dec); } catch { amount = 0n; }
   if (amount <= 0n) { $("getErr").textContent = "Enter an amount above zero."; return; }
   $("makeBtn").disabled = true;
   let block; try { block = await (await provider()).getBlockNumber(); } catch { $("getErr").textContent = "Can't reach BlockDAG right now. Try again in a moment."; $("makeBtn").disabled = false; return; }
   $("makeBtn").disabled = false;
-  const p = new URLSearchParams({ to, t: token.sym, a: ethers.formatUnits(amount, token.dec).replace(/\.0$/, ""), b: String(block) });
+  const p = new URLSearchParams({ to, t: token.extra ? token.addr : token.sym, a: ethers.formatUnits(amount, token.dec).replace(/\.0$/, ""), b: String(block) });
   const note = $("gNote").value.trim(); if (note) p.set("n", note);
   const url = location.origin + location.pathname + "?" + p.toString();
   $("gLink").value = url;
@@ -367,11 +393,14 @@ $("csvBtn").onclick = () => {
 
 async function payerView(q) {
   let to, token, amount, block;
-  try { to = ethers.getAddress(q.get("to")); token = BY_SYM[(q.get("t") || "").toLowerCase()]; if (!token) throw 0; amount = ethers.parseUnits(q.get("a"), token.dec); if (amount <= 0n) throw 0; block = parseInt(q.get("b") || "0", 10); }
+  const tk = (q.get("t") || "").trim();
+  if (/^0x[0-9a-fA-F]{40}$/.test(tk) && !findToken(tk)) await loadReefTokens();
+  try { to = ethers.getAddress(q.get("to")); token = findToken(tk); if (!token) throw 0; amount = ethers.parseUnits(q.get("a"), token.dec); if (amount <= 0n) throw 0; block = parseInt(q.get("b") || "0", 10); }
   catch { $("getErr").textContent = "That payment link is broken or incomplete. Ask the sender for a new one."; return; }
   $("mainView").hidden = true; $("payView").hidden = false;
   $("pAmount").textContent = fmt(amount, token.dec) + " " + token.sym;
-  $("pTo").textContent = to; $("pToken").textContent = token.sym; $("pTokenAddr").textContent = token.addr ? short(token.addr) : "(the chain's own coin)";
+  $("pTo").textContent = to; $("pToken").textContent = token.sym; $("pTokenAddr").textContent = token.addr ? (token.extra ? token.addr : short(token.addr)) : "(the chain's own coin)";
+  if (token.extra) { const a = document.createElement("a"); a.href = "/token/?a=" + token.addr; a.textContent = " · safety report"; a.target = "_blank"; a.rel = "noopener"; $("pTokenAddr").after(a); }
   const note = (q.get("n") || "").slice(0, 120);
   if (note) $("pNote").textContent = note; else { $("pNote").hidden = true; $("pNoteLabel").hidden = true; }
   $("copyTo").onclick = () => navigator.clipboard.writeText(to).then(() => { $("copyTo").textContent = "Copied"; setTimeout(() => $("copyTo").textContent = "Copy address", 1500); });
