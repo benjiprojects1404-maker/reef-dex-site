@@ -121,9 +121,9 @@ async function rpc(method, params) {
     try {
       const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(6000) });
       const j = await r.json();
-      if (j.error) throw new Error(j.error.message || "rpc error");
+      if (j.error) return null; // the node answered (e.g. the function doesn't exist): don't ask the others
       return j.result;
-    } catch (e) { last = e; }
+    } catch (e) { last = e; } // network trouble: try the next node
   }
   throw last || new Error("no RPC reachable");
 }
@@ -194,7 +194,7 @@ async function run(id) {
   const lockPct = pool.lpLockedOrBurnedPct || 0;
   const lockers = (pool.lpHolders || []).filter((h) => !BURN.has(h.address.toLowerCase()) && h.pct > 0.01);
   const dates = await Promise.all(lockers.map(async (h) => ({ ...h, until: await callUint(h.address, "unlockTime()") })));
-  const lockTxt = dates.map((d) => `${esc(d.label)} holds ${pct(d.pct)}${d.until ? `, locked until ${new Date(Number(d.until) * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}`).join("; ");
+  const lockTxt = dates.map((d) => `${esc(d.label)} holds ${pct(d.pct)}${d.until ? `, locked until ${new Date(Number(d.until) * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} (UTC)` : ""}`).join("; ");
   checks.push(lockPct >= 50
     ? check("ok", `LP ${pct(lockPct)} locked or burned`, `${lockTxt ? lockTxt + ". " : ""}That share of the pool's liquidity can't be pulled. <a href="${EXP}/address/${pool.pair}" target="_blank" rel="noopener">Pool on the explorer</a>`)
     : lockPct > 0 ? check("warn", `Only ${pct(lockPct)} of the LP is locked or burned`, "Whoever holds the rest can remove that liquidity at any time.")
