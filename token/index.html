@@ -146,10 +146,17 @@ function check(state, title, text) { return { state, title, text }; }
 async function run(id) {
   const out = $("out");
   out.innerHTML = '<p class="muted">Reading the chain and the explorer…</p>';
-  let pool;
-  try { pool = await getJson(API + encodeURIComponent(id)); } catch (e) { pool = null; }
+  if (!isAddr(id) && !["reef", "nocap", "cooked"].includes(id)) { out.innerHTML = '<p class="err">That doesn\'t look like a token address.</p>'; return; }
+  let pool, failed = false;
+  try { pool = await getJson(API + encodeURIComponent(id)); } catch (e) { failed = true; }
+  if (failed) {
+    // Couldn't reach the data (slow RPC or a network blip): say so, and offer a retry rather than a wrong answer.
+    out.innerHTML = '<p class="err">Couldn\'t read the chain just now (the network is slow). <button class="cta alt" id="retry" style="margin:0 0 0 6px;padding:6px 12px">Try again</button></p>';
+    $("retry").onclick = () => run(id);
+    return;
+  }
   if (!pool || !pool.token) {
-    out.innerHTML = `<p class="err">${isAddr(id) ? "No BDAG pool on Reef for that token yet, so there's nothing to report. Reports cover tokens with a Reef BDAG pool." : "That doesn't look like a token address."}</p>`;
+    out.innerHTML = '<p class="err">No BDAG pool on Reef for that token yet, so there\'s nothing to report. Reports cover tokens with a Reef BDAG pool.</p>';
     return;
   }
   const token = pool.token, sym = pool.symbol || "token", dec = pool.decimals ?? 18;
