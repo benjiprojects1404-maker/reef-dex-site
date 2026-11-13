@@ -56,7 +56,8 @@ async function readPairs() {
     const r0 = big(b[2], 0), r1 = big(b[2], 1), supply = big(b[3]);
     const held = Object.keys(LP_HOLDERS).map((h, k) => [h, big(b[4 + k])]);
     const locked = held.reduce((s, [, v]) => s + v, 0n);
-    return { pair, t0, t1, r0, r1, supply, locked, heldBy: held.filter(([, v]) => v > 0n).map(([h]) => LP_HOLDERS[h]) };
+    return { pair, t0, t1, r0, r1, supply, locked, heldBy: held.filter(([, v]) => v > 0n).map(([h]) => LP_HOLDERS[h]),
+      lpHolders: held.filter(([, v]) => v > 0n).map(([h, v]) => ({ address: h, label: LP_HOLDERS[h], pct: supply > 0n ? Number((v * 10000n) / supply) / 100 : 0 })) };
   }).filter((p) => p.t0 === WBDAG || p.t1 === WBDAG);
   const tokens = pools.map((p) => (p.t0 === WBDAG ? p.t1 : p.t0));
   const meta = await rpc(tokens.flatMap((t) => [call(t, SEL.symbol), call(t, SEL.name), call(t, SEL.decimals), call(t, SEL.totalSupply)]));
@@ -75,6 +76,7 @@ async function readPairs() {
       fdvBDAG: fdv !== null ? units(fdv, 18) : null, // fully diluted value = total supply x priceBDAG
       liquidityBDAG: units(rB * 2n, 18), // both sides of the pool, valued in BDAG
       lpLockedOrBurnedPct: p.supply > 0n ? Number((p.locked * 10000n) / p.supply) / 100 : 0, lpHeldBy: p.heldBy,
+      lpHolders: p.lpHolders, // each known lock or burn address holding this pool's LP, with its share
       page: ALIASES.reef === token ? "https://reefdex.fyi/pairs/reef/" : ALIASES.nocap === token ? "https://reefdex.fyi/pairs/nocap/" : ALIASES.cooked === token ? "https://reefdex.fyi/pairs/cooked/" : null,
       swap: `https://reefdex.fyi/?from=bdag&to=${token}`,
       _bdagIs0: bdagIs0,

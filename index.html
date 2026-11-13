@@ -230,6 +230,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .toplist .tk span{color:var(--muted);font-size:12px;display:block;overflow-wrap:anywhere}
 .toplist .v{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
 .toplist .v b{display:block;color:inherit;font-size:13px}
+.toplist .sf.rep{text-decoration:none;color:var(--link,#7fd0f7);border-color:transparent}
 .toplist .v .fdv{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
 .toplist .v .fdv.thin{color:var(--warn,#d9a14a)}
 .footer{max-width:1080px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
@@ -1725,7 +1726,7 @@ async function loadFdvBadge(pairAddr) {
     box.title = "FDV = total supply x price in this pool. Liquidity = both sides of the pool, in BDAG.";
     box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg>
       <span><b>FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))} BDAG</b> · liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG · supply ${fmtCompact(ethers.formatUnits(supply, dec))} ${escHtml(sym)}.
-      ${f.thin ? " Thin liquidity: the FDV is a rough guide only." : ""} FDV = total supply × this pool's price.</span>`;
+      ${f.thin ? " Thin liquidity: the FDV is a rough guide only." : ""} FDV = total supply × this pool's price. <a href="/token/?a=${token}">Full safety report →</a></span>`;
   } catch (e) { hideFdvBadge(); }
 }
 async function loadLockBadge(pairAddr) {
@@ -2463,6 +2464,9 @@ async function loadTopTokens() {
       li.querySelector(".tk b").textContent = t.symbol;
       li.querySelector(".tk span").textContent = t.name;
       renderSafety(li.querySelector(".safety"), safety[i]);
+      const rep = el("a"); rep.className = "sf rep"; rep.href = "/token/?a=" + x.token; rep.textContent = "Report →"; rep.title = "Full safety report: code, admin powers, tax, LP lock, holders";
+      rep.addEventListener("click", (e) => e.stopPropagation());
+      li.querySelector(".safety").appendChild(rep);
       li.title = `${t.name} · ${x.token}`;
       li.onclick = () => selectPoolPair(t, { ...NATIVE });
       list.appendChild(li);
