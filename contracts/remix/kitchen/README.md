@@ -30,6 +30,18 @@ fee goes, through the multisig. Reserved tickers are fixed at deploy.
 1. Explorer → Verify & publish → Solidity single file: the same flat source, 0.8.24, optimizer off, berlin.
 2. Send the address: it gets checked on-chain and goes into the site's config.
 
+## Deployed (v2)
+
+| | |
+|---|---|
+| KitchenServe | `0xF30f5E4f46AcAE803815B82CfEC5CD8Fc77eF394` (chain 1404, 15 Nov 2026, from the COOKED_Main wallet, 4,318,975 gas) |
+| Compiler | Solidity 0.8.24, **optimizer off**, EVM **berlin** |
+| How | Remix kept compiling for a newer EVM (its config file ignored the berlin setting, so deploys failed with `invalid opcode: PUSH0`). The deploy data was built with solc 0.8.24 from `KitchenServe_flat.sol` (berlin, no optimizer), dry-run on BlockDAG, then sent from MetaMask. Deploy data keccak `0xb60a6731031746959e74e117f96720ff553e6664126ee6a4e86f163acfdc5141`. |
+| Checked on-chain | router/factory/WBDAG = Reef's; admin = Reef multisig; fee 5,000 BDAG to the Reef treasury; minimum liquidity 10,000 BDAG; all 11 tickers reserved; no admin hand-over pending; runtime 17,814 bytes |
+
+**Remix tip for chain 1404:** BlockDAG doesn't support `PUSH0` (Shanghai). Always compile for EVM berlin, and if
+Remix shows "Use configuration file", check `remix.config.json` says `"evmVersion": "berlin"`.
+
 ---
 
 # v1 (retired from the site): `KitchenFactory`
