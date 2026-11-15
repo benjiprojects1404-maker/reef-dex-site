@@ -16,7 +16,7 @@ describe("KitchenFactory", function () {
     const tx = await factory.connect(signer).cook(name, symbol, supply, { value });
     const rc = await tx.wait();
     const ev = rc.logs.map((l) => { try { return factory.interface.parseLog(l); } catch (e) { return null; } }).find((e) => e && e.name === "TokenCooked");
-    return ethers.getContractAt("KitchenToken", ev.args.token);
+    return ethers.getContractAt("contracts/kitchen/KitchenFactory.sol:KitchenToken", ev.args.token);
   }
 
   it("makes a fixed-supply token with the whole supply in the creator's wallet", async function () {

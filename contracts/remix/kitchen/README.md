@@ -1,4 +1,38 @@
-# The Kitchen: deploy `KitchenFactory` from Remix
+# The Kitchen v2: deploy `KitchenServe` from Remix (cook AND serve on Reef)
+
+v2 makes the token and its TOKEN/BDAG pool on Reef in one transaction, with the LP burned. It replaces the v1
+`KitchenFactory` on the site. `KitchenServe_flat.sol` is `contracts/kitchen/KitchenServe.sol` with OpenZeppelin
+inlined, ready to paste.
+
+## 1. Compile
+
+1. Remix → new file `KitchenServe_flat.sol` → paste the whole file (use GitHub's Raw view).
+2. Solidity compiler **0.8.24**, Advanced: EVM version **berlin**. Leave the optimizer **off** (that's what Remix
+   used for v1, and it keeps the explorer verification simple).
+3. Contract to deploy: **KitchenServe** (not KitchenToken).
+
+## 2. Deploy (Injected Provider, BlockDAG chain 1404, Value 0, "Verify Contract on Explorers" off)
+
+| Argument | Value |
+|---|---|
+| `router_` | `0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76` (Reef router; WBDAG and the Reef factory are read from it) |
+| `admin_` | `0x4E2401bFD24c66166fABF9Cc5cD5B6B2c5c860fc` (Reef admin multisig, 2-of-3) |
+| `feeRecipient_` | `0xECc48Bca8c28Caa8e980E308DFb08B8dEfE86267` (Reef treasury) |
+| `fee_` | `5000000000000000000000` (5,000 BDAG) |
+| `minLiquidity_` | `10000000000000000000000` (10,000 BDAG minimum in each new pool) |
+| `reserved` | `["BDAG","WBDAG","REEF","NOCAP","COOKED","USDT","USDC","ETH","WETH","BTC","WBTC"]` |
+
+The admin can only change the fee (max 50,000 BDAG), the minimum liquidity (max 1,000,000 BDAG) and where the
+fee goes, through the multisig. Reserved tickers are fixed at deploy.
+
+## 3. Verify and check
+
+1. Explorer → Verify & publish → Solidity single file: the same flat source, 0.8.24, optimizer off, berlin.
+2. Send the address: it gets checked on-chain and goes into the site's config.
+
+---
+
+# v1 (retired from the site): `KitchenFactory`
 
 `KitchenFactory_flat.sol` is `contracts/kitchen/KitchenFactory.sol` with OpenZeppelin inlined, ready to paste.
 You sign the deploy from your own wallet; no keys go anywhere.
