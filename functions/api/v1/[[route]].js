@@ -27,9 +27,30 @@ function str(hex) { // ABI string, or bytes32 fallback
 }
 const units = (v, d = 18) => { const s = v.toString().padStart(d + 1, "0"); const i = s.slice(0, -d) || "0", f = s.slice(-d).replace(/0+$/, ""); return f ? `${i}.${f}` : i; };
 
+// Public nodes can fall hundreds of blocks behind (rpc.capedag.com was ~480 behind on 15 Nov 2026, so a new pool
+// was missing from the list). Once per isolate every 30s, ask every node for its block height and only use nodes
+// within MAX_LAG blocks of the highest, highest first; fall back to the full list if that check fails.
+const MAX_LAG = 20;
+let ranked = null, rankedAt = 0;
+async function freshRpcs() {
+  if (ranked && Date.now() - rankedAt < 30000) return ranked;
+  const heights = await Promise.all(RPCS.map(async (url) => {
+    try {
+      const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }), signal: AbortSignal.timeout(4000) });
+      const j = await r.json();
+      return { url, h: j && j.result ? Number(BigInt(j.result)) : -1 };
+    } catch (e) { return { url, h: -1 }; }
+  }));
+  const top = Math.max(...heights.map((x) => x.h));
+  if (top < 0) return RPCS;
+  ranked = heights.filter((x) => x.h >= top - MAX_LAG).sort((a, b) => b.h - a.h).map((x) => x.url);
+  rankedAt = Date.now();
+  return ranked;
+}
+
 async function rpc(batch) {
   let last;
-  for (const url of RPCS) {
+  for (const url of await freshRpcs()) {
     try {
       const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(batch.map((c, id) => ({ jsonrpc: "2.0", id, ...c }))), signal: AbortSignal.timeout(8000) });
       const j = await r.json();
