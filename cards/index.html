@@ -63,6 +63,29 @@ section{margin-top:40px}
 .count{border-radius:16px;padding:14px;border:1px solid var(--line2)}
 .count.c{background:linear-gradient(135deg,rgba(215,55,43,.18),rgba(255,194,58,.12))}
 .count.n{background:linear-gradient(135deg,rgba(155,63,224,.2),rgba(79,203,232,.12))}
+.deck{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start}
+.topcard{position:relative;perspective:900px}
+.topcard img{width:100%;height:auto;display:block;border-radius:16px;border:1px solid var(--line2);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.topcard .flag{position:absolute;top:10px;left:10px;background:var(--ink);color:var(--text);font:700 12px "Instrument Sans",sans-serif;padding:4px 10px;border-radius:999px;border:1px solid var(--line2)}
+.topcard.l img{box-shadow:0 0 0 2px #ffe58a,0 0 40px rgba(255,138,216,.55)} .topcard.e img{box-shadow:0 0 0 2px #eef2f6,0 0 30px rgba(238,242,246,.35)} .topcard.r img{box-shadow:0 0 0 2px #f2c14e,0 0 24px rgba(242,193,78,.35)}
+.tierchip{display:inline-block;font:700 11px "Instrument Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#1b1206}
+.tierchip.c{background:#c98a4f} .tierchip.u{background:#dfe4ea} .tierchip.r{background:#f2c14e} .tierchip.e{background:#eef2f6} .tierchip.l{background:linear-gradient(90deg,#ff8ad8,#ffe58a,#9ee7ff)}
+.queue{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 16px}
+.queue figure{margin:0;text-align:center} .queue img{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
+.queue figcaption{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3}
+.watch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.watch div{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px}
+.watch b{display:block;font:800 20px/1.1 "Bricolage Grotesque",sans-serif}
+.watch .hot{border-color:#ffe58a;box-shadow:0 0 18px rgba(255,229,138,.25)}
+.taken{display:none;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(229,98,74,.14);border:1px solid rgba(229,98,74,.4);font-size:13px}
+.taken.show{display:block;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.96);opacity:0}100%{transform:none;opacity:1}}
+.flip{animation:flip .9s ease}
+@keyframes flip{0%{transform:rotateY(90deg)}100%{transform:none}}
+.got{display:flex;gap:14px;align-items:center;margin-top:12px}
+.got img{width:110px;height:auto;border-radius:10px;border:1px solid var(--line2)}
+@media (max-width:640px){.deck{grid-template-columns:1fr}.topcard{max-width:260px;margin:0 auto}.watch{grid-template-columns:1fr 1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.flip,.taken.show{animation:none}}
 .count b{display:block;font:800 30px/1.1 "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
 .bar{height:8px;border-radius:6px;background:var(--raised);overflow:hidden;margin-top:8px}
 .bar span{display:block;height:100%;width:0;border-radius:6px;transition:width .6s}
@@ -102,7 +125,7 @@ footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--mu
 <div class="betabar">Unaudited beta. Cards are collectibles and a game, not an investment. Not for US/UK persons.</div>
 <header class="top"><div class="topwrap">
   <a class="brand" href="/">reef<span>.</span>dex</a>
-  <nav class="jump"><a href="#mint">Mint</a><a href="/cards/battle/">Battle</a><a href="#how">How it works</a><a href="#rarity">Rarity</a><a href="#risks">Risks</a><a href="/">Swap on Reef</a></nav>
+  <nav class="jump"><a href="#mint">Mint</a><a href="#deck">The deck</a><a href="/cards/battle/">Battle</a><a href="#how">How it works</a><a href="#rarity">Rarity</a><a href="#risks">Risks</a><a href="/">Swap on Reef</a></nav>
 </div></header>
 
 <main class="wrap">
@@ -115,7 +138,7 @@ footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--mu
   <div class="lineup"><img src="/assets/cards/lineup.jpg" alt="The 16 characters: 8 COOKED Kitchen Crew and 8 NOCAP Truth Squad" width="1400" height="1910" loading="lazy"></div>
 
   <section id="mint">
-    <div class="sechead"><h2>Mint a card</h2><p>100,000 BDAG each · 2 per wallet · rarity is random and revealed at sell-out (or after 30 days)</p></div>
+    <div class="sechead"><h2>Mint a card</h2><p>100,000 BDAG each · 2 per wallet · the cards are revealed, so <a href="#deck">the deck</a> shows exactly which card comes next</p></div>
     <div class="grid2">
       <div class="card">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">The desk</h3><span class="pill" id="phasePill"><i></i><span id="phase">Loading…</span></span></div>
@@ -152,14 +175,33 @@ footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--mu
     </div>
   </section>
 
+  <section id="deck">
+    <div class="sechead"><h2>The deck</h2><p>Every card left, in order. Everyone sees the same deck, live from the chain. There's no luck and nothing hidden: just timing.</p></div>
+    <div class="card">
+      <div class="taken" id="taken" role="status"></div>
+      <div class="deck">
+        <div class="topcard" id="topCard"><span class="flag">Next up</span><img id="topImg" src="/assets/cards/cooked-back.png" alt="" width="360" height="503"></div>
+        <div>
+          <h3 style="margin:0 0 4px" id="topName">Loading the deck…</h3>
+          <div id="topMeta" class="small muted"></div>
+          <p class="small muted" style="margin:10px 0 0">Mint now and you get this card, unless someone else's mint lands first. Then you get the next one in line. Wait, and someone else might take the Common for you… or the Legendary.</p>
+          <div class="small muted" style="margin-top:14px"><b style="color:var(--text)">Then</b></div>
+          <div class="queue" id="queue"></div>
+          <div class="watch" id="watch"></div>
+          <div class="small muted" id="left"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="how">
     <div class="sechead"><h2>How a mint works</h2><p>All in one transaction; if any step fails, nothing happens.</p></div>
     <div class="card"><ol class="steps">
       <li>You pick COOKED or NOCAP and pay 100,000 BDAG.</li>
       <li>The contract swaps just enough of it for the token so the rest pairs exactly, and stops if the pool moved more than 2% from your quote.</li>
       <li>It adds both sides to that pool on Reef and sends the LP tokens to the dead address, so the liquidity can never be removed.</li>
-      <li>It mints you the next card. All cards show a card back until the reveal.</li>
-      <li>At sell-out (or after 30 days), anyone can trigger the reveal. A block hash nobody could know in advance picks the starting point in the card list, whose fingerprint was fixed before the sale: <code id="prov">0xe88c5841430e34ab12dc5c68af11614b8b894a5b49a35197159e95f1dea05c69</code></li>
+      <li>It mints you the next card in the deck: the top card at the moment your transaction lands.</li>
+      <li>At sell-out (or after 30 days), anyone can trigger the reveal. A block hash nobody could know in advance picks the starting point in the card list, whose fingerprint was fixed before the sale: <code id="prov">0xe88c5841430e34ab12dc5c68af11614b8b894a5b49a35197159e95f1dea05c69</code>. Revealed on Sun Nov 15, 2026 with starting index 19, so the order of every card still in the deck is public.</li>
     </ol>
     <p class="small muted" style="margin:12px 0 0">The contract has no withdraw function. Source and tests: <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/tree/main/contracts/contracts/cards" target="_blank" rel="noopener">GitHub</a>.</p></div>
   </section>
@@ -208,7 +250,55 @@ const CFG = {
   const PRICE = 100000n * 10n ** 18n;
   const SLIPPAGE_BPS = 200n;
   const CARDS_ABI = ["function mint(uint8,uint256,uint256) payable", "function minted(uint256) view returns (uint256)", "function mintedBy(address) view returns (uint256)",
-    "function saleOpen() view returns (bool)", "function revealed() view returns (bool)", "function revealAfter() view returns (uint256)", "function price() view returns (uint256)"];
+    "function saleOpen() view returns (bool)", "function revealed() view returns (bool)", "function revealAfter() view returns (uint256)", "function price() view returns (uint256)",
+    "function startingIndex() view returns (uint256)", "function cardOf(uint256) view returns (uint256)"];
+  const TIER = { c: "Common", u: "Uncommon", r: "Rare", e: "Epic", l: "Legendary" };
+  const STATS = { c: ["Heat", "Crunch", "Spice", "Burn factor"], n: ["Honesty", "Swagger", "Hype resist.", "Realness"] };
+  const TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+  let DATA = null, lastTop = [null, null];
+  fetch("/assets/cards/cards.json").then((r) => r.json()).then((d) => { DATA = d; renderDeck(); }).catch(() => {});
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const cardInfo = (n) => { const d = DATA[n - 1]; return { n, brand: d[0], name: d[1], tier: d[2], stats: d[3] }; };
+  // The contract's own rule (cardOf): the k-th token of a side (0-based) is card side*75 + ((k + startingIndex) % 75) + 1.
+  function deckOf(b) {
+    if (!st || st.si === undefined || st.si === null) return null;
+    const m = Number(b === 0 ? st.mc : st.mn), si = Number(st.si), out = [];
+    for (let k = m; k < 75; k++) out.push(b * 75 + ((k + si) % 75) + 1);
+    return out;
+  }
+  function renderDeck() {
+    const deck = deckOf(brand);
+    if (!DATA || !deck) return;
+    const side = brand === 0 ? "COOKED" : "NOCAP";
+    if (!deck.length) { $("topName").textContent = `All 75 ${side} cards are minted.`; $("topMeta").textContent = ""; $("queue").innerHTML = ""; $("watch").innerHTML = ""; $("left").textContent = ""; return; }
+    const top = cardInfo(deck[0]);
+    $("topCard").className = "topcard " + top.tier;
+    $("topImg").src = `/assets/cards/thumbs/${top.n}.webp`; $("topImg").alt = `${top.name}, card #${top.n}`;
+    $("topName").innerHTML = `${esc(top.name)} <span class="tierchip ${top.tier}">${TIER[top.tier]}</span>`;
+    $("topMeta").textContent = `${side} card #${top.n} · ` + STATS[top.brand].map((l, i) => `${l} ${top.stats[i]}`).join(" · ");
+    $("queue").innerHTML = deck.slice(1, 5).map((n) => { const c = cardInfo(n); return `<figure><img src="/assets/cards/thumbs/${n}.webp" alt="${esc(c.name)}" loading="lazy" width="360" height="503"><figcaption>${esc(c.name)}<br>${TIER[c.tier]}</figcaption></figure>`; }).join("");
+    const away = (t) => { const i = deck.findIndex((n) => cardInfo(n).tier === t); return i; };
+    $("watch").innerHTML = ["l", "e", "r"].map((t) => {
+      const i = away(t);
+      const txt = i < 0 ? "none left" : i === 0 ? "next card!" : `${i} card${i > 1 ? "s" : ""} away`;
+      return `<div class="${i === 0 ? "hot" : ""}"><span class="small muted">Next ${TIER[t]}</span><b>${txt}</b></div>`;
+    }).join("");
+    const counts = { c: 0, u: 0, r: 0, e: 0, l: 0 };
+    deck.forEach((n) => counts[cardInfo(n).tier]++);
+    $("left").textContent = `Left in the ${side} deck: ` + ["l", "e", "r", "u", "c"].map((t) => `${counts[t]} ${TIER[t]}`).join(" · ") + `. Switch sides with "Choose a side" above.`;
+  }
+  function noticeTaken() {
+    [0, 1].forEach((b) => {
+      const deck = deckOf(b); if (!deck || !DATA) return;
+      const top = deck.length ? deck[0] : 0;
+      if (lastTop[b] !== null && top !== lastTop[b] && !busy) {
+        const gone = cardInfo(lastTop[b]);
+        $("taken").innerHTML = `Card taken: <b>${esc(gone.name)}</b> (${TIER[gone.tier]}) just went to another wallet. The deck moved on.`;
+        $("taken").classList.remove("show"); void $("taken").offsetWidth; $("taken").classList.add("show");
+      }
+      lastTop[b] = top;
+    });
+  }
   const FACTORY_ABI = ["function getPair(address,address) view returns (address)"];
   const PAIR_ABI = ["function getReserves() view returns (uint112,uint112,uint32)", "function token0() view returns (address)"];
   let ro = null, wallet = null, signer = null, account = null, onChain = false, brand = 0, busy = false, st = null, listening = false;
@@ -273,13 +363,16 @@ const CFG = {
       if (!CFG.cards) { setPhase("Coming soon", "wait"); render(); return; }
       const c = new ethers.Contract(CFG.cards, CARDS_ABI, ro);
       const [mc, mn, open, rev, ra] = await Promise.all([c.minted(0), c.minted(1), c.saleOpen(), c.revealed(), c.revealAfter()]);
-      Object.assign(st, { mc, mn, open, rev, ra, mine: account ? await c.mintedBy(account) : null });
+      const si = rev ? await c.startingIndex() : null;
+      Object.assign(st, { mc, mn, open, rev, ra, si, mine: account ? await c.mintedBy(account) : null });
+      noticeTaken();
       setPhase(mc + mn === 150n ? "Sold out" : open ? "Minting" : "Paused", open ? "ok" : "wait");
       render();
     } catch (e) { setPhase("Can't read the desk", "bad"); }
   }
   function render() {
     renderQuote();
+    renderDeck();
     if (st && st.mc !== undefined) {
       $("cntC").textContent = st.mc + " / 75"; $("cntN").textContent = st.mn + " / 75";
       $("barC").style.width = (Number(st.mc) / 75 * 100) + "%"; $("barN").style.width = (Number(st.mn) / 75 * 100) + "%";
@@ -292,7 +385,9 @@ const CFG = {
     $("btnSwitch").classList.toggle("hide", !account || onChain);
     $("btnMint").classList.toggle("hide", !account || !onChain);
     $("btnMint").disabled = !ready || (st && st.mine >= 2n) || (st && (brand === 0 ? st.mc : st.mn) >= 75n);
-    $("btnMint").textContent = (st && st.mine >= 2n) ? "Wallet limit reached (2)" : `Mint a ${brand === 0 ? "COOKED" : "NOCAP"} card for 100,000 BDAG`;
+    const next = DATA && deckOf(brand) && deckOf(brand).length ? cardInfo(deckOf(brand)[0]) : null;
+    $("btnMint").textContent = (st && st.mine >= 2n) ? "Wallet limit reached (2)"
+      : next ? `Mint the next card (${next.name}, ${TIER[next.tier]}) for 100,000 BDAG` : `Mint a ${brand === 0 ? "COOKED" : "NOCAP"} card for 100,000 BDAG`;
   }
   async function connect() {
     if (!window.ethereum) { msg("No wallet in this browser. On a phone, open this page in your wallet app's browser.", "err"); return; }
@@ -337,14 +432,21 @@ const CFG = {
       msg(`Waiting for confirmation… <a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">View transaction</a>`);
       const r = await tx.wait();
       if (!r || r.status !== 1) throw new Error("The transaction failed on-chain.");
-      msg(`Minted. Your card shows its back until the reveal. <a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">View transaction</a>`, "ok");
+      const link = `<a href="${CFG.explorer}/tx/${tx.hash}" target="_blank" rel="noopener">View transaction</a>`;
+      const log = r.logs.find((l) => l.address.toLowerCase() === CFG.cards.toLowerCase() && l.topics[0] === TRANSFER && l.topics.length === 4);
+      let got = null;
+      if (log && DATA) { try { got = cardInfo(Number(await new ethers.Contract(CFG.cards, CARDS_ABI, ro).cardOf(BigInt(log.topics[3])))); } catch (e) {} }
+      if (got) {
+        lastTop[brand] = null; // your own mint isn't "taken by someone else"
+        msg(`<div class="got"><img class="flip" src="/assets/cards/thumbs/${got.n}.webp" alt="${esc(got.name)}" width="360" height="503"><div><b>You got ${esc(got.name)}</b> <span class="tierchip ${got.tier}">${TIER[got.tier]}</span><br>Card #${got.n}. ${link} · <a href="/cards/battle/">Take it into battle</a></div></div>`, "ok");
+      } else msg(`Minted. ${link}`, "ok");
     } catch (e) { msg(await walletErr(e, sentLink), "err"); }
     finally { busy = false; await load(); }
   }
   function pick(b) { brand = b; $("pickC").setAttribute("aria-pressed", b === 0); $("pickN").setAttribute("aria-pressed", b === 1); render(); }
   $("pickC").onclick = () => pick(0); $("pickN").onclick = () => pick(1);
   $("btnConnect").onclick = connect; $("btnSwitch").onclick = switchNet; $("btnMint").onclick = mint; $("ack").onchange = render;
-  load(); setInterval(load, 30000);
+  load(); setInterval(load, 15000);
 })();
 </script>
 </body>
