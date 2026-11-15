@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pairs on Reef</title>
-<meta name="description" content="Live BDAG pools on Reef (BlockDAG chain 1404): REEF, NOCAP and COOKED. Pool price, depth, volume and recent swaps.">
+<meta name="description" content="Every BDAG pool on Reef (BlockDAG chain 1404), live: price, liquidity, FDV and how much of each pool's liquidity is locked. New launches from The Kitchen included.">
 <link rel="canonical" href="https://reefdex.fyi/pairs/">
 <meta property="og:type" content="website"><meta property="og:url" content="https://reefdex.fyi/pairs/">
-<meta property="og:title" content="Pairs on Reef"><meta property="og:description" content="Live BDAG pools on Reef (BlockDAG chain 1404): REEF, NOCAP and COOKED. Pool price, depth, volume and recent swaps.">
+<meta property="og:title" content="Pairs on Reef"><meta property="og:description" content="Every BDAG pool on Reef, live: price, liquidity, FDV and locked liquidity. New launches from The Kitchen included.">
 <meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=4"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,8 +63,21 @@ td:first-child,th:first-child{text-align:left}
 .addr code{font:400 13px "JetBrains Mono",monospace;overflow-wrap:anywhere;text-align:right}
 .note{font-size:13px;color:var(--muted);margin-top:14px}
 .muted{color:var(--muted)}
-.pairlist a{display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:var(--text)}
-.pairlist a b{font:700 18px "Bricolage Grotesque",sans-serif}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.tools input{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line2);color:var(--text);border-radius:11px;padding:10px 12px;font:400 15px "Instrument Sans",sans-serif}
+.seg{display:flex;background:var(--raised);border-radius:11px;padding:3px;gap:2px}
+.seg button{background:none;border:0;color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:7px 11px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--text)}
+.pool{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(0,1fr));gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 10px}
+.pool .nm b{font:700 18px "Bricolage Grotesque",sans-serif;overflow-wrap:anywhere}
+.pool .nm .muted{font-size:13px;display:block;overflow-wrap:anywhere}
+.pool .st .k{font-size:11px} .pool .st div:last-child{font:600 15px "Instrument Sans",sans-serif;font-variant-numeric:tabular-nums}
+.pool .links{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;font-size:14px;font-weight:600;border-top:1px solid var(--line);padding-top:10px}
+.badge{display:inline-block;font:700 11px "Instrument Sans",sans-serif;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px;letter-spacing:.02em}
+.badge.kitchen{background:rgba(255,61,139,.16);color:#ff6fa7;border:1px solid rgba(255,61,139,.45)}
+.badge.new{background:rgba(63,191,131,.14);color:var(--good);border:1px solid rgba(63,191,131,.45)}
+.lock-ok{color:var(--good)} .lock-low{color:var(--amber)}
+@media (max-width:640px){.pool{grid-template-columns:repeat(2,minmax(0,1fr))}.pool .nm{grid-column:1/-1}}
 @media (max-width:560px){table .hm{display:none}}
 </style>
 </head>
@@ -76,10 +89,87 @@ td:first-child,th:first-child{text-align:left}
 <div class="betabar">BETA: not independently audited, on an early-stage chain. Numbers below are read live from the pool on chain 1404. They are not a price feed or a recommendation.</div>
 <main>
 <div class="crumb"><a href="/">Reef</a> · Pairs</div>
-<h1>Pairs</h1>
-<p class="lede">Live pages for Reef's main BDAG pools. Every number is read from the pool on chain 1404 when the page loads. Any token can have a pool on Reef; use the swap screen's search for the rest.</p>
-<div class="pairlist"><div class="box" style="margin-bottom:10px"><a href="/pairs/reef/"><span><b>REEF / BDAG</b><br><span class="muted" style="font-size:14px">Reef</span></span><span>View pool →</span></a></div><div class="box" style="margin-bottom:10px"><a href="/pairs/nocap/"><span><b>NOCAP / BDAG</b><br><span class="muted" style="font-size:14px">NoCap</span></span><span>View pool →</span></a></div><div class="box" style="margin-bottom:10px"><a href="/pairs/cooked/"><span><b>COOKED / BDAG</b><br><span class="muted" style="font-size:14px">Cooked</span></span><span>View pool →</span></a></div></div>
-<p class="note">Not an endorsement or a recommendation. Reef is unaudited beta software.</p>
+<h1>Pairs <small id="count"></small></h1>
+<p class="lede">Every BDAG pool on Reef, read live from chain 1404. Tokens launched in <a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a> appear here the moment they're made, with their liquidity locked.</p>
+<div class="tools">
+  <input id="q" type="search" placeholder="Search by name, ticker or address" aria-label="Search pools" autocomplete="off">
+  <div class="seg" role="group" aria-label="Sort"><button type="button" data-sort="liq" aria-pressed="true">Liquidity</button><button type="button" data-sort="new" aria-pressed="false">Newest</button><button type="button" data-sort="fdv" aria-pressed="false">FDV</button></div>
+</div>
+<div id="list"><p class="muted">Loading Reef's pools…</p></div>
+<p class="note">Prices come from each pool's own reserves, not a price feed. <span class="badge kitchen" style="margin:0">Kitchen</span> = made in The Kitchen (plain fixed-supply token, starting liquidity locked). <span class="badge new" style="margin:0">New</span> = pool under 7 days old. Not an endorsement or a recommendation; check the safety report before trading. Reef is unaudited beta software.</p>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const RPCS = ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net"];
+  const EXP = "https://explorer.east.bdag-us.org", EXP_API = EXP + "/api/v2";
+  const KITCHENS = ["0xF30f5E4f46AcAE803815B82CfEC5CD8Fc77eF394", "0x0E331686ee029EfafFC3a5cFda0ee3c7006F8A98"];
+  const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+  function num(v) {
+    const n = Number(v); if (!isFinite(n) || n === 0) return "–";
+    const a = Math.abs(n);
+    if (a < 1) return n.toLocaleString("en-US", { maximumSignificantDigits: 3 });
+    const [d, s] = a >= 1e12 ? [1e12, "T"] : a >= 1e9 ? [1e9, "B"] : a >= 1e6 ? [1e6, "M"] : a >= 1e3 ? [1e3, "K"] : [1, ""];
+    const x = n / d; return (s ? x.toFixed(x >= 100 ? 0 : x >= 10 ? 1 : 2).replace(/\.0+$|(\.\d*?)0+$/, "$1") : x.toLocaleString("en-US", { maximumFractionDigits: 2 })) + s;
+  }
+  async function rpcBatch(calls) {
+    for (const url of RPCS) {
+      try {
+        const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(calls.map((c, id) => ({ jsonrpc: "2.0", id, method: "eth_call", params: [c, "latest"] }))), signal: AbortSignal.timeout(8000) });
+        const j = await r.json(); if (!Array.isArray(j)) continue;
+        const out = []; for (const x of j) out[x.id] = x.result || null; return out;
+      } catch (e) {}
+    }
+    return calls.map(() => null);
+  }
+  const getJson = (u) => fetch(u, { signal: AbortSignal.timeout(10000) }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  let pools = [], sort = "liq";
+
+  async function load() {
+    const d = await getJson("/api/v1/pairs");
+    if (!d || !Array.isArray(d.pairs)) { $("list").innerHTML = '<p class="muted">Couldn\'t read the pools just now. <a href="" onclick="location.reload();return false">Try again</a></p>'; return; }
+    pools = d.pairs.map((p) => ({ ...p, kitchen: false, created: null }));
+    $("count").textContent = `${pools.length} pools`;
+    render();
+    // Kitchen tokens: ask each Kitchen contract isKitchenToken(token) in one batch.
+    const calls = pools.flatMap((p) => KITCHENS.map((k) => ({ to: k, data: "0x5819ad16" + p.token.slice(2).toLowerCase().padStart(64, "0") })));
+    const res = await rpcBatch(calls);
+    pools.forEach((p, i) => { p.kitchen = KITCHENS.some((_, k) => { const r = res[i * KITCHENS.length + k]; return r && BigInt(r) === 1n; }); });
+    render();
+    // Pool age, from the pair contract's creation transaction on the explorer.
+    await Promise.all(pools.map(async (p) => {
+      const a = await getJson(`${EXP_API}/addresses/${p.pair}`);
+      const h = a && (a.creation_tx_hash || a.creation_transaction_hash);
+      const t = h ? await getJson(`${EXP_API}/transactions/${h}`) : null;
+      if (t && t.timestamp) p.created = Date.parse(t.timestamp);
+    }));
+    render();
+  }
+  function render() {
+    const q = $("q").value.trim().toLowerCase();
+    let rows = pools.filter((p) => !q || [p.symbol, p.name, p.token, p.pair].some((x) => String(x || "").toLowerCase().includes(q)));
+    const key = { liq: (p) => Number(p.liquidityBDAG) || 0, fdv: (p) => Number(p.fdvBDAG) || 0, new: (p) => p.created || 0 }[sort];
+    rows.sort((a, b) => key(b) - key(a));
+    if (!rows.length) { $("list").innerHTML = '<p class="muted">No pool matches that.</p>'; return; }
+    const week = Date.now() - 7 * 864e5;
+    $("list").innerHTML = rows.map((p) => {
+      const lock = Number(p.lpLockedOrBurnedPct) || 0;
+      const isNew = p.created && p.created > week;
+      return `<div class="pool">
+        <div class="nm"><b>${esc(p.symbol)} / BDAG</b>${p.kitchen ? '<span class="badge kitchen">🔥 Kitchen</span>' : ""}${isNew ? '<span class="badge new">New</span>' : ""}<span class="muted">${esc(p.name)} · <a href="${EXP}/address/${p.token}" target="_blank" rel="noopener">${short(p.token)}</a></span></div>
+        <div class="st"><div class="k">Price</div><div>${num(p.priceBDAG)} <span class="muted" style="font-size:12px">BDAG</span></div></div>
+        <div class="st"><div class="k">Liquidity</div><div>${num(p.liquidityBDAG)}</div></div>
+        <div class="st"><div class="k">FDV</div><div>${num(p.fdvBDAG)}</div></div>
+        <div class="st"><div class="k">LP locked</div><div class="${lock >= 50 ? "lock-ok" : "lock-low"}">${lock >= 99.99 ? "100" : lock.toFixed(lock >= 10 ? 0 : 1)}%</div></div>
+        <div class="links"><a href="/?from=bdag&to=${p.token}">Trade</a><a href="/token/?a=${p.token}">Safety report</a>${p.page ? `<a href="${p.page.replace("https://reefdex.fyi", "")}">Pool page</a>` : ""}<a href="${EXP}/address/${p.pair}" target="_blank" rel="noopener">Pool on explorer</a></div>
+      </div>`;
+    }).join("");
+  }
+  $("q").addEventListener("input", render);
+  document.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { sort = b.dataset.sort; document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); render(); });
+  load();
+})();
+</script>
 </main>
 </body>
 </html>
