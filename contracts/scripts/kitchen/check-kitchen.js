@@ -1,4 +1,4 @@
-// Read-only check of a deployed KitchenFactory. Sends nothing.
+// Read-only check of a deployed KitchenFactory (v1) or KitchenServe (v2). Sends nothing.
 //   node scripts/kitchen/check-kitchen.js <factory address>
 const { ethers } = require("ethers");
 const RPCS = ["https://rpc.community.bdag-us.org", "https://rpc.bdagexplorer.com", "https://rpc.dagcore.net"];
@@ -8,7 +8,7 @@ const EXPECT = {
   fee: ethers.parseEther("5000"),
 };
 const RESERVED = ["BDAG", "WBDAG", "REEF", "NOCAP", "COOKED", "USDT", "USDC", "ETH", "WETH", "BTC", "WBTC"];
-const ABI = ["function admin() view returns (address)", "function feeRecipient() view returns (address)", "function fee() view returns (uint256)",
+const ABI = ["function minLiquidity() view returns (uint256)", "function router() view returns (address)", "function admin() view returns (address)", "function feeRecipient() view returns (address)", "function fee() view returns (uint256)",
   "function MAX_FEE() view returns (uint256)", "function tokenCount() view returns (uint256)", "function isReserved(string) view returns (bool)", "function pendingAdmin() view returns (address)"];
 
 (async () => {
@@ -27,6 +27,12 @@ const ABI = ["function admin() view returns (address)", "function feeRecipient()
   line("fee cap is 50,000 BDAG", max === ethers.parseEther("50000"), ethers.formatEther(max) + " BDAG");
   line("no admin hand-over pending", pend === ethers.ZeroAddress, pend);
   for (const s of RESERVED) line(`ticker ${s} reserved`, await f.isReserved(s), "");
+  // v2 (KitchenServe) only: router and minimum liquidity
+  try {
+    const [r, m] = await Promise.all([f.router(), f.minLiquidity()]);
+    line("router is Reef's router", r.toLowerCase() === "0xbd6fba41ab84292163a599510a12d6bf8b7ccc76", r);
+    line("minimum liquidity is 10,000 BDAG", m === ethers.parseEther("10000"), ethers.formatEther(m) + " BDAG");
+  } catch (e) { console.log("(v1 factory: no router or minimum liquidity)"); }
   console.log(`Tokens made so far: ${n}`);
   process.exit(ok ? 0 : 1);
 })();
