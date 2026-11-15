@@ -1537,6 +1537,20 @@ async function copySwapLink() {
   flashBtn(btn, await copyText(`${location.origin}${location.pathname}?${q.toString()}`), "Copy link");
 }
 async function applyShareLink() {
+  // /?add=<token address> opens "Add liquidity" with BDAG and that token filled in (used by The Kitchen).
+  try {
+    const addTok = (new URLSearchParams(location.search).get("add") || "").trim();
+    if (addTok && ethers.isAddress(addTok)) {
+      const info = await tokenInfoWrapped(addTok).catch(() => null);
+      if (info && !info.native) {
+        liqTokA = { ...NATIVE }; liqTokB = info;
+        setMode("pool"); setPoolSub("add");
+        renderTokButtons(); refreshPool(); refreshBalances();
+        showMsg("pool", `Opened from a link: add liquidity for ${info.symbol} (${info.address.slice(0, 6)}…${info.address.slice(-4)}). Check the token address; nothing is sent until you confirm in your wallet.`, "info");
+        return;
+      }
+    }
+  } catch (e) { /* fall through to the normal start */ }
   const sh = parseShareParams(location.search);
   if (!sh.present) {
     // No shared link: start on the live REEF/BDAG pool, so "You receive" isn't blank.
