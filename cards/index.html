@@ -41,12 +41,13 @@ header.top::before{content:"";display:block;height:3px;background:linear-gradien
 nav.jump{display:flex;gap:4px;background:var(--raised);border-radius:12px;padding:4px;flex-wrap:wrap;margin-left:auto}
 nav.jump a{color:var(--muted);font:600 13px "Instrument Sans",sans-serif;padding:7px 11px;border-radius:9px;text-decoration:none}
 nav.jump a:hover{background:var(--card);color:var(--text)}
-.hero{padding:40px 0 18px}
+.hero{padding:22px 0 6px}
 .eyebrow{font:600 12px "Instrument Sans",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--coral-text)}
-.hero h1{font-size:clamp(34px,6vw,58px);font-weight:800;line-height:1.02;margin:10px 0 12px}
+.hero h1{font-size:clamp(30px,5vw,46px);font-weight:800;line-height:1.02;margin:8px 0 8px}
 .hero h1 .c{color:var(--mustard)} .hero h1 .n{color:var(--cyan)}
 .hero p{max-width:640px;color:var(--muted);font-size:17px;margin:0}
-.lineup{margin:24px 0 8px;border-radius:20px;overflow:hidden;border:1px solid var(--line2)}
+.chars summary{cursor:pointer;font-weight:600;color:var(--text)}
+.lineup{margin:14px 0 0;border-radius:20px;overflow:hidden;border:1px solid var(--line2)}
 .lineup img{display:block;width:100%;height:auto}
 section{margin-top:40px}
 .sechead{margin-bottom:14px}
@@ -132,10 +133,8 @@ footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--mu
   <div class="hero">
     <div class="eyebrow">150 stat-battle cards · BlockDAG chain 1404</div>
     <h1><span class="c">COOKED</span> × <span class="n">NOCAP</span> Cards</h1>
-    <p>16 characters, five rarities, four stats each. Every mint adds its whole 100,000 BDAG to that token's Reef pool and burns the LP, so the liquidity stays forever. Nobody receives the BDAG, including the team.</p>
-    <p style="margin-top:10px">The REEF airdrop round for card mints closed on Sat Nov 14, 09:00 (UTC+7). Every mint still adds 100,000 BDAG of liquidity to the COOKED or NOCAP pool. <a href="/reef/#airdrop">Airdrop rules</a></p>
+    <p>16 characters, five rarities, four stats each. Every mint puts its whole 100,000 BDAG into that token's Reef pool for good. Nobody receives it, including the team.</p>
   </div>
-  <div class="lineup"><img src="/assets/cards/lineup.jpg" alt="The 16 characters: 8 COOKED Kitchen Crew and 8 NOCAP Truth Squad" width="1400" height="1910" loading="lazy"></div>
 
   <section id="mint">
     <div class="sechead"><h2>Mint a card</h2><p>100,000 BDAG each · 2 per wallet · the cards are revealed, so <a href="#deck">the deck</a> shows exactly which card comes next</p></div>
@@ -192,6 +191,12 @@ footer{max-width:1080px;margin:48px auto 0;padding:20px 16px 48px;color:var(--mu
         </div>
       </div>
     </div>
+  </section>
+
+  <section id="characters">
+    <details class="card chars"><summary>See all 16 characters</summary>
+      <div class="lineup"><img src="/assets/cards/lineup.jpg" alt="The 16 characters: 8 COOKED Kitchen Crew and 8 NOCAP Truth Squad" width="1400" height="1910" loading="lazy"></div>
+    </details>
   </section>
 
   <section id="how">
