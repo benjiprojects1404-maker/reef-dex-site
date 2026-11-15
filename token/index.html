@@ -95,6 +95,12 @@ const API = "/api/v1/pairs/";
 const EXP = "https://explorer.east.bdag-us.org";
 const EXP_API = EXP + "/api/v2";
 const RPCS = ["https://rpc.community.bdag-us.org", "https://rpc.capedag.com", "https://rpc.bdagexplorer.com", "https://rpc.dvdmining.com", "https://rpc.escrowhubs.io"];
+// The Kitchen (cookedmeme.fyi): every token it makes is the same verified KitchenToken code (plain fixed-supply
+// ERC-20, no owner/mint/tax/pause/blocklist), so its own copy doesn't need separate verification. v2 first.
+const KITCHENS = [
+  { addr: "0xF30f5E4f46AcAE803815B82CfEC5CD8Fc77eF394", name: "The Kitchen v2 (KitchenServe)" },
+  { addr: "0x0E331686ee029EfafFC3a5cFda0ee3c7006F8A98", name: "The Kitchen v1 (KitchenFactory)" },
+];
 const BURN = new Set(["0x0000000000000000000000000000000000000000", "0x000000000000000000000000000000000000dead"]);
 // Same fee settings the swap screen reads to spot transfer-tax tokens.
 const TAX_GETTERS = ["taxFee", "_taxFee", "buyTax", "sellTax", "_buyTax", "_sellTax", "buyFee", "sellFee", "transferTax", "transferFee", "totalFees", "buyTotalFees", "sellTotalFees", "_liquidityFee", "liquidityFee", "marketingFee", "taxRate", "feePercent"];
@@ -109,6 +115,7 @@ const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(a);
 function compact(n) {
   const v = Number(n); if (!isFinite(v)) return "–";
   const a = Math.abs(v), [d, s] = a >= 1e12 ? [1e12, "T"] : a >= 1e9 ? [1e9, "B"] : a >= 1e6 ? [1e6, "M"] : a >= 1e3 ? [1e3, "K"] : [1, ""];
+  if (a > 0 && a < 1) return v.toLocaleString("en-US", { maximumSignificantDigits: 3 }); // e.g. 0.00001
   const x = v / d;
   return (x >= 100 || !s ? x.toLocaleString("en-US", { maximumFractionDigits: s ? 0 : 4 }) : x.toFixed(x >= 10 ? 1 : 2).replace(/\.?0+$/, "")) + s;
 }
@@ -172,9 +179,16 @@ async function run(id) {
   ]);
   const checks = [];
 
+  // Made by The Kitchen? Ask each Kitchen contract isKitchenToken(token).
+  let kitchen = null;
+  for (const k of KITCHENS) {
+    try { const r = await rpc("eth_call", [{ to: k.addr, data: "0x5819ad16" + token.slice(2).toLowerCase().padStart(64, "0") }, "latest"]); if (r && BigInt(r) === 1n) { kitchen = k; break; } } catch (e) {}
+  }
+
   // 1. Verified source
   const verified = sc === undefined ? null : !!(sc && sc.is_verified);
-  checks.push(verified === null ? check("na", "Source code: couldn't check", "The explorer didn't answer just now.")
+  if (kitchen && !verified) checks.push(check("ok", "Made by The Kitchen: verified code", `This token was made by <a href="${EXP}/address/${kitchen.addr}?tab=contract" target="_blank" rel="noopener">${kitchen.name}</a>, whose verified source includes the exact token code every Kitchen token uses: a plain fixed-supply ERC-20. <a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a>`));
+  else checks.push(verified === null ? check("na", "Source code: couldn't check", "The explorer didn't answer just now.")
     : verified ? check("ok", "Source code is verified", `Anyone can read exactly what the contract does. <a href="${EXP}/address/${token}?tab=contract" target="_blank" rel="noopener">Read it on the explorer</a>`)
     : check("bad", "Source code is not verified", "Nobody can check what this token's contract really does. Treat any claims about it with care."));
 
@@ -189,6 +203,8 @@ async function run(id) {
     if (!extra.length) checks.push(check("ok", "No admin functions", "A plain ERC-20: nobody can mint more, pause trading, block wallets or change fees."));
     else if (risky.length && !renounced) checks.push(check("warn", "Has admin functions", `The contract can: <code>${risky.map(esc).join("</code>, <code>")}</code>.${ownerTxt} These can be legitimate, but they let someone change the rules after you buy.`));
     else checks.push(check("ok", risky.length ? "Admin functions, but ownership renounced" : "Only minor extra functions", `Extra functions: <code>${extra.map(esc).join("</code>, <code>")}</code>.${ownerTxt}`));
+  } else if (kitchen) {
+    checks.push(check("ok", "No admin functions", "A Kitchen token has no owner and only the standard ERC-20 functions: nobody can mint more, pause trading, block wallets or change fees."));
   } else {
     checks.push(check("na", "Admin powers: can't check", "Without verified source code, the contract's functions can't be read."));
   }
