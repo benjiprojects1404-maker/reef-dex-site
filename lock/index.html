@@ -374,7 +374,7 @@ ul.plain{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--muted)} ul.
       ["Owner", own ? (account && own === account ? "your wallet" : esc(short(own))) : "–"],
       ["Fee", fee !== null ? `${num(fee, 18, 2)} BDAG + gas` : "…"],
     ];
-    if (tok && amt && tok.supply > 0n) rows.splice(1, 0, ["Share of supply", `${(Number((amt * 1000000n) / tok.supply) / 10000).toLocaleString("en-US", { maximumFractionDigits: 2 })}%`]);
+    if (tok && amt && tok.supply > 0n) { const sh = Number((amt * 1000000n) / tok.supply) / 10000; rows.splice(1, 0, ["Share of supply", sh < 0.01 ? "under 0.01%" : `${sh.toLocaleString("en-US", { maximumFractionDigits: 2 })}%`]); }
     $("ticket").innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><span>${v}</span></div>`).join("");
     const p = problems(); const b = $("tGo");
     const needApprove = tok && amt && tok.allowance !== null && tok.allowance < amt;
@@ -384,25 +384,40 @@ ul.plain{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--muted)} ul.
     if (account && onChain && p.length && ($("tAddr").value || $("tAmt").value)) say("tMsg", esc(p[0]), "");
     else if (!busy && $("tMsg").className === "msg ") say("tMsg", "", "");
   }
+  // Send straight through the wallet (eth_sendTransaction) and keep only the hash. Everything else (dry runs,
+  // receipts, balances) goes through Reef's own RPC, so a flaky wallet connection can't break the page.
+  const erc20i = new ethers.Interface(ERC20_ABI);
+  async function send(to, data, value) {
+    const tx = { from: account, to, data };
+    if (value) tx.value = "0x" + value.toString(16);
+    const hash = await window.ethereum.request({ method: "eth_sendTransaction", params: [tx] });
+    return { hash };
+  }
+  // Wait for the receipt on Reef's own RPC, not through the wallet: some wallets' BlockDAG connections return
+  // receipts ethers can't read ("could not coalesce error") even though the transaction went through.
   async function wait(tx, el, what) {
     say(el, `${what}: sent, waiting for it to confirm… ${xlink("tx/" + tx.hash, "view")}`, "");
-    const r = await tx.wait(); if (r.status !== 1) throw new Error("The transaction failed on-chain.");
-    return r;
+    for (let i = 0; i < 100; i++) {
+      let r = null;
+      try { r = await ro.getTransactionReceipt(tx.hash); } catch (e) { const p = await pickRpc(); if (p) ro = p; }
+      if (r) { if (r.status !== 1) throw new Error("The transaction failed on-chain."); return r; }
+      await new Promise((res) => setTimeout(res, 3000));
+    }
+    throw new Error(`Still waiting for confirmation. Check it on the explorer: ${tx.hash}`);
   }
   async function doLock() {
     if (!account || !onChain) return connect();
     if (busy) return; busy = true; renderTicket();
     try {
       const amt = amountUnits(), ts = unlockTs(), own = ownerAddr();
-      const t = erc20(tok.addr, signer);
       if (tok.allowance < amt) {
-        await wait(await t.approve(CFG.locker, amt), "tMsg", "Approval");
+        await wait(await send(tok.addr, erc20i.encodeFunctionData("approve", [CFG.locker, amt])), "tMsg", "Approval");
         tok.allowance = await erc20(tok.addr).allowance(account, CFG.locker);
         say("tMsg", "Approved. Now press Lock.", "ok"); busy = false; renderTicket(); return;
       }
-      const L = locker(signer); const f = await locker().fee(); fee = f;
-      await L.lock.staticCall(tok.addr, amt, ts, own, { value: f }); // dry run: shows the real reason before you pay gas
-      const r = await wait(await L.lock(tok.addr, amt, ts, own, { value: f }), "tMsg", "Lock");
+      const f = await locker().fee(); fee = f;
+      await locker().lock.staticCall(tok.addr, amt, ts, own, { value: f, from: account }); // dry run: shows the real reason before you pay gas
+      const r = await wait(await send(CFG.locker, iface.encodeFunctionData("lock", [tok.addr, amt, ts, own]), f), "tMsg", "Lock");
       const ev = r.logs.map((l) => { try { return iface.parseLog(l); } catch (e) { return null; } }).find((x) => x && x.name === "Locked");
       say("tMsg", `Locked${ev ? ` (lock #${ev.args.id})` : ""}: ${num(ev ? ev.args.amount : amt, tok.decimals)} ${esc(tok.label)} until ${dateStr(ts)}. ${xlink("tx/" + r.hash, "View transaction")} · <a href="?token=${tok.addr}#lookup">Check this token</a>`, "ok");
       $("tAmt").value = ""; $("tAgree").checked = false;
@@ -444,20 +459,19 @@ ul.plain{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--muted)} ul.
     if (!account || !onChain) return connect();
     if (busy) return; busy = true; card.querySelectorAll("button").forEach((b) => b.disabled = true);
     try {
-      const L = locker(signer);
       if (act === "withdraw") {
-        await L.withdraw.staticCall(id); await wait(await L.withdraw(id), "mMsg", "Withdrawal");
+        await locker().withdraw.staticCall(id, { from: account }); await wait(await send(CFG.locker, iface.encodeFunctionData("withdraw", [id])), "mMsg", "Withdrawal");
         say("mMsg", `Lock #${id} withdrawn to your wallet.`, "ok");
       } else if (act === "extend") {
         const v = card.querySelector("[data-in=extend]").value; if (!v) throw new Error("Pick the new date first.");
         const [y, m, d] = v.split("-").map(Number); const ts = Math.floor(Date.UTC(y, m - 1, d, 12) / 1000);
-        await L.extend.staticCall(id, ts); await wait(await L.extend(id, ts), "mMsg", "Extension");
+        await locker().extend.staticCall(id, ts, { from: account }); await wait(await send(CFG.locker, iface.encodeFunctionData("extend", [id, ts])), "mMsg", "Extension");
         say("mMsg", `Lock #${id} now unlocks ${dateStr(ts)}.`, "ok");
       } else if (act === "hand") {
         const v = card.querySelector("[data-in=hand]").value.trim(); if (!ethers.isAddress(v)) throw new Error("Enter a valid address.");
         const to = ethers.getAddress(v); if (to === account) throw new Error("That's already you.");
         if (card.dataset.confirm !== to) { card.dataset.confirm = to; say("mMsg", `Press Hand over again to give lock #${id} to ${esc(to)}. You won't be able to withdraw it after that.`, ""); busy = false; card.querySelectorAll("button").forEach((b) => b.disabled = false); return; }
-        await L.transferLockOwnership.staticCall(id, to); await wait(await L.transferLockOwnership(id, to), "mMsg", "Hand-over");
+        await locker().transferLockOwnership.staticCall(id, to, { from: account }); await wait(await send(CFG.locker, iface.encodeFunctionData("transferLockOwnership", [id, to])), "mMsg", "Hand-over");
         say("mMsg", `Lock #${id} now belongs to ${esc(to)}.`, "ok");
       }
       await loadMine(); loadStats(); if (tok) loadToken();
