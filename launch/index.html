@@ -218,6 +218,8 @@ contract MyToken is ERC20 {
     <section id="lock">
       <h2>3. Lock the liquidity</h2>
       <p>Whoever holds the LP tokens can withdraw the pool at any time. Locking them in a time-lock contract and publishing its address is the clearest way to show buyers you can't.</p>
+      <p><b>The easy way: <a href="/lock/">Reef Lock</a>.</b> Paste your pool's LP token address, pick an amount and a date (30 days to 10 years), and lock it for a 100 BDAG fee. Nobody can withdraw early, including Reef, and the lock shows up straight away on the Pairs page and in your token's safety report. You can push the date later, or hand the lock to a multisig.</p>
+      <p>Or deploy your own time-lock:</p>
       <ol class="steps">
         <li>Deploy a simple time-lock that holds the LP token until a fixed date. NOCAP's lock is a short contract: it takes the LP token, a beneficiary and a duration of at least 6 months, and only lets the beneficiary withdraw after <code>unlockTime</code>. Anyone can read <code>unlockTime()</code> and <code>timeRemaining()</code> on the explorer.</li>
         <li>Send your LP tokens to the lock contract.</li>
@@ -229,7 +231,7 @@ contract MyToken is ERC20 {
     <section id="tell">
       <h2>4. Tell people</h2>
       <ul>
-        <li>Post the <b>token address</b>, the <b>pool</b> and the <b>lock address</b> together, and ask people to check them on the explorer.</li>
+        <li>Post the <b>token address</b>, the <b>pool</b> and the <b>lock</b> (a <code>reefdex.fyi/lock/?token=…</code> link if you used Reef Lock) together, and ask people to check them on the explorer.</li>
         <li>Share a ready-made swap link. It opens Reef with your pair filled in and nothing sent until the buyer confirms: <code>https://reefdex.fyi/?from=BDAG&amp;to=YOUR_TOKEN_ADDRESS</code></li>
         <li>Say what your token is and isn't. Plain, honest wording ages better than promises.</li>
         <li>Never DM people first, and warn your community that anyone sending them a different address isn't you.</li>

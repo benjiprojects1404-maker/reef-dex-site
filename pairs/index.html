@@ -96,7 +96,7 @@ td:first-child,th:first-child{text-align:left}
   <div class="seg" role="group" aria-label="Sort"><button type="button" data-sort="liq" aria-pressed="true">Liquidity</button><button type="button" data-sort="new" aria-pressed="false">Newest</button><button type="button" data-sort="fdv" aria-pressed="false">FDV</button></div>
 </div>
 <div id="list"><p class="muted">Loading Reef's pools…</p></div>
-<p class="note">Prices come from each pool's own reserves, not a price feed. <span class="badge kitchen" style="margin:0">Kitchen</span> = made in The Kitchen (plain fixed-supply token, starting liquidity locked). <span class="badge new" style="margin:0">New</span> = pool under 7 days old. Not an endorsement or a recommendation; check the safety report before trading. Reef is unaudited beta software.</p>
+<p class="note">Prices come from each pool's own reserves, not a price feed. LP locked = burned, or in a known lock such as <a href="/lock/">Reef Lock</a> (only locks whose date is still ahead count). <span class="badge kitchen" style="margin:0">Kitchen</span> = made in The Kitchen (plain fixed-supply token, starting liquidity locked). <span class="badge new" style="margin:0">New</span> = pool under 7 days old. Not an endorsement or a recommendation; check the safety report before trading. Reef is unaudited beta software.</p>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -161,7 +161,7 @@ td:first-child,th:first-child{text-align:left}
         <div class="st"><div class="k">Liquidity</div><div>${num(p.liquidityBDAG)}</div></div>
         <div class="st"><div class="k">FDV</div><div>${num(p.fdvBDAG)}</div></div>
         <div class="st"><div class="k">LP locked</div><div class="${lock >= 50 ? "lock-ok" : "lock-low"}">${lock >= 99.99 ? "100" : lock.toFixed(lock >= 10 ? 0 : 1)}%</div></div>
-        <div class="links"><a href="/?from=bdag&to=${p.token}">Trade</a><a href="/token/?a=${p.token}">Safety report</a>${p.page ? `<a href="${p.page.replace("https://reefdex.fyi", "")}">Pool page</a>` : ""}<a href="${EXP}/address/${p.pair}" target="_blank" rel="noopener">Pool on explorer</a></div>
+        <div class="links"><a href="/?from=bdag&to=${p.token}">Trade</a><a href="/token/?a=${p.token}">Safety report</a><a href="/lock/?token=${p.pair}">LP locks</a>${p.page ? `<a href="${p.page.replace("https://reefdex.fyi", "")}">Pool page</a>` : ""}<a href="${EXP}/address/${p.pair}" target="_blank" rel="noopener">Pool on explorer</a></div>
       </div>`;
     }).join("");
   }

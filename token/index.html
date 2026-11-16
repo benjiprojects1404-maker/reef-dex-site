@@ -218,12 +218,16 @@ async function run(id) {
   // 4. LP lock
   const lockPct = pool.lpLockedOrBurnedPct || 0;
   const lockers = (pool.lpHolders || []).filter((h) => !BURN.has(h.address.toLowerCase()) && h.pct > 0.01);
-  const dates = await Promise.all(lockers.map(async (h) => ({ ...h, until: await callUint(h.address, "unlockTime()") })));
-  const lockTxt = dates.map((d) => `${esc(d.label)} holds ${pct(d.pct)}${d.until ? `, locked until ${new Date(Number(d.until) * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })} (UTC)` : ""}`).join("; ");
+  const dates = await Promise.all(lockers.map(async (h) => ({ ...h, until: h.until || await callUint(h.address, "unlockTime()") })));
+  const day = (t) => new Date(Number(t) * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const lockTxt = dates.map((d) => d.label === "Reef Lock"
+    ? `<a href="/lock/?token=${pool.pair}">Reef Lock</a> holds ${pct(d.pct)}${d.locks > 1 ? ` in ${d.locks} locks, the first unlocking ${day(d.until)}` : `, locked until ${day(d.until)}`} (UTC)`
+    : `${esc(d.label)} holds ${pct(d.pct)}${d.until ? `, locked until ${day(d.until)} (UTC)` : ""}`).join("; ");
+  const lockIt = `The LP holder can lock it with <a href="/lock/?token=${pool.pair}">Reef Lock</a> for 30 days to 10 years.`;
   checks.push(lockPct >= 50
     ? check("ok", `LP ${pct(lockPct)} locked or burned`, `${lockTxt ? lockTxt + ". " : ""}That share of the pool's liquidity can't be pulled. <a href="${EXP}/address/${pool.pair}" target="_blank" rel="noopener">Pool on the explorer</a>`)
-    : lockPct > 0 ? check("warn", `Only ${pct(lockPct)} of the LP is locked or burned`, "Whoever holds the rest can remove that liquidity at any time.")
-    : check("bad", "LP not locked", "None of the pool's LP is in a known lock or burned: the liquidity can be removed at any time. Locked it in a contract Reef doesn't know yet? Tell us and we'll review it."));
+    : lockPct > 0 ? check("warn", `Only ${pct(lockPct)} of the LP is locked or burned`, `${lockTxt ? lockTxt + ". " : ""}Whoever holds the rest can remove that liquidity at any time. ${lockIt}`)
+    : check("bad", "LP not locked", `None of the pool's LP is in a known lock or burned: the liquidity can be removed at any time. ${lockIt} Locked it in a contract Reef doesn't know yet? Tell us and we'll review it.`));
 
   // 5. Holder concentration
   const supply = pool.totalSupply ? Number(pool.totalSupply) : null;
