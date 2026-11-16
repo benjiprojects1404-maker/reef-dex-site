@@ -10,6 +10,10 @@ const WBDAG = "0x62ba5c4f067989a7f6644488c875bea69bfa1fba";
 const HIDDEN_PAIR_INDEXES = new Set([1]); // test pair, hidden on the site too
 const ALIASES = { reef: "0xb7a1e198767bf0fd4c1c3805b9757369e1c3f416", nocap: "0x17aee3eeda0d12e3a6a9a6078d028b88f9c91752", cooked: "0xd95c548b144682f4ef49728944505d8506861b1b" };
 const LP_HOLDERS = { "0x030d2466f634022fb93fbdf475ea81faff2525a0": "REEF presale lock", "0x5520cc4e80e86e99c5a6a748c506d80f0d274bb1": "NOCAP LP lock", "0x7beae450c08b092317c3d882fb1ba1714c41420f": "Mauro LP lock", "0x000000000000000000000000000000000000dead": "dead address", "0x0000000000000000000000000000000000000000": "zero address" };
+// Reef Lock (ReefLocker): only locks whose unlock date is still ahead count as locked. Expired-but-not-withdrawn
+// locks could be withdrawn any moment, so they don't count.
+const REEF_LOCK = "0xd999d2e6efc1d30143e23c3cc736adedff95c2a1";
+const LOCK_SEL = { lockedSummary: "0xa07aa30d", locksForToken: "0x75b99371", getLock: "0xd68f4dd1" };
 const SWAP_TOPIC = "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822";
 const CACHE_SECONDS = 60;
 
@@ -63,6 +67,31 @@ async function rpc(batch) {
 }
 const call = (to, data) => ({ method: "eth_call", params: [{ to, data }, "latest"] });
 
+async function addReefLocks(pools) {
+  try {
+    const sums = await rpc(pools.map((p) => call(REEF_LOCK, LOCK_SEL.lockedSummary + addrWord(p.pair))));
+    const withLocks = pools.filter((p, i) => sums[i] && big(sums[i], 2) > 0n); // openLocks > 0
+    if (!withLocks.length) return;
+    const idLists = await rpc(withLocks.map((p) => call(REEF_LOCK, LOCK_SEL.locksForToken + addrWord(p.pair))));
+    const ids = idLists.map((h) => { if (!h) return []; const n = Number(big(h, 1)); return [...Array(n).keys()].map((k) => big(h, 2 + k)); });
+    const locks = await rpc(ids.flat().map((id) => call(REEF_LOCK, LOCK_SEL.getLock + word(id))));
+    const now = BigInt(Math.floor(Date.now() / 1000));
+    let k = 0;
+    withLocks.forEach((p, i) => {
+      let amount = 0n, until = 0n, n = 0;
+      for (const _ of ids[i]) {
+        const h = locks[k++]; if (!h) continue;
+        const amt = big(h, 2), unlock = big(h, 4), withdrawn = big(h, 5) === 1n;
+        if (withdrawn || unlock <= now) continue;
+        amount += amt; n++; if (!until || unlock < until) until = unlock;
+      }
+      if (amount === 0n) return;
+      p.locked += amount; p.heldBy.push("Reef Lock");
+      p.lpHolders.push({ address: REEF_LOCK, label: "Reef Lock", pct: p.supply > 0n ? Number((amount * 10000n) / p.supply) / 100 : 0, until: Number(until), locks: n });
+    });
+  } catch (e) { /* Reef Lock unreadable: report the other locks and burns only */ }
+}
+
 async function readPairs() {
   const [n] = await rpc([call(FACTORY, SEL.allPairsLength)]);
   const count = Number(big(n));
@@ -80,6 +109,7 @@ async function readPairs() {
     return { pair, t0, t1, r0, r1, supply, locked, heldBy: held.filter(([, v]) => v > 0n).map(([h]) => LP_HOLDERS[h]),
       lpHolders: held.filter(([, v]) => v > 0n).map(([h, v]) => ({ address: h, label: LP_HOLDERS[h], pct: supply > 0n ? Number((v * 10000n) / supply) / 100 : 0 })) };
   }).filter((p) => p.t0 === WBDAG || p.t1 === WBDAG);
+  await addReefLocks(pools);
   const tokens = pools.map((p) => (p.t0 === WBDAG ? p.t1 : p.t0));
   const meta = await rpc(tokens.flatMap((t) => [call(t, SEL.symbol), call(t, SEL.name), call(t, SEL.decimals), call(t, SEL.totalSupply)]));
   return pools.map((p, i) => {

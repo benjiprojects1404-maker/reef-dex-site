@@ -157,13 +157,13 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .launchban .acts a.go:hover{filter:brightness(1.1)}
 .launchban .acts a.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
 @media (max-width:600px){.launchban{padding:18px 16px 18px 20px}.launchban h3{font-size:19px}.launchban .acts{width:100%}.launchban .acts a{flex:1;text-align:center}}
-.usegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.usegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .use{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--text)}
 .use:hover{border-color:var(--line2)}
 .use b{display:block;font:700 16px "Bricolage Grotesque",sans-serif}
 .use span{display:block;font-size:13px;line-height:1.5;color:var(--muted);margin-top:6px}
 .use i{display:block;font-style:normal;font-size:13px;color:var(--coral-text);margin-top:10px;font-weight:600}
-@media (max-width:860px){.usegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1000px){.usegrid{grid-template-columns:repeat(2,minmax(0,1fr))}.usegrid .use:last-child:nth-child(odd){grid-column:1/-1}}
 @media (max-width:600px){.presalebar .adbar,.presalebar small{display:none}.presalebar{font-size:12.5px;padding:7px 12px}.betabar{font-size:11px;padding:5px 10px;line-height:1.4}}
 @media (max-width:420px){.usegrid{grid-template-columns:1fr}}
 .adhint{font-size:12.5px;color:var(--muted);margin:8px 2px 2px;line-height:1.5}
@@ -547,12 +547,13 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <a class="use" href="/?from=bdag&amp;to=0xb7a1e198767bf0fd4C1C3805b9757369e1c3F416"><b>Trade a token</b><span>Swap any token with a BDAG pool. You see the full fee and the minimum you'll get before you sign.</span><i>Open the swap &rarr;</i></a>
     <a class="use" href="/docs/#liquidity"><b>Provide liquidity</b><span>Add both sides of a pool and earn 0.25% of its trades. Impermanent loss can outweigh the fees.</span><i>How liquidity works &rarr;</i></a>
     <a class="use" href="/pairs/"><b>Check a pool</b><span>Live depth, 24h volume, recent swaps and how much of the liquidity is locked or burned.</span><i>Pair pages &rarr;</i></a>
+    <a class="use" href="/lock/"><b>Lock liquidity</b><span>Lock LP tokens or any token for 30 days to 10 years. Nobody can unlock early, including Reef.</span><i>Reef Lock &rarr;</i></a>
     <a class="use" href="/pay/"><b>Get paid</b><span>Send someone a link or QR code for BDAG or any token on Reef. Wallet to wallet, nothing held.</span><i>Make a payment link &rarr;</i></a>
   </div>
 </section>
 
 <div class="footer-wrap" style="max-width:1080px;margin:0 auto;padding:0 16px 48px">
-  <p class="footlinks" style="font-size:13px;margin:0 0 14px"><a href="/docs/">Docs</a> · <a href="/launch/">Launch a token</a> · <a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a> · <a href="/launchpad/">Launchpad</a> · <a href="/pairs/">Pairs</a> · <a href="/pay/">Get paid</a> · <a href="/developers/">Developers</a> · <a href="/security/">Security</a> · <a href="https://github.com/benjiprojects1404-maker/reef-dex-site" target="_blank" rel="noopener">Source code (GitHub)</a> · <a href="/overview.pdf" target="_blank" rel="noopener">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></p>
+  <p class="footlinks" style="font-size:13px;margin:0 0 14px"><a href="/docs/">Docs</a> · <a href="/launch/">Launch a token</a> · <a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a> · <a href="/launchpad/">Launchpad</a> · <a href="/pairs/">Pairs</a> · <a href="/lock/">Reef Lock</a> · <a href="/pay/">Get paid</a> · <a href="/developers/">Developers</a> · <a href="/security/">Security</a> · <a href="https://github.com/benjiprojects1404-maker/reef-dex-site" target="_blank" rel="noopener">Source code (GitHub)</a> · <a href="/overview.pdf" target="_blank" rel="noopener">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></p>
   <div class="disclaimer">
     <h4>Risk disclosure</h4>
     <ul>
