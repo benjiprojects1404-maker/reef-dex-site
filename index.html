@@ -36,6 +36,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
+/* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
+:root{--head:#b9e4f8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+:root[data-theme="light"]{--head:var(--text)}
+h1,h2,h3,h4{color:var(--head)}
+
 :root{
   --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
   --text:#e7f3f5;--muted:#a6c4ca;--ctadis:#8fb3ba;--coral-text:#e79bab;--steel:#9aa1ab;--tide:#0a71a1;--polyp:#7fd0f7;--amber:#c5966c;--ember:#e5624a;--good:#3fbf83;--sfwarn:#e8b86a;--info:#7fd0f7;--info-line:rgba(127,208,247,.28);
@@ -160,7 +166,7 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .usegrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .use{display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--text)}
 .use:hover{border-color:var(--line2)}
-.use b{display:block;font:700 16px "Bricolage Grotesque",sans-serif}
+.use b{display:block;font:700 16px "Bricolage Grotesque",sans-serif;color:var(--head)}
 .use span{display:block;font-size:13px;line-height:1.5;color:var(--muted);margin-top:6px}
 .use i{display:block;font-style:normal;font-size:13px;color:var(--coral-text);margin-top:10px;font-weight:600}
 @media (max-width:1000px){.usegrid{grid-template-columns:repeat(2,minmax(0,1fr))}.usegrid .use:last-child:nth-child(odd){grid-column:1/-1}}

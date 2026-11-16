@@ -10,6 +10,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
+/* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
+:root{--head:#b9e4f8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+:root[data-theme="light"]{--head:var(--text)}
+h1,h2,h3,h4{color:var(--head)}
+
 :root{--bg:#050f14;--card:#0e1f24;--line:rgba(150,210,225,.12);--text:#e7f3f5;--muted:#a6c4ca;--tide:#0a71a1;--link:#7fd0f7;--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16)}
 @media (prefers-color-scheme:light){:root{--bg:#e6f4f6;--card:#f5fcfd;--line:rgba(6,40,46,.14);--text:#0b1f24;--muted:#2a464d;--link:#0a71a1;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.12)}}
 *{box-sizing:border-box}

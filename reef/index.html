@@ -25,6 +25,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
 <style>
+/* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
+:root{--head:#b9e4f8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+:root[data-theme="light"]{--head:var(--text)}
+h1,h2,h3,h4{color:var(--head)}
+
 /* Same design tokens as reefdex.pages.dev */
 :root{
   --ink:#050f14;--raised:#12262c;--card:#0e1f24;--line:rgba(150,210,225,.12);--line2:rgba(150,210,225,.22);
