@@ -2,6 +2,12 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reef pool widget</title><meta name="robots" content="noindex">
 <style>
+/* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
+:root{--head:#b9e4f8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+:root[data-theme="light"]{--head:var(--text)}
+h1,h2,h3,h4{color:var(--head)}
+
 :root{--bg:#0e1f24;--text:#e7f3f5;--muted:#a6c4ca;--line:rgba(150,210,225,.18);--tide:#0a71a1;--coral:#e79bab}
 :root[data-theme="light"]{--bg:#f5fcfd;--text:#0b1f24;--muted:#2a464d;--line:rgba(6,40,46,.16);--coral:#9c2f4a}
 *{box-sizing:border-box}html,body{margin:0;background:transparent}
