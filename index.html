@@ -319,8 +319,13 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .adout li{margin:3px 0}
 .adout a{color:var(--polyp)}
 .disclaimer{border-top:1px solid var(--line);margin-top:26px;padding-top:22px;color:var(--muted);font-size:12px;line-height:1.6}
-.disclaimer h4{color:var(--text);font:700 13px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px}
-.disclaimer ul{margin:6px 0 16px;padding-left:18px}
+.disclaimer .gist{margin:0 0 10px}
+.disclaimer details{background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.disclaimer summary{cursor:pointer;font:600 13px "Instrument Sans",sans-serif;color:var(--text);list-style:none}
+.disclaimer summary::-webkit-details-marker{display:none}
+.disclaimer summary::before{content:"+ ";color:var(--coral);font-weight:700}
+.disclaimer details[open] summary::before{content:"− "}
+.disclaimer ul{margin:10px 0 2px;padding-left:18px}
 .disclaimer li{margin:4px 0}
 
 /* Links inside grey helper text stand out from it (6 Nov 2026) */
@@ -555,7 +560,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <div class="footer-wrap" style="max-width:1080px;margin:0 auto;padding:0 16px 48px">
   <p class="footlinks" style="font-size:13px;margin:0 0 14px"><a href="/docs/">Docs</a> · <a href="/launch/">Launch a token</a> · <a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a> · <a href="/launchpad/">Launchpad</a> · <a href="/pairs/">Pairs</a> · <a href="/lock/">Reef Lock</a> · <a href="/pay/">Get paid</a> · <a href="/developers/">Developers</a> · <a href="/security/">Security</a> · <a href="https://github.com/benjiprojects1404-maker/reef-dex-site" target="_blank" rel="noopener">Source code (GitHub)</a> · <a href="/overview.pdf" target="_blank" rel="noopener">Overview &amp; testing brief (PDF)</a> · built by <a href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Undercurrent Works</a></p>
   <div class="disclaimer">
-    <h4>Risk disclosure</h4>
+    <p class="gist">Reef is unaudited beta software. You review and sign every transaction, Reef never holds your funds, and nothing here is financial advice.</p>
+    <details>
+    <summary>Risk disclosure</summary>
     <ul>
       <li>Reef is decentralized exchange software deployed on BlockDAG (chain 1404). It is unaudited. Use it at your own risk.</li>
       <li>This interface only submits transactions that you review and sign yourself. Nothing is custodial &mdash; Reef never holds your funds or your private keys.</li>
@@ -565,13 +572,16 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <li>Anyone can create a pool for any token. The existence of a pool or a token on this page is not an endorsement, and tokens can be worthless, mislabeled, or malicious. Verify the token contract address yourself before trading.</li>
       <li>This app reads public blockchain data through third-party RPC endpoints (see RPC status). Availability and accuracy are outside Reef's control &mdash; if an endpoint misbehaves, switch to another before transacting.</li>
     </ul>
-    <h4>No advice, no warranty</h4>
+    </details>
+    <details>
+    <summary>No advice, no warranty</summary>
     <ul>
       <li>Nothing on this page is financial, investment, legal, or tax advice. It is provided for informational purposes only.</li>
       <li>This software is provided "as is", without warranty of any kind, express or implied. To the fullest extent permitted by law, its authors and contributors accept no liability for any loss arising from its use.</li>
       <li>You are solely responsible for complying with the laws that apply to you, including in your own jurisdiction. Do not use this app where doing so would be unlawful.</li>
       <li>Reef is independent software and is not issued, endorsed, or operated by BlockDAG.</li>
     </ul>
+    </details>
   </div>
 
   <div class="faqsec" id="faq">
