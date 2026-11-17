@@ -135,7 +135,8 @@ td:first-child,th:first-child{text-align:left}
     const d = await getJson("/api/v1/pairs");
     if (!d || !Array.isArray(d.pairs)) { $("list").innerHTML = '<p class="muted">Couldn\'t read the pools just now. <a href="" onclick="location.reload();return false">Try again</a></p>'; return; }
     pools = d.pairs.map((p) => ({ ...p, kitchen: false, created: null }));
-    $("count").textContent = `${pools.length} pools`;
+    const tvl = pools.reduce((t, p) => t + (Number(p.liquidityBDAG) || 0), 0);
+    $("count").textContent = `${pools.length} pools · ≈ ${num(tvl)} BDAG total value locked`;
     render();
     // Kitchen tokens: ask each Kitchen contract isKitchenToken(token) in one batch.
     const calls = pools.flatMap((p) => KITCHENS.map((k) => ({ to: k, data: "0x5819ad16" + p.token.slice(2).toLowerCase().padStart(64, "0") })));

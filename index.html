@@ -92,6 +92,15 @@ button.wallet:active{transform:translateY(1px)}
 }
 main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
 @media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}.col{min-width:0}}
+.tvlbar{max-width:1080px;margin:22px auto -8px;padding:0 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:stretch}
+.tvlbar[hidden]{display:none}
+.tvlbar .tv{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;min-width:0}
+.tvlbar .k{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.tvlbar .v{font:700 20px/1.25 "Bricolage Grotesque",system-ui,sans-serif;color:var(--head);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tvlbar .v small{font:500 13px system-ui,sans-serif;color:var(--muted);margin-left:4px}
+.tvlbar .s{font-size:12px;color:var(--muted);margin-top:2px}
+.tvlbar a.more{align-self:center;font-size:13px;color:var(--coral-text);font-weight:500;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+@media (max-width:760px){.tvlbar{grid-template-columns:repeat(2,minmax(0,1fr))}.tvlbar .tv:first-child{grid-column:1/-1}.tvlbar a.more{grid-column:1/-1;justify-self:start}}
 .col{display:flex;flex-direction:column;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
 .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -378,6 +387,13 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <button class="wallet" id="walletBtn" onclick="connect()">Connect wallet</button>
   </div>
 </header>
+
+<section class="tvlbar" id="tvlBar" aria-label="Reef at a glance" hidden>
+  <div class="tv"><div class="k">Total value locked</div><div class="v" id="tvlTotal">…</div><div class="s">all Reef pools, valued in BDAG</div></div>
+  <div class="tv"><div class="k">Pools</div><div class="v" id="tvlPools">…</div><div class="s">live on Reef</div></div>
+  <div class="tv"><div class="k">Liquidity locked or burned</div><div class="v" id="tvlSafe">…</div><div class="s">can't be pulled before its unlock date</div></div>
+  <a class="more" href="/pairs/">See every pool &rarr;</a>
+</section>
 
 <main>
   <div class="col">
@@ -2631,6 +2647,25 @@ function init() {
   refreshAirdropClaim();
   setInterval(refreshAirdropClaim, 60000); // switches on by itself at opening time if the page is left open
 }
+// Reef at a glance: totals from /api/v1/pairs (pool reserves on-chain, valued in BDAG, no price feed).
+async function loadTvl() {
+  try {
+    const r = await fetch("/api/v1/pairs", { signal: AbortSignal.timeout(10000) });
+    const d = r.ok ? await r.json() : null;
+    if (!d || !Array.isArray(d.pairs) || !d.pairs.length) return;
+    let total = 0, safe = 0;
+    for (const p of d.pairs) {
+      const liq = Number(p.liquidityBDAG) || 0;
+      total += liq;
+      safe += liq * Math.min(100, Math.max(0, Number(p.lpLockedOrBurnedPct) || 0)) / 100;
+    }
+    document.getElementById("tvlTotal").innerHTML = "≈ " + fmtCompact(total) + "<small>BDAG</small>";
+    document.getElementById("tvlPools").textContent = d.pairs.length.toLocaleString("en-US");
+    document.getElementById("tvlSafe").innerHTML = (total > 0 ? Math.round(safe / total * 100) : 0) + "%<small>≈ " + fmtCompact(safe) + " BDAG</small>";
+    document.getElementById("tvlBar").hidden = false;
+  } catch (e) {}
+}
+document.addEventListener("DOMContentLoaded", loadTvl);
 document.addEventListener("DOMContentLoaded", init);
 
 </script>
