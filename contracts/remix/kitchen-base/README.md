@@ -10,10 +10,10 @@ TOKEN/ETH Uniswap V2 pool, burns the LP (to `0x…dEaD`; Uniswap itself locks th
 | Argument | Value |
 |---|---|
 | `router_` | `0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24` (Uniswap V2 Router02 on Base, from Uniswap's docs) |
-| `admin_` | **TBD**: a Safe on Base (recommended) or a hardware wallet |
-| `feeRecipient_` | **TBD**: your Base treasury address |
-| `fee_` | **TBD** in wei, e.g. `2000000000000000` = 0.002 ETH. Hard cap in the contract: 1 ETH |
-| `minLiquidity_` | **TBD** in wei, e.g. `10000000000000000` = 0.01 ETH. Hard cap: 100 ETH |
+| `admin_` | **The Base Safe** (decided 18 Nov 2026; address once it's created at app.safe.global, same owners as the Arc Safe) |
+| `feeRecipient_` | **The same Base Safe**, so fees also need two signatures to move |
+| `fee_` | `3000000000000000` = **0.003 ETH** per launch (decided 18 Nov 2026). Hard cap in the contract: 1 ETH |
+| `minLiquidity_` | `20000000000000000` = **0.02 ETH** minimum starting liquidity (decided 18 Nov 2026). Hard cap: 100 ETH |
 | `reserved` | `["ETH","WETH","USDC","USDT","BTC","WBTC","CBBTC","BASE","REEF","COOKED"]` (any case is refused) |
 
 The router's `WETH()` and `factory()` are read in the constructor, so only the router address needs to be right.
