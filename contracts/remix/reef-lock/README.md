@@ -46,6 +46,6 @@ Constructor arguments (ABI-encoded):
 | ReefLocker | `0xd999d2e6efc1d30143e23c3cc736adedff95c2a1` (chain 1404, 16 Nov 2026, from the COOKED_Main wallet, 2,448,917 gas) |
 | Deploy tx | `0x5ed669351a83d1de8f8f051c694277d86386fea60fa4493eb0328065055f6215` |
 | Checked on-chain | runtime code hash `0xa72ace87…1dbe` = the reviewed build; admin = Reef multisig; fee recipient = Reef treasury; fee 100 BDAG; no admin hand-over pending; 0 locks |
-| Verified | full match on explorer.east.bdag-us.org (Standard JSON, 0.8.24, berlin, optimizer off) |
+| Verified | full match on explorer.east.bdag-us.org (Standard JSON, 0.8.24, berlin, optimizer off), and full match on explorer.bdagexplorer.com (20 Nov 2026) |
 
 The temporary `deploy-lock/` page has been removed. The site's Lock page is `/lock/`.
