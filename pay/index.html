@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Get paid in BDAG</title>
-<meta name="description" content="Make a payment link with a QR code for BDAG or any token with a Reef pool on BlockDAG chain 1404. Payments go straight from the payer's wallet to yours.">
+<meta name="description" content="Make a payment link or a printable invoice with a QR code for BDAG or any token with a Reef pool on BlockDAG chain 1404. Payments go straight from the payer's wallet to yours.">
 <link rel="canonical" href="https://reefdex.fyi/pay/">
 <meta property="og:title" content="Get paid in BDAG"><meta property="og:description" content="Payment links with a QR code on BlockDAG chain 1404. Nothing held in between."><meta property="og:image" content="https://reefdex.fyi/assets/og-image.jpg?v=5">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -77,6 +77,37 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.in{color:var(--good)}td.out{color:var(--coral-text)}
 .faint{color:var(--muted)}
 .spacer{flex:1}
+/* invoices */
+.invtoggle{display:flex;align-items:center;gap:9px;margin:14px 0 0;font-size:13.5px;color:var(--muted);cursor:pointer}
+.invtoggle input{width:auto;margin:0;accent-color:var(--tide)}
+#invFields{margin-top:14px;padding-top:4px;border-top:1px solid var(--line)}
+.items{width:100%;border-collapse:collapse;margin-top:10px}
+.items th{font-size:11.5px;color:var(--muted);font-weight:500;padding:6px 4px;border-bottom:1px solid var(--line)}
+.items td{padding:5px 4px;border:0;white-space:normal}
+.items td input{padding:8px 9px}
+.items .q{width:80px}.items .pr{width:130px}.items .x{width:36px;text-align:right}
+.items .rm{background:none;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.invtotal{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:14px;gap:10px}
+.invtotal b{font:700 20px "Bricolage Grotesque",sans-serif;color:var(--link)}
+.inv{margin-bottom:18px}
+.invhead{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.invhead h2{margin:0;font:700 24px "Bricolage Grotesque",sans-serif}
+.invhead .meta{font-size:13px;color:var(--muted);text-align:right}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:6px 0 14px;font-size:14px}
+.parties span{display:block;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+.lines td{white-space:normal}.lines td.n,.lines th.n{text-align:right;white-space:nowrap}
+.lines tfoot td{border-bottom:0;font-weight:600;padding-top:10px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--line2)}
+.badge.due{color:var(--amber);border-color:rgba(197,150,108,.5)}.badge.over{color:var(--ember);border-color:rgba(229,98,74,.5)}.badge.ok{color:var(--good);border-color:rgba(63,191,131,.5)}
+@media print{
+  body{background:#fff!important;color:#111!important}
+  header.top,.betabar,#payView>h1,#payView>.lede,#payBtn,#copyTo,#printBtn,#noWallet,.note,.err{display:none!important}
+  .panel{background:#fff!important;border:0!important;padding:0!important}
+  .amount,.invtotal b,.invhead h2,dd{color:#111!important}
+  .lines td,.lines th,dt,.parties span,.invhead .meta{color:#333!important;border-color:#ccc!important}
+  .status{color:#111!important}
+}
+@media (max-width:600px){.parties{grid-template-columns:1fr}.items .pr{width:96px}.items .q{width:56px}}
 [hidden]{display:none!important}
 </style></head><body>
 <header class="top"><div class="topwrap"><a class="brand" href="/"><img class="logo-mark" src="/assets/reef-dex-wordmark.png?v=2" alt="Reef"><span>Pay</span></a><div class="spacer"></div><a class="openapp" href="/">Open Reef</a></div></header>
@@ -86,9 +117,10 @@ td.in{color:var(--good)}td.out{color:var(--coral-text)}
   <h1>Payment request</h1>
   <p class="lede">Someone has asked you to pay them on BlockDAG (chain 1404). The payment goes straight from your wallet to their address.</p>
   <div class="panel">
+    <div class="inv" id="invView" hidden></div>
     <div class="amount" id="pAmount">–</div>
     <dl><dt>To</dt><dd class="mono" id="pTo">–</dd><dt>Token</dt><dd><span id="pToken">–</span> <span class="mono muted" id="pTokenAddr"></span></dd><dt id="pNoteLabel">Note</dt><dd id="pNote"></dd></dl>
-    <div class="row"><button class="btn primary" id="payBtn">Pay with my wallet</button><button class="btn" id="copyTo">Copy address</button></div>
+    <div class="row"><button class="btn primary" id="payBtn">Pay with my wallet</button><button class="btn" id="copyTo">Copy address</button><button class="btn" id="printBtn" hidden>Print or save as PDF</button></div>
     <div class="err" id="payErr"></div>
     <p class="note" id="noWallet" hidden>No wallet found in this browser. On a phone, open this link in your wallet app's browser. Or send exactly the amount above to the address from any wallet.</p>
     <div class="status" id="pStatus"><span class="dot"></span><span id="pStatusText"></span></div>
@@ -107,6 +139,21 @@ td.in{color:var(--good)}td.out{color:var(--coral-text)}
     </div>
     <label for="gNote">Note for the payer (optional)</label>
     <input id="gNote" maxlength="120" placeholder="e.g. Invoice 042, logo design">
+    <label class="invtoggle"><input type="checkbox" id="gInv"> Make it an invoice (line items, due date, printable)</label>
+    <div id="invFields" hidden>
+      <div class="two">
+        <div><label for="iNo">Invoice number</label><input id="iNo" maxlength="24" placeholder="e.g. 042"></div>
+        <div><label for="iDue">Due date (optional)</label><input id="iDue" type="date"></div>
+        <div><label for="iFrom">From (your name or business)</label><input id="iFrom" maxlength="80" placeholder="e.g. Undercurrent Works"></div>
+        <div><label for="iBill">Bill to</label><input id="iBill" maxlength="80" placeholder="e.g. Acme Labs"></div>
+      </div>
+      <table class="items">
+        <thead><tr><th>Item</th><th class="q">Qty</th><th class="pr">Price</th><th class="x"></th></tr></thead>
+        <tbody id="iRows"></tbody>
+      </table>
+      <div class="row" style="margin-top:8px"><button class="btn small" id="iAdd" type="button">+ Add line</button></div>
+      <div class="invtotal"><span>Total (sets the amount above)</span><b id="iTotal">0</b></div>
+    </div>
     <div class="row"><button class="btn primary" id="makeBtn">Create link</button></div>
     <div class="err" id="getErr"></div>
     <div class="result" id="getResult">
@@ -219,6 +266,43 @@ function watchPayment(statusEl, textEl, token, to, amount, fromBlock, onPaid) {
   return () => { stopped = true; };
 }
 
+// ---- Invoice fields ----
+// Everything travels in the link: the items as a short base64url JSON list [[description, qty, price], …].
+const b64u = str => btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = str => new TextDecoder().decode(Uint8Array.from(atob(str.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)));
+function addItem(desc = "", qty = "1", price = "") {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td><input class="d" maxlength="80" placeholder="Description"></td><td class="q"><input class="qv" inputmode="decimal"></td><td class="pr"><input class="pv" inputmode="decimal" placeholder="0"></td><td class="x"><button class="rm" type="button" title="Remove line" aria-label="Remove line">×</button></td>`;
+  tr.querySelector(".d").value = desc; tr.querySelector(".qv").value = qty; tr.querySelector(".pv").value = price;
+  tr.querySelector(".rm").onclick = () => { tr.remove(); invTotal(); };
+  tr.querySelectorAll("input").forEach(i => (i.oninput = invTotal));
+  $("iRows").appendChild(tr);
+}
+function invItems() {
+  return [...$("iRows").querySelectorAll("tr")].map(tr => [tr.querySelector(".d").value.trim(), tr.querySelector(".qv").value.trim() || "1", tr.querySelector(".pv").value.trim().replace(/,/g, "")])
+    .filter(([d, q, p]) => d || p);
+}
+// Total in the token's smallest unit, computed exactly (qty to 6 decimals, price to the token's decimals).
+function itemsTotal(items, dec) {
+  let t = 0n;
+  for (const [, q, p] of items) t += (ethers.parseUnits(q || "0", 6) * ethers.parseUnits(p || "0", dec)) / 1000000n;
+  return t;
+}
+function invTotal() {
+  const token = findToken($("gToken").value); if (!token) return;
+  try { const t = itemsTotal(invItems(), token.dec); $("iTotal").textContent = fmt(t, token.dec) + " " + token.sym; if (t > 0n) $("gAmt").value = ethers.formatUnits(t, token.dec).replace(/\.0$/, ""); }
+  catch { $("iTotal").textContent = "check the numbers"; }
+}
+$("gInv").onchange = () => {
+  const on = $("gInv").checked;
+  $("invFields").hidden = !on; $("gAmt").readOnly = on;
+  $("makeBtn").textContent = on ? "Create invoice" : "Create link";
+  if (on && !$("iRows").children.length) addItem();
+  if (on) invTotal();
+};
+$("iAdd").onclick = () => addItem();
+$("gToken").addEventListener("change", () => { if ($("gInv").checked) invTotal(); });
+
 let stopGetWatch = null;
 $("makeBtn").onclick = async () => {
   $("getErr").textContent = "";
@@ -232,6 +316,17 @@ $("makeBtn").onclick = async () => {
   $("makeBtn").disabled = false;
   const p = new URLSearchParams({ to, t: token.extra ? token.addr : token.sym, a: ethers.formatUnits(amount, token.dec).replace(/\.0$/, ""), b: String(block) });
   const note = $("gNote").value.trim(); if (note) p.set("n", note);
+  if ($("gInv").checked) {
+    let items;
+    try { items = invItems(); if (!items.length) throw 0; if (itemsTotal(items, token.dec) !== amount) throw 0; }
+    catch { $("getErr").textContent = "Add at least one line with a price; the total must match the amount."; return; }
+    p.set("inv", $("iNo").value.trim().slice(0, 24) || "1");
+    if ($("iFrom").value.trim()) p.set("fr", $("iFrom").value.trim().slice(0, 80));
+    if ($("iBill").value.trim()) p.set("bt", $("iBill").value.trim().slice(0, 80));
+    if ($("iDue").value) p.set("due", $("iDue").value);
+    p.set("i", b64u(JSON.stringify(items.slice(0, 20).map(([d, q, pr]) => [d.slice(0, 80), q, pr]))));
+    p.set("d", new Date().toISOString().slice(0, 10));
+  }
   const url = location.origin + location.pathname + "?" + p.toString();
   $("gLink").value = url;
   const qr = qrcode(0, "M"); qr.addData(url); qr.make(); $("gQr").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
@@ -409,9 +504,10 @@ async function payerView(q) {
   if (token.extra) { const a = document.createElement("a"); a.href = "/token/?a=" + token.addr; a.textContent = " · safety report"; a.target = "_blank"; a.rel = "noopener"; $("pTokenAddr").after(a); }
   const note = (q.get("n") || "").slice(0, 120);
   if (note) $("pNote").textContent = note; else { $("pNote").hidden = true; $("pNoteLabel").hidden = true; }
+  const inv = q.get("inv") ? renderInvoice(q, token, amount) : null;
   $("copyTo").onclick = () => navigator.clipboard.writeText(to).then(() => { $("copyTo").textContent = "Copied"; setTimeout(() => $("copyTo").textContent = "Copy address", 1500); });
   let paid = false;
-  const markPaid = () => { paid = true; $("payBtn").disabled = true; $("payBtn").textContent = "Already paid"; $("noWallet").hidden = true; };
+  const markPaid = () => { paid = true; $("payBtn").disabled = true; $("payBtn").textContent = "Already paid"; $("noWallet").hidden = true; if (inv) inv.paid(); };
   if (token.addr) { if (!block) { try { block = Math.max(0, (await (await provider()).getBlockNumber()) - 20000); } catch { block = 0; } } watchPayment($("pStatus"), $("pStatusText"), token, to, amount, block, markPaid); }
   else $("pStatus").hidden = true;
   if (!window.ethereum) { $("noWallet").hidden = false; $("payBtn").disabled = true; return; }
@@ -447,6 +543,34 @@ async function payerView(q) {
       if (!paid) $("payBtn").disabled = false;
     }
   };
+}
+// Invoice layout for the payer: from / bill to, line items, total, dates and a paid / unpaid / overdue badge.
+// Every value comes from the link, so it's all escaped; line items only show if they add up to the requested amount.
+function renderInvoice(q, token, amount) {
+  let items = [];
+  try { items = JSON.parse(unb64u(q.get("i") || "")).filter(r => Array.isArray(r) && r.length === 3).map(r => r.map(String)).slice(0, 20); } catch {}
+  let ok = false; try { ok = items.length > 0 && itemsTotal(items, token.dec) === amount; } catch {}
+  const no = (q.get("inv") || "").slice(0, 24), fr = (q.get("fr") || "").slice(0, 80), bt = (q.get("bt") || "").slice(0, 80);
+  const day = k => /^\d{4}-\d{2}-\d{2}$/.test(q.get(k) || "") ? q.get(k) : "";
+  const due = day("due"), issued = day("d");
+  const nice = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const overdue = due && new Date(due + "T23:59:59Z") < new Date();
+  document.title = `Invoice ${no}${fr ? " from " + fr : ""} · Reef Pay`;
+  $("payView").querySelector("h1").textContent = fr ? `Invoice from ${fr}` : "Invoice";
+  $("payView").querySelector(".lede").textContent = "Pay it straight from your wallet to theirs on BlockDAG (chain 1404). Nothing is held in between." + (token.addr ? " This page shows when it's paid." : "");
+  const rows = ok ? items.map(([d, qt, pr]) => {
+    const line = (ethers.parseUnits(qt || "0", 6) * ethers.parseUnits(pr || "0", token.dec)) / 1000000n;
+    return `<tr><td>${esc(d)}</td><td class="n">${esc(qt)}</td><td class="n">${esc(pr)}</td><td class="n">${fmt(line, token.dec)}</td></tr>`;
+  }).join("") : `<tr><td colspan="4" class="faint">Line items couldn't be read from this link.</td></tr>`;
+  const box = $("invView");
+  box.hidden = false;
+  box.innerHTML = `<div class="invhead"><h2>Invoice ${esc(no)}</h2><div class="meta">${issued ? "Issued " + nice(issued) + "<br>" : ""}${due ? "Due " + nice(due) + "<br>" : ""}<span class="badge ${overdue ? "over" : "due"}" id="invBadge">${overdue ? "Overdue" : "Unpaid"}</span></div></div>
+    <div class="parties"><div><span>From</span>${esc(fr || "–")}</div><div><span>Bill to</span>${esc(bt || "–")}</div></div>
+    <div class="tablewrap"><table class="lines"><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Price</th><th class="n">Amount</th></tr></thead><tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="3">Total</td><td class="n">${fmt(amount, token.dec)} ${esc(token.sym)}</td></tr></tfoot></table></div>`;
+  $("printBtn").hidden = false;
+  $("printBtn").onclick = () => window.print();
+  return { paid() { const b = $("invBadge"); if (b) { b.className = "badge ok"; b.textContent = "Paid"; } } };
 }
 const q = new URLSearchParams(location.search);
 if (q.get("to")) payerView(q);
