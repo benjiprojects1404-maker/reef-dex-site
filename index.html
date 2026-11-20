@@ -293,6 +293,9 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .impactwarn{margin-top:10px;font-size:12px;line-height:1.5;padding:10px 12px;border-radius:12px;border:1px solid var(--amber);background:rgba(197,150,108,.10);color:var(--text)}
 .impactwarn.severe{border-color:var(--ember);background:rgba(229,98,74,.12)}
 .impactwarn b{font-weight:700}
+.receipt{margin-top:10px;background:var(--raised);border:1px solid var(--good);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.5}
+.receipt b{font-weight:700}.receipt .rbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.receipt .rbtns button{font:600 12px inherit;padding:6px 10px;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--text);cursor:pointer}
 /* Pre-sign token check: one line per fact, read live before the wallet is asked to sign. */
 .tcheck{margin-top:10px;background:var(--raised);border:1px solid var(--info-line);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.5}
 .tcheck.bad{border-color:var(--ember)}.tcheck.warn{border-color:var(--amber)}
@@ -456,6 +459,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
       <div class="msg" id="swapMsg"></div>
+      <div class="receipt" id="receiptBox" style="display:none" aria-live="polite"></div>
 
       <div class="lockbadge" id="fdvBadge" style="display:none"></div>
       <div class="lockbadge" id="lockBadge" style="display:none"></div>
@@ -2083,6 +2087,113 @@ async function renderTaxWarn(my) {
   w.style.display = "";
 }
 
+
+// ---------- Trade receipt ----------
+// After a swap confirms, a record of what the chain showed: the block, the route, each pool's reserves just
+// before and just after the trade, the quote, the slippage bound (minimum received) and what actually arrived.
+// It's built in the browser from public chain data and nothing is sent anywhere. It is a record, not a
+// cryptographic proof: anyone can re-check every number on the explorer from the transaction hash.
+let lastReceipt = null;
+async function buildReceipt(tx, rc, ctx) {
+  const blk = rc.blockNumber;
+  const block = await ro.getBlock(blk).catch(() => null);
+  const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+  const hops = [];
+  for (let i = 0; i < ctx.path.length - 1; i++) {
+    const pairAddr = await factory.getPair(ctx.path[i], ctx.path[i + 1]);
+    const pair = new ethers.Contract(pairAddr, PAIR_ABI, ro);
+    const [t0, before, after] = await Promise.all([
+      pair.token0(),
+      pair.getReserves({ blockTag: blk - 1 }).catch(() => null),
+      pair.getReserves({ blockTag: blk }).catch(() => null),
+    ]);
+    const r = (x) => (x ? { reserve0: x[0].toString(), reserve1: x[1].toString() } : null);
+    hops.push({ pair: pairAddr, token0: t0, tokenIn: ctx.path[i], tokenOut: ctx.path[i + 1], reservesBefore: r(before), reservesAfter: r(after) });
+  }
+  // What came out of the last pool, from its Swap event in this transaction.
+  let received = null;
+  const lastPair = hops.length ? hops[hops.length - 1] : null;
+  if (lastPair) {
+    const iface = SWAP_IFACE;
+    const lg = [...rc.logs].reverse().find((l) => l.address.toLowerCase() === lastPair.pair.toLowerCase() && l.topics[0] === SWAP_TOPIC);
+    if (lg) { const e = iface.parseLog(lg); received = (e.args.amount0Out > 0n ? e.args.amount0Out : e.args.amount1Out); }
+  }
+  const tok = (t) => ({ symbol: t.symbol, address: t.native ? null : t.address, decimals: t.decimals, native: !!t.native });
+  const units = (v, d) => (v == null ? null : ethers.formatUnits(v, d));
+  return {
+    kind: "Reef swap record",
+    note: "A record of what BlockDAG chain 1404 showed for this trade, built in the browser from public chain data. Not a cryptographic proof: check any number on the explorer from the transaction hash.",
+    chainId: CHAIN_ID,
+    transaction: tx.hash,
+    explorer: `${EXPLORER}/tx/${tx.hash}`,
+    block: blk,
+    blockHash: rc.blockHash,
+    time: block ? new Date(block.timestamp * 1000).toISOString() : null,
+    trader: account,
+    router: ADDR.ROUTER,
+    status: rc.status === 1 ? "success" : "failed",
+    gasUsed: rc.gasUsed != null ? rc.gasUsed.toString() : null,
+    gasPrice: rc.gasPrice != null ? rc.gasPrice.toString() : null,
+    sold: { ...tok(ctx.from), amount: units(ctx.amountIn, ctx.from.decimals) },
+    bought: { ...tok(ctx.to), quoted: units(ctx.quotedOut, ctx.to.decimals), minimum: units(ctx.minOut, ctx.to.decimals), received: units(received, ctx.to.decimals) },
+    slippageTolerancePct: ctx.slippageBp / 100,
+    priceImpactPct: ctx.impactPct,
+    swapFee: "0.30% per hop (0.25% to liquidity providers, 0.05% to Reef's treasury)",
+    route: hops,
+    rpcUsed: activeRpc,
+    createdBy: location.origin + "/",
+  };
+}
+function receiptText(r) {
+  const n = (v) => (v == null ? "–" : Number(v).toLocaleString("en-US", { maximumFractionDigits: 8 }));
+  return `Sold ${n(r.sold.amount)} ${r.sold.symbol} for ${n(r.bought.received)} ${r.bought.symbol} (quoted ${n(r.bought.quoted)}, minimum ${n(r.bought.minimum)}) in block ${r.block.toLocaleString("en-US")}.`;
+}
+function downloadReceipt() {
+  const r = lastReceipt; if (!r) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(r, null, 2)], { type: "application/json" }));
+  a.download = `reef-swap-${r.block}-${r.transaction.slice(2, 10)}.json`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function printReceipt() {
+  const r = lastReceipt; if (!r) return;
+  const e = escHtml, n = (v) => (v == null ? "–" : e(Number(v).toLocaleString("en-US", { maximumFractionDigits: 8 })));
+  const res = (x, d0, d1) => (x ? `${e(x.reserve0)} / ${e(x.reserve1)}` : "–");
+  const rows = (pairs) => pairs.map((h, i) => `<tr><td>${i + 1}</td><td class="m">${e(h.pair)}</td><td class="m">${res(h.reservesBefore)}</td><td class="m">${res(h.reservesAfter)}</td></tr>`).join("");
+  const w = window.open("", "_blank");
+  if (!w) { downloadReceipt(); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reef swap record · block ${r.block}</title>
+<style>body{font:14px/1.5 system-ui,sans-serif;color:#111;max-width:760px;margin:24px auto;padding:0 16px}h1{font-size:22px;margin:0 0 4px}.s{color:#555;font-size:12px}
+table{width:100%;border-collapse:collapse;margin:10px 0}td,th{text-align:left;border-bottom:1px solid #ddd;padding:6px 4px;vertical-align:top}th{font-size:11px;color:#666;text-transform:uppercase}
+.m{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;word-break:break-all}.k{width:34%;color:#444}</style></head><body>
+<h1>Reef swap record</h1><p class="s">${e(r.note)}</p>
+<table>
+<tr><td class="k">Sold</td><td>${n(r.sold.amount)} ${e(r.sold.symbol)}</td></tr>
+<tr><td class="k">Received</td><td>${n(r.bought.received)} ${e(r.bought.symbol)}</td></tr>
+<tr><td class="k">Quoted / minimum</td><td>${n(r.bought.quoted)} / ${n(r.bought.minimum)} ${e(r.bought.symbol)} (slippage tolerance ${e(r.slippageTolerancePct)}%${r.priceImpactPct != null ? `, price impact ${e(r.priceImpactPct.toFixed(2))}%` : ""})</td></tr>
+<tr><td class="k">Fee</td><td>${e(r.swapFee)}</td></tr>
+<tr><td class="k">Time (UTC)</td><td>${e(r.time || "–")}</td></tr>
+<tr><td class="k">Block</td><td>${e(r.block)} <span class="m">${e(r.blockHash)}</span></td></tr>
+<tr><td class="k">Transaction</td><td class="m">${e(r.transaction)}</td></tr>
+<tr><td class="k">Trader</td><td class="m">${e(r.trader)}</td></tr>
+<tr><td class="k">Tokens</td><td class="m">${e(r.sold.symbol)}: ${e(r.sold.address || "native BDAG")}<br>${e(r.bought.symbol)}: ${e(r.bought.address || "native BDAG")}</td></tr>
+</table>
+<h2 style="font-size:15px">Pools on the route (raw reserves, reserve0 / reserve1)</h2>
+<table><thead><tr><th>#</th><th>Pool</th><th>Before (block ${e(r.block - 1)})</th><th>After (block ${e(r.block)})</th></tr></thead><tbody>${rows(r.route)}</tbody></table>
+<p class="s">Check it: ${e(r.explorer)} · Made on ${e(r.createdBy)} for BlockDAG chain ${e(r.chainId)}.</p>
+<script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+function showReceipt(state, r) {
+  const box = $("#receiptBox");
+  if (state === "hide") { box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "";
+  if (state === "building") { box.innerHTML = "<b>Swap complete.</b> Preparing your trade record…"; return; }
+  if (!r) { box.innerHTML = "<b>Swap complete.</b> The trade record couldn't be built just now; the transaction is on the explorer."; return; }
+  box.innerHTML = `<b>Swap complete.</b> ${escHtml(receiptText(r))}
+    <div class="rbtns"><button type="button" onclick="downloadReceipt()">Download record (JSON)</button><button type="button" onclick="printReceipt()">Print or save as PDF</button><a href="${EXPLORER}/tx/${escHtml(r.transaction)}" target="_blank" rel="noopener">View on explorer</a></div>`;
+}
+
 // ---------- Pre-sign token check ----------
 // Before the wallet is asked to sign, the token being bought (or sold, when the other side is BDAG) gets the
 // same checks as its safety report: verified code, admin powers, transfer tax, LP lock, plus whether several
@@ -2317,6 +2428,7 @@ async function doSwap() {
   impactArmed = false; clearTimeout(impactTimer);
   riskArmed = false; clearTimeout(riskTimer);
   swapInFlight = true;
+  showReceipt("hide");
   clearMsg("swap");
   $("#swapBtn").disabled = true;
   $("#swapBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
@@ -2325,6 +2437,7 @@ async function doSwap() {
     const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
     const minOut = lastSwap.amountOut - (lastSwap.amountOut * BigInt(slippageBp)) / 10000n;
     let tx;
+    const ctx = { from: tokFrom, to: tokTo, path: lastSwap.path, amountIn: lastSwap.amountIn, quotedOut: lastSwap.amountOut, minOut, slippageBp, impactPct: lastSwap.impactPct };
     if (tokFrom.native) {
       tx = await router.swapExactBDAGForTokens(minOut, lastSwap.path, account, deadline, { value: lastSwap.amountIn });
     } else {
@@ -2334,10 +2447,12 @@ async function doSwap() {
     }
     $("#swapBtn").innerHTML = '<span class="spin"></span>Confirming…';
     showTxMsg("swap", "Transaction sent:", tx.hash, "info");
-    await tx.wait();
+    const rc = await tx.wait();
     showMsg("swap", "Swap complete.", "ok");
     clearAmounts();
     refreshBalances();
+    showReceipt("building");
+    buildReceipt(tx, rc, ctx).then((r) => { lastReceipt = r; showReceipt("show", r); }).catch((e) => { console.error(e); showReceipt("show", null); });
   } catch (e) {
     showMsg("swap", walletErr(e), "err");
   } finally {
