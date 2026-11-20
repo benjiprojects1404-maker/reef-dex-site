@@ -2108,20 +2108,21 @@ async function nodeCall(url, method, params) {
   const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(6000) });
   const j = await r.json(); if (j.error) throw new Error(j.error.message || "rpc error"); return j.result;
 }
-// Up to three nodes: each reports the hash of the same recent block and the pool's reserves at that block.
+// Three nodes (by preference: the one Reef is using, then the rest of the live list): each reports the hash of
+// the same recent block and the pool's reserves at that block. Nodes that are behind or don't answer are skipped.
 async function nodesAgree(pair) {
-  const urls = [activeRpc, ...RPC_URLS.filter((u) => u !== activeRpc)].filter(Boolean).slice(0, 5);
+  const urls = [activeRpc, ...RPC_URLS.filter((u) => u !== activeRpc)].filter(Boolean);
   const heads = await Promise.all(urls.map((u) => nodeCall(u, "eth_blockNumber", []).then((h) => ({ u, h: parseInt(h, 16) })).catch(() => null)));
-  const live = heads.filter(Boolean).slice(0, 3);
+  const live = heads.filter(Boolean);
   if (live.length < 2) return null;
-  const at = "0x" + (Math.min(...live.map((x) => x.h)) - 2).toString(16);
-  const views = await Promise.all(live.map(async ({ u }) => {
+  const target = Math.max(...live.map((x) => x.h)) - 5, at = "0x" + target.toString(16);
+  const views = await Promise.all(live.filter((x) => x.h >= target).map(async ({ u }) => {
     try {
       const [b, r] = await Promise.all([nodeCall(u, "eth_getBlockByNumber", [at, false]), nodeCall(u, "eth_call", [{ to: pair, data: "0x0902f1ac" }, at])]);
       return b && b.hash && r ? b.hash + ":" + r.slice(0, 130) : null;
     } catch (e) { return null; }
   }));
-  const got = views.filter(Boolean);
+  const got = views.filter(Boolean).slice(0, 3);
   if (got.length < 2) return null;
   const counts = {}; for (const v of got) counts[v] = (counts[v] || 0) + 1;
   return { agree: Math.max(...Object.values(counts)), of: got.length };
@@ -2169,7 +2170,13 @@ async function runTokenCheck(token) {
   let pair = pool && pool.pair;
   if (pool && pool.token) {
     const pctL = Number(pool.lpLockedOrBurnedPct || 0);
-    const until = (pool.lpHolders || []).filter((h) => !BURN_ADDRS.has(String(h.address).toLowerCase()) && h.until).map((h) => Number(h.until)).sort((x, y) => x - y)[0];
+    // Earliest unlock among the lock contracts holding LP: from the pool data, or the lock's own unlockTime().
+    const lockers = (pool.lpHolders || []).filter((h) => !BURN_ADDRS.has(String(h.address).toLowerCase()) && h.pct > 0.01);
+    const dates = await Promise.all(lockers.map(async (h) => {
+      if (h.until) return Number(h.until);
+      try { const r = await ro.call({ to: h.address, data: "0x251c1aa3" }); return r && r.length === 66 ? Number(BigInt(r)) : null; } catch (e) { return null; }
+    }));
+    const until = dates.filter((d) => d && d > Date.now() / 1000).sort((x, y) => x - y)[0];
     const day = until ? new Date(until * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
     const pctTxt = pctL >= 10 ? pctL.toFixed(0) : pctL.toFixed(1);
     if (pctL >= 50) items.push(["ok", `LP ${pctTxt}% locked or burned${day ? `, first unlock ${day}` : ""}`]);
