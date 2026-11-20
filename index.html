@@ -293,6 +293,19 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .impactwarn{margin-top:10px;font-size:12px;line-height:1.5;padding:10px 12px;border-radius:12px;border:1px solid var(--amber);background:rgba(197,150,108,.10);color:var(--text)}
 .impactwarn.severe{border-color:var(--ember);background:rgba(229,98,74,.12)}
 .impactwarn b{font-weight:700}
+.receipt{margin-top:10px;background:var(--raised);border:1px solid var(--good);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.5}
+.receipt b{font-weight:700}.receipt .rbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.receipt .rbtns button{font:600 12px inherit;padding:6px 10px;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--text);cursor:pointer}
+/* Pre-sign token check: one line per fact, read live before the wallet is asked to sign. */
+.tcheck{margin-top:10px;background:var(--raised);border:1px solid var(--info-line);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.5}
+.tcheck.bad{border-color:var(--ember)}.tcheck.warn{border-color:var(--amber)}
+.tcheck .th{display:flex;justify-content:space-between;gap:8px;color:var(--muted);margin-bottom:4px}
+.tcheck .th b{color:var(--text);font-weight:700}
+.tcheck ul{list-style:none;margin:0;padding:0}
+.tcheck li{display:flex;gap:7px;padding:2px 0}
+.tcheck li i{font-style:normal;flex:none;width:14px;text-align:center;font-weight:700}
+.tcheck li.ok i{color:var(--good)}.tcheck li.warn i{color:var(--sfwarn)}.tcheck li.bad i{color:var(--ember)}.tcheck li.na i{color:var(--muted)}
+.tcheck li.na{color:var(--muted)}
 .cta.danger:not(:disabled){background:var(--coral);color:#fff}
 .risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.55}
 .tradesbox{background:var(--raised);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -442,9 +455,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       <div class="adhint" id="swapAirdrop" aria-live="polite"></div>
       <div class="impactwarn" id="impactWarn" style="display:none"></div>
       <div class="impactwarn severe" id="taxWarn" style="display:none"></div>
+      <div class="tcheck" id="tokCheck" style="display:none" aria-live="polite"></div>
 
       <button class="cta" id="swapBtn" disabled onclick="doSwap()">Select tokens</button>
       <div class="msg" id="swapMsg"></div>
+      <div class="receipt" id="receiptBox" style="display:none" aria-live="polite"></div>
 
       <div class="lockbadge" id="fdvBadge" style="display:none"></div>
       <div class="lockbadge" id="lockBadge" style="display:none"></div>
@@ -879,6 +894,7 @@ let slippageBp = 50; // 0.5%
 // Price-impact thresholds (percent). Impact = how much worse this trade's price is than a tiny trade's, fee excluded.
 const WARN_IMPACT_PCT = 3, HIGH_IMPACT_PCT = 10, EXTREME_IMPACT_PCT = 30;
 let impactArmed = false, impactTimer = null, swapInFlight = false;
+let tokCheckSeq = 0, tokCheckSerious = false, riskArmed = false, riskTimer = null; // pre-sign token check
 let pickerFor = null; // 'from' | 'to' | 'liqA' | 'liqB'
 let quoteAbort = 0;
 
@@ -1627,6 +1643,7 @@ async function refreshSwapQuote() {
   clearMsg("swap");
   const amtStr = $("#fromAmt").value.trim();
   $("#swapBtn").disabled = true;
+  if (!tokFrom || !tokTo || sameToken(tokFrom, tokTo)) { tokCheckSeq++; tokCheckSerious = false; $("#tokCheck").style.display = "none"; }
   if (!tokFrom || !tokTo || !amtStr || Number(amtStr) <= 0) { $("#toAmt").value = ""; setSwapInfo(null); hideChart(); return; }
   if (sameToken(tokFrom, tokTo)) { showMsg("swap", "Choose two different tokens.", "err"); setSwapInfo(null); hideChart(); return; }
   let amountIn;
@@ -1663,6 +1680,7 @@ async function refreshSwapQuote() {
     } catch (e) { impactPct = null; }
     setSwapInfo({ path, amountIn, amountOut: out, rate, impactPct, quotedAt: Date.now(), tookMs: Date.now() - quoteStarted });
     renderTaxWarn(my);
+    renderTokenCheck();
     if (account && isReef1404) $("#swapBtn").disabled = false;
     if (path.length === 2) loadChartForPair(path[0], path[1]); else hideChart();
   } catch (e) {
@@ -2068,6 +2086,266 @@ async function renderTaxWarn(my) {
     : `<b>This token looks like it takes a tax on transfers</b> (${setting}). Selling ${escHtml(t.symbol)} through Reef will fail, whatever slippage you set. <a href="/docs/#taxed" target="_blank" rel="noopener">Why?</a>`;
   w.style.display = "";
 }
+
+
+// ---------- Trade receipt ----------
+// After a swap confirms, a record of what the chain showed: the block, the route, each pool's reserves just
+// before and just after the trade, the quote, the slippage bound (minimum received) and what actually arrived.
+// It's built in the browser from public chain data and nothing is sent anywhere. It is a record, not a
+// cryptographic proof: anyone can re-check every number on the explorer from the transaction hash.
+let lastReceipt = null;
+async function buildReceipt(tx, rc, ctx) {
+  const blk = rc.blockNumber;
+  const block = await ro.getBlock(blk).catch(() => null);
+  const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
+  const hops = [];
+  // Names and decimals for every token on the route (BDAG travels as WBDAG inside the pools).
+  const meta = {}; const w = ADDR.WBDAG.toLowerCase();
+  meta[w] = { sym: "BDAG", dec: 18 };
+  for (const t of [ctx.from, ctx.to]) if (!t.native) meta[t.address.toLowerCase()] = { sym: t.symbol, dec: t.decimals };
+  const human = (x, a0, a1) => {
+    if (!x) return null;
+    const m0 = meta[a0.toLowerCase()] || { sym: short(a0), dec: 18 }, m1 = meta[a1.toLowerCase()] || { sym: short(a1), dec: 18 };
+    const f = (v, d) => Number(ethers.formatUnits(v, d)).toLocaleString("en-US", { maximumFractionDigits: 6 });
+    return `${f(x[0], m0.dec)} ${m0.sym} / ${f(x[1], m1.dec)} ${m1.sym}`;
+  };
+  for (let i = 0; i < ctx.path.length - 1; i++) {
+    const pairAddr = await factory.getPair(ctx.path[i], ctx.path[i + 1]);
+    const pair = new ethers.Contract(pairAddr, PAIR_ABI, ro);
+    const [t0, t1, before, after] = await Promise.all([
+      pair.token0(), pair.token1(),
+      pair.getReserves({ blockTag: blk - 1 }).catch(() => null),
+      pair.getReserves({ blockTag: blk }).catch(() => null),
+    ]);
+    const r = (x) => (x ? { reserve0: x[0].toString(), reserve1: x[1].toString() } : null);
+    hops.push({ pair: pairAddr, token0: t0, token1: t1, tokenIn: ctx.path[i], tokenOut: ctx.path[i + 1],
+      reservesBefore: r(before), reservesAfter: r(after), before: human(before, t0, t1), after: human(after, t0, t1) });
+  }
+  // What came out of the last pool, from its Swap event in this transaction.
+  let received = null;
+  const lastPair = hops.length ? hops[hops.length - 1] : null;
+  if (lastPair) {
+    const iface = SWAP_IFACE;
+    const lg = [...rc.logs].reverse().find((l) => l.address.toLowerCase() === lastPair.pair.toLowerCase() && l.topics[0] === SWAP_TOPIC);
+    if (lg) { const e = iface.parseLog(lg); received = (e.args.amount0Out > 0n ? e.args.amount0Out : e.args.amount1Out); }
+  }
+  const tok = (t) => ({ symbol: t.symbol, address: t.native ? null : t.address, decimals: t.decimals, native: !!t.native });
+  const units = (v, d) => (v == null ? null : ethers.formatUnits(v, d));
+  return {
+    kind: "Reef swap record",
+    note: "A record of what BlockDAG chain 1404 showed for this trade, built in the browser from public chain data. Not a cryptographic proof: check any number on the explorer from the transaction hash.",
+    chainId: CHAIN_ID,
+    transaction: tx.hash,
+    explorer: `${EXPLORER}/tx/${tx.hash}`,
+    block: blk,
+    blockHash: rc.blockHash,
+    time: block ? new Date(block.timestamp * 1000).toISOString() : null,
+    trader: account,
+    router: ADDR.ROUTER,
+    status: rc.status === 1 ? "success" : "failed",
+    gasUsed: rc.gasUsed != null ? rc.gasUsed.toString() : null,
+    gasPrice: rc.gasPrice != null ? rc.gasPrice.toString() : null,
+    sold: { ...tok(ctx.from), amount: units(ctx.amountIn, ctx.from.decimals) },
+    bought: { ...tok(ctx.to), quoted: units(ctx.quotedOut, ctx.to.decimals), minimum: units(ctx.minOut, ctx.to.decimals), received: units(received, ctx.to.decimals) },
+    slippageTolerancePct: ctx.slippageBp / 100,
+    priceImpactPct: ctx.impactPct,
+    swapFee: "0.30% per hop (0.25% to liquidity providers, 0.05% to Reef's treasury)",
+    route: hops,
+    rpcUsed: activeRpc,
+    createdBy: location.origin + "/",
+  };
+}
+function receiptText(r) {
+  const n = (v) => (v == null ? "–" : Number(v).toLocaleString("en-US", { maximumFractionDigits: 8 }));
+  return `Sold ${n(r.sold.amount)} ${r.sold.symbol} for ${n(r.bought.received)} ${r.bought.symbol} (quoted ${n(r.bought.quoted)}, minimum ${n(r.bought.minimum)}) in block ${r.block.toLocaleString("en-US")}.`;
+}
+function downloadReceipt() {
+  const r = lastReceipt; if (!r) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(r, null, 2)], { type: "application/json" }));
+  a.download = `reef-swap-${r.block}-${r.transaction.slice(2, 10)}.json`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function printReceipt() {
+  const r = lastReceipt; if (!r) return;
+  const e = escHtml, n = (v) => (v == null ? "–" : e(Number(v).toLocaleString("en-US", { maximumFractionDigits: 8 })));
+  const rows = (pairs) => pairs.map((h, i) => `<tr><td>${i + 1}</td><td class="m">${e(h.pair)}</td><td>${e(h.before || "–")}</td><td>${e(h.after || "–")}</td></tr>`).join("");
+  const w = window.open("", "_blank");
+  if (!w) { downloadReceipt(); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reef swap record · block ${r.block}</title>
+<style>body{font:14px/1.5 system-ui,sans-serif;color:#111;max-width:760px;margin:24px auto;padding:0 16px}h1{font-size:22px;margin:0 0 4px}.s{color:#555;font-size:12px}
+table{width:100%;border-collapse:collapse;margin:10px 0}td,th{text-align:left;border-bottom:1px solid #ddd;padding:6px 4px;vertical-align:top}th{font-size:11px;color:#666;text-transform:uppercase}
+.m{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;word-break:break-all}.k{width:34%;color:#444}</style></head><body>
+<h1>Reef swap record</h1><p class="s">${e(r.note)}</p>
+<table>
+<tr><td class="k">Sold</td><td>${n(r.sold.amount)} ${e(r.sold.symbol)}</td></tr>
+<tr><td class="k">Received</td><td>${n(r.bought.received)} ${e(r.bought.symbol)}</td></tr>
+<tr><td class="k">Quoted / minimum</td><td>${n(r.bought.quoted)} / ${n(r.bought.minimum)} ${e(r.bought.symbol)} (slippage tolerance ${e(r.slippageTolerancePct)}%${r.priceImpactPct != null ? `, price impact ${e(r.priceImpactPct.toFixed(2))}%` : ""})</td></tr>
+<tr><td class="k">Fee</td><td>${e(r.swapFee)}</td></tr>
+<tr><td class="k">Time (UTC)</td><td>${e(r.time || "–")}</td></tr>
+<tr><td class="k">Block</td><td>${e(r.block)} <span class="m">${e(r.blockHash)}</span></td></tr>
+<tr><td class="k">Transaction</td><td class="m">${e(r.transaction)}</td></tr>
+<tr><td class="k">Trader</td><td class="m">${e(r.trader)}</td></tr>
+<tr><td class="k">Tokens</td><td class="m">${e(r.sold.symbol)}: ${e(r.sold.address || "native BDAG")}<br>${e(r.bought.symbol)}: ${e(r.bought.address || "native BDAG")}</td></tr>
+</table>
+<h2 style="font-size:15px">What was in each pool on the route</h2>
+<table><thead><tr><th>#</th><th>Pool</th><th>Before (block ${e(r.block - 1)})</th><th>After (block ${e(r.block)})</th></tr></thead><tbody>${rows(r.route)}</tbody></table>
+<p class="s">Check it: ${e(r.explorer)} · Made on ${e(r.createdBy)} for BlockDAG chain ${e(r.chainId)}.</p>
+<script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+function showReceipt(state, r) {
+  const box = $("#receiptBox");
+  if (state === "hide") { box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "";
+  if (state === "building") { box.innerHTML = "<b>Swap complete.</b> Preparing your trade record…"; return; }
+  if (!r) { box.innerHTML = "<b>Swap complete.</b> The trade record couldn't be built just now; the transaction is on the explorer."; return; }
+  box.innerHTML = `<b>Swap complete.</b> ${escHtml(receiptText(r))}
+    <div class="rbtns"><button type="button" onclick="downloadReceipt()">Download record (JSON)</button><button type="button" onclick="printReceipt()">Print or save as PDF</button><a href="${EXPLORER}/tx/${escHtml(r.transaction)}" target="_blank" rel="noopener">View on explorer</a></div>`;
+}
+
+// ---------- Pre-sign token check ----------
+// Before the wallet is asked to sign, the token being bought (or sold, when the other side is BDAG) gets the
+// same checks as its safety report: verified code, admin powers, transfer tax, LP lock, plus whether several
+// independent BlockDAG nodes agree on the pool's state. Facts read live; nothing is stored. A serious
+// finding (unverified code, unlocked LP, a transfer tax on a buy, nodes disagreeing) makes the swap button
+// ask for a second tap, the same way a high price impact does.
+const KITCHEN_FACTORIES = [
+  { addr: "0xF30f5E4f46AcAE803815B82CfEC5CD8Fc77eF394", name: "The Kitchen v2" },
+  { addr: "0x0E331686ee029EfafFC3a5cFda0ee3c7006F8A98", name: "The Kitchen v1" },
+];
+const ERC20_STANDARD_FNS = new Set(["approve", "transfer", "transferFrom", "increaseAllowance", "decreaseAllowance", "permit", "burn", "burnFrom", "delegate", "delegateBySig"]);
+const RISKY_FNS = /^(mint|_?mint|pause|unpause|blacklist|addToBlacklist|setBlacklist|block|setBot|setBots|setFee|setFees|setTax|setTaxes|updateFees|setMaxTx|setMaxWallet|setMaxTransaction|enableTrading|setTrading|excludeFrom|setExcluded|setRouter|setPair|upgradeTo|upgradeToAndCall|setImplementation|rescue|withdraw|setOwner|transferOwnership)/i;
+const BURN_ADDRS = new Set(["0x0000000000000000000000000000000000000000", "0x000000000000000000000000000000000000dead"]);
+const tokCheckCache = new Map(); // token -> { at, v: Promise }
+function tokCheckSubject() {
+  if (tokTo && !isBdagTok(tokTo)) return { t: tokTo, buying: true };
+  if (tokTo && tokFrom && !isBdagTok(tokFrom)) return { t: tokFrom, buying: false };
+  return null;
+}
+const getJsonT = (u, ms = 8000) => fetch(u, { signal: AbortSignal.timeout(ms) }).then((r) => (r.ok ? r.json() : r.status === 404 ? null : Promise.reject(new Error("HTTP " + r.status))));
+// Raw JSON-RPC to one node (not the shared provider), so each node answers for itself.
+async function nodeCall(url, method, params) {
+  const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(6000) });
+  const j = await r.json(); if (j.error) throw new Error(j.error.message || "rpc error"); return j.result;
+}
+// Three nodes (by preference: the one Reef is using, then the rest of the live list): each reports the hash of
+// the same recent block and the pool's reserves at that block. Nodes that are behind or don't answer are skipped.
+async function nodesAgree(pair) {
+  const urls = [activeRpc, ...RPC_URLS.filter((u) => u !== activeRpc)].filter(Boolean);
+  const heads = await Promise.all(urls.map((u) => nodeCall(u, "eth_blockNumber", []).then((h) => ({ u, h: parseInt(h, 16) })).catch(() => null)));
+  const live = heads.filter(Boolean);
+  if (live.length < 2) return null;
+  const target = Math.max(...live.map((x) => x.h)) - 5, at = "0x" + target.toString(16);
+  const views = await Promise.all(live.filter((x) => x.h >= target).map(async ({ u }) => {
+    try {
+      const [b, r] = await Promise.all([nodeCall(u, "eth_getBlockByNumber", [at, false]), nodeCall(u, "eth_call", [{ to: pair, data: "0x0902f1ac" }, at])]);
+      return b && b.hash && r ? b.hash + ":" + r.slice(0, 130) : null;
+    } catch (e) { return null; }
+  }));
+  const got = views.filter(Boolean).slice(0, 3);
+  if (got.length < 2) return null;
+  const counts = {}; for (const v of got) counts[v] = (counts[v] || 0) + 1;
+  return { agree: Math.max(...Object.values(counts)), of: got.length };
+}
+async function runTokenCheck(token) {
+  const a = token.address, al = a.toLowerCase();
+  const [pool, sc, tax] = await Promise.all([
+    getJsonT("/api/v1/pairs/" + al).catch(() => undefined),
+    getJsonT(`${EXPLORER_API}/smart-contracts/${a}`).catch(() => undefined),
+    taxCheck(token).catch(() => undefined),
+  ]);
+  let kitchen = null;
+  for (const k of KITCHEN_FACTORIES) {
+    try { const r = await ro.call({ to: k.addr, data: "0x5819ad16" + al.slice(2).padStart(64, "0") }); if (r && r !== "0x" && BigInt(r) === 1n) { kitchen = k; break; } } catch (e) {}
+  }
+  const items = [];
+  // Code and admin powers
+  const verified = sc === undefined ? null : !!(sc && sc.is_verified);
+  if (kitchen && !verified) {
+    items.push(["ok", `Made by ${kitchen.name}: standard verified token code`]);
+    items.push(["ok", "No mint, pause, blocklist or fee functions"]);
+  } else if (verified === null) {
+    items.push(["na", "Source code: the explorer didn't answer"]);
+  } else if (!verified) {
+    items.push(["bad", "Source code not verified: nobody can check what it does"]);
+  } else {
+    const writes = (sc.abi || []).filter((x) => x.type === "function" && x.stateMutability !== "view" && x.stateMutability !== "pure").map((x) => x.name);
+    const extra = writes.filter((n) => !ERC20_STANDARD_FNS.has(n));
+    const risky = [...new Set(extra.filter((n) => RISKY_FNS.test(n) && !/^renounce/i.test(n)))];
+    let owner = null;
+    if ((sc.abi || []).some((x) => x.name === "owner" && x.type === "function")) {
+      try { const r = await ro.call({ to: a, data: "0x8da5cb5b" }); if (r && r.length === 66) owner = "0x" + r.slice(26); } catch (e) {}
+    }
+    const renounced = owner && BURN_ADDRS.has(owner.toLowerCase());
+    items.push(["ok", "Source code verified"]);
+    if (!risky.length) items.push(["ok", extra.length ? "No mint, pause, blocklist or fee functions" : "Plain token: no admin functions"]);
+    else if (renounced) items.push(["ok", `Admin functions (${risky.slice(0, 3).join(", ")}${risky.length > 3 ? "…" : ""}), but ownership renounced`]);
+    else items.push(["warn", `Owner can call: ${risky.slice(0, 4).join(", ")}${risky.length > 4 ? "…" : ""}`]);
+  }
+  // Transfer tax (Reef can't sell taxed tokens)
+  if (tax === undefined) items.push(["na", "Transfer tax: couldn't check"]);
+  else if (tax) items.push(["bad", `Transfer tax setting found (${tax.name}): selling through Reef will fail`]);
+  else items.push(["ok", "Transfer tax 0% (no fee settings found)"]);
+  // LP lock, for tokens with a BDAG pool on Reef
+  let pair = pool && pool.pair;
+  if (pool && pool.token) {
+    const pctL = Number(pool.lpLockedOrBurnedPct || 0);
+    // Earliest unlock among the lock contracts holding LP: from the pool data, or the lock's own unlockTime().
+    const lockers = (pool.lpHolders || []).filter((h) => !BURN_ADDRS.has(String(h.address).toLowerCase()) && h.pct > 0.01);
+    const dates = await Promise.all(lockers.map(async (h) => {
+      if (h.until) return Number(h.until);
+      try { const r = await ro.call({ to: h.address, data: "0x251c1aa3" }); return r && r.length === 66 ? Number(BigInt(r)) : null; } catch (e) { return null; }
+    }));
+    const until = dates.filter((d) => d && d > Date.now() / 1000).sort((x, y) => x - y)[0];
+    const day = until ? new Date(until * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
+    const pctTxt = pctL >= 10 ? pctL.toFixed(0) : pctL.toFixed(1);
+    if (pctL >= 50) items.push(["ok", `LP ${pctTxt}% locked or burned${day ? `, first unlock ${day}` : ""}`]);
+    else if (pctL > 0) items.push(["warn", `Only ${pctTxt}% of the LP locked or burned: the rest can be pulled`]);
+    else items.push(["bad", "LP not locked: the liquidity can be removed at any time"]);
+  } else if (pool === null) {
+    items.push(["na", "No BDAG pool on Reef, so no LP lock to check"]);
+  }
+  if (!pair) { try { const f = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro); const pa = await f.getPair(a, ADDR.WBDAG); if (pa && !/^0x0+$/.test(pa)) pair = pa; } catch (e) {} }
+  // Several nodes agree on the pool
+  if (pair) {
+    const n = await nodesAgree(pair).catch(() => null);
+    if (!n) items.push(["na", "Couldn't reach enough nodes to compare the pool"]);
+    else if (n.agree === n.of) items.push(["ok", `${n.agree} of ${n.of} nodes agree on this pool`]);
+    else items.push(["bad", `Nodes disagree on this pool (${n.agree} of ${n.of} match): wait before trading`]);
+  }
+  return { items, sym: token.symbol };
+}
+function tokenCheckFor(token) {
+  const k = token.address.toLowerCase(), c = tokCheckCache.get(k);
+  if (c && Date.now() - c.at < 120000) return c.v;
+  const v = runTokenCheck(token); tokCheckCache.set(k, { at: Date.now(), v });
+  v.catch(() => tokCheckCache.delete(k));
+  return v;
+}
+async function renderTokenCheck() {
+  const box = $("#tokCheck"), my = ++tokCheckSeq;
+  riskArmed = false; clearTimeout(riskTimer);
+  const sub = tokCheckSubject();
+  if (!sub) { tokCheckSerious = false; box.style.display = "none"; box.innerHTML = ""; syncSwapBtn(); return; }
+  const { t, buying } = sub;
+  box.className = "tcheck"; box.style.display = "";
+  box.innerHTML = `<div class="th"><span><b>Token check</b> · ${escHtml(t.symbol)}</span><span>reading the chain…</span></div>`;
+  tokCheckSerious = false;
+  let r;
+  try { r = await tokenCheckFor(t); } catch (e) { r = null; }
+  if (my !== tokCheckSeq) return;
+  if (!r) { box.innerHTML = `<div class="th"><span><b>Token check</b> · ${escHtml(t.symbol)}</span><span>couldn't read the chain just now</span></div>`; syncSwapBtn(); return; }
+  // A transfer tax only blocks you when you hold the token afterwards (buying) or are selling it: both apply here.
+  const items = r.items;
+  const worst = items.some((x) => x[0] === "bad") ? "bad" : items.some((x) => x[0] === "warn") ? "warn" : "ok";
+  tokCheckSerious = worst === "bad";
+  const icon = { ok: "✓", warn: "!", bad: "✕", na: "–" };
+  box.className = "tcheck" + (worst === "ok" ? "" : " " + worst);
+  box.innerHTML = `<div class="th"><span><b>Token check</b> · ${escHtml(t.symbol)} ${buying ? "(buying)" : "(selling)"}</span><a href="/token/?a=${t.address}" target="_blank" rel="noopener">Full report →</a></div>
+    <ul>${items.map(([st, txt]) => `<li class="${st}"><i>${icon[st]}</i><span>${escHtml(txt)}</span></li>`).join("")}</ul>`;
+  syncSwapBtn();
+}
 // Keeps the main button's label truthful for the current state (it used to say "Select tokens" even when a swap was ready).
 function syncSwapBtn() {
   const b = $("#swapBtn");
@@ -2083,6 +2361,11 @@ function syncSwapBtn() {
   if (p != null && p >= HIGH_IMPACT_PCT) {
     b.classList.add("danger");
     b.textContent = impactArmed ? `Tap again to confirm \u2014 ${fmtImpact(p)} impact` : "Swap anyway";
+    return;
+  }
+  if (tokCheckSerious) {
+    b.classList.add("danger");
+    b.textContent = riskArmed ? "Tap again to confirm \u2014 see the token check" : "Swap anyway";
     return;
   }
   b.textContent = "Swap";
@@ -2144,8 +2427,18 @@ async function doSwap() {
     impactTimer = setTimeout(() => { impactArmed = false; syncSwapBtn(); }, 8000);
     return;
   }
+  // Serious token-check findings: the same deliberate second tap.
+  if (tokCheckSerious && !riskArmed) {
+    riskArmed = true;
+    syncSwapBtn();
+    clearTimeout(riskTimer);
+    riskTimer = setTimeout(() => { riskArmed = false; syncSwapBtn(); }, 8000);
+    return;
+  }
   impactArmed = false; clearTimeout(impactTimer);
+  riskArmed = false; clearTimeout(riskTimer);
   swapInFlight = true;
+  showReceipt("hide");
   clearMsg("swap");
   $("#swapBtn").disabled = true;
   $("#swapBtn").innerHTML = '<span class="spin"></span>Confirm in wallet…';
@@ -2154,6 +2447,7 @@ async function doSwap() {
     const deadline = Math.floor(Date.now() / 1000) + DEADLINE_SECS;
     const minOut = lastSwap.amountOut - (lastSwap.amountOut * BigInt(slippageBp)) / 10000n;
     let tx;
+    const ctx = { from: tokFrom, to: tokTo, path: lastSwap.path, amountIn: lastSwap.amountIn, quotedOut: lastSwap.amountOut, minOut, slippageBp, impactPct: lastSwap.impactPct };
     if (tokFrom.native) {
       tx = await router.swapExactBDAGForTokens(minOut, lastSwap.path, account, deadline, { value: lastSwap.amountIn });
     } else {
@@ -2163,10 +2457,12 @@ async function doSwap() {
     }
     $("#swapBtn").innerHTML = '<span class="spin"></span>Confirming…';
     showTxMsg("swap", "Transaction sent:", tx.hash, "info");
-    await tx.wait();
+    const rc = await tx.wait();
     showMsg("swap", "Swap complete.", "ok");
     clearAmounts();
     refreshBalances();
+    showReceipt("building");
+    buildReceipt(tx, rc, ctx).then((r) => { lastReceipt = r; showReceipt("show", r); }).catch((e) => { console.error(e); showReceipt("show", null); });
   } catch (e) {
     showMsg("swap", walletErr(e), "err");
   } finally {
