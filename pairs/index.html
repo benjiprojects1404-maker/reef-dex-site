@@ -85,6 +85,8 @@ td:first-child,th:first-child{text-align:left}
 .lock-ok{color:var(--good)} .lock-low{color:var(--amber)}
 @media (max-width:640px){.pool{grid-template-columns:repeat(2,minmax(0,1fr))}.pool .nm{grid-column:1/-1}}
 @media (max-width:560px){table .hm{display:none}}
+.quietbtn{background:none;border:1px solid rgba(255,255,255,.18);color:inherit;border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.quietbtn:hover{border-color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
@@ -102,7 +104,8 @@ td:first-child,th:first-child{text-align:left}
   <div class="seg" role="group" aria-label="Sort"><button type="button" data-sort="liq" aria-pressed="true">Liquidity</button><button type="button" data-sort="new" aria-pressed="false">Newest</button><button type="button" data-sort="fdv" aria-pressed="false">FDV</button></div>
 </div>
 <div id="list"><p class="muted">Loading Reef's pools…</p></div>
-<p class="note">Prices come from each pool's own reserves, not a price feed. LP locked = burned, or in a known lock such as <a href="/lock/">Reef Lock</a> (only locks whose date is still ahead count). <span class="badge kitchen" style="margin:0">Kitchen</span> = made in The Kitchen (plain fixed-supply token, starting liquidity locked). <span class="badge new" style="margin:0">New</span> = pool under 7 days old. Not an endorsement or a recommendation; check the safety report before trading. Reef is unaudited beta software.</p>
+<p class="muted" id="quietBar" hidden><button type="button" id="quietBtn" class="quietbtn"></button></p>
+<p class="note">Prices come from each pool's own reserves, not a price feed. LP locked = burned, or in a known lock such as <a href="/lock/">Reef Lock</a> (only locks whose date is still ahead count). <span class="badge kitchen" style="margin:0">Kitchen</span> = made in The Kitchen (plain fixed-supply token, starting liquidity locked). <span class="badge new" style="margin:0">New</span> = pool under 7 days old. Quiet pools (under 5,000 BDAG of liquidity, or no trades or liquidity changes in 14 days) are hidden until you show them; their liquidity is still there and they still trade. Not an endorsement or a recommendation; check the safety report before trading. Reef is unaudited beta software.</p>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -118,6 +121,15 @@ td:first-child,th:first-child{text-align:left}
     const [d, s] = a >= 1e12 ? [1e12, "T"] : a >= 1e9 ? [1e9, "B"] : a >= 1e6 ? [1e6, "M"] : a >= 1e3 ? [1e3, "K"] : [1, ""];
     const x = n / d; return (s ? x.toFixed(x >= 100 ? 0 : x >= 10 ? 1 : 2).replace(/\.0+$|(\.\d*?)0+$/, "$1") : x.toLocaleString("en-US", { maximumFractionDigits: 2 })) + s;
   }
+  async function rpc(method, params) {
+    for (const url of RPCS) {
+      try {
+        const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }), signal: AbortSignal.timeout(8000) });
+        const j = await r.json(); if (j.result) return j.result;
+      } catch (e) {}
+    }
+    throw new Error("rpc");
+  }
   async function rpcBatch(calls) {
     for (const url of RPCS) {
       try {
@@ -129,7 +141,9 @@ td:first-child,th:first-child{text-align:left}
     return calls.map(() => null);
   }
   const getJson = (u) => fetch(u, { signal: AbortSignal.timeout(10000) }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  let pools = [], sort = "liq";
+  let pools = [], sort = "liq", showQuiet = false;
+  const QUIET_LIQ = 5000, QUIET_DAYS = 14;
+  const isQuiet = (p) => (Number(p.liquidityBDAG) || 0) < QUIET_LIQ || (p.lastActive != null && p.lastActive < Date.now() - QUIET_DAYS * 864e5);
 
   async function load() {
     const d = await getJson("/api/v1/pairs");
@@ -151,10 +165,28 @@ td:first-child,th:first-child{text-align:left}
       if (t && t.timestamp) p.created = Date.parse(t.timestamp);
     }));
     render();
+    // Last activity: the newest event on each pool (every trade, add or remove emits Sync), dated from its block.
+    try {
+      const head = await rpc("eth_getBlockByNumber", ["latest", false]);
+      const hn = parseInt(head.number, 16), ht = parseInt(head.timestamp, 16);
+      const old = await rpc("eth_getBlockByNumber", ["0x" + Math.max(0, hn - 20000).toString(16), false]);
+      const spb = Math.max(0.05, (ht - parseInt(old.timestamp, 16)) / Math.min(hn, 20000));
+      await Promise.all(pools.map(async (p) => {
+        const j = await getJson(`${EXP_API}/addresses/${p.pair}/logs`);
+        const it = j && j.items && j.items[0];
+        if (it) p.lastActive = (ht - (hn - Number(it.block_number)) * spb) * 1000;
+      }));
+      render();
+    } catch (e) { /* liquidity rule only */ }
   }
   function render() {
     const q = $("q").value.trim().toLowerCase();
     let rows = pools.filter((p) => !q || [p.symbol, p.name, p.token, p.pair].some((x) => String(x || "").toLowerCase().includes(q)));
+    // Searching always finds a pool; otherwise quiet pools stay out of the list until asked for.
+    const quietN = rows.filter(isQuiet).length;
+    if (!q && !showQuiet) rows = rows.filter((p) => !isQuiet(p));
+    $("quietBar").hidden = !!q || !quietN;
+    $("quietBtn").textContent = showQuiet ? `Hide quiet pools (${quietN})` : `Show quiet pools (${quietN})`;
     const key = { liq: (p) => Number(p.liquidityBDAG) || 0, fdv: (p) => Number(p.fdvBDAG) || 0, new: (p) => p.created || 0 }[sort];
     rows.sort((a, b) => key(b) - key(a));
     if (!rows.length) { $("list").innerHTML = '<p class="muted">No pool matches that.</p>'; return; }
@@ -173,6 +205,7 @@ td:first-child,th:first-child{text-align:left}
     }).join("");
   }
   $("q").addEventListener("input", render);
+  $("quietBtn").onclick = () => { showQuiet = !showQuiet; render(); };
   document.querySelectorAll(".seg button").forEach((b) => b.onclick = () => { sort = b.dataset.sort; document.querySelectorAll(".seg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); render(); });
   load();
 })();

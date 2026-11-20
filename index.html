@@ -2481,8 +2481,9 @@ async function loadTopTokens() {
         }
         volOk = true;
       } catch (e) { volOk = false; }
-      // Pools with under 1 BDAG left (e.g. emptied ones) aren't worth ranking.
-      const list = Object.values(stats).filter((x) => x.liq >= 10n ** 18n);
+      // Quiet pools (under 5,000 BDAG of total liquidity, i.e. 2,500 BDAG on the BDAG side) aren't ranked;
+      // they're still listed under "Show quiet pools" on the Pairs page.
+      const list = Object.values(stats).filter((x) => x.liq >= 2500n * 10n ** 18n);
       const anyVol = volOk && list.some((x) => x.vol > 0n);
       list.sort((a, b) => {
         const ka = anyVol ? a.vol : a.liq, kb = anyVol ? b.vol : b.liq;
