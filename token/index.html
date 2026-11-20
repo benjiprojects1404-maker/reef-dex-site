@@ -258,7 +258,7 @@ async function run(id) {
   const ratio = fdv && liq ? fdv / liq : null;
   checks.push(ratio === null ? check("na", "FDV: not available", "")
     : ratio > 100 ? check("warn", "Thin liquidity for its FDV", `FDV is ${compact(fdv)} BDAG but the pool holds ${compact(liq)} BDAG (both sides), about ${Math.round(ratio).toLocaleString("en-US")}× less. Large sells would move the price a lot, so treat the FDV as a rough guide.`)
-    : check("ok", "Liquidity in line with FDV", `FDV ${compact(fdv)} BDAG against ${compact(liq)} BDAG of pool liquidity (both sides).`));
+    : check("ok", "Liquidity in line with FDV", `FDV ${compact(fdv)} BDAG against ${compact(liq)} BDAG of pool liquidity (both sides). FDV is a theoretical value at today's pool price, not what the supply could be sold for.`));
 
   const okN = checks.filter((c) => c.state === "ok").length, known = checks.filter((c) => c.state !== "na").length;
   const icon = { ok: "✓", warn: "!", bad: "✕", na: "–" };
@@ -268,7 +268,7 @@ async function run(id) {
   <p class="addrline">${token} · <a href="${EXP}/token/${token}" target="_blank" rel="noopener">explorer</a></p>
   <div class="grid">
     <div class="box"><div class="k">Price</div><div class="v">${pool.priceBDAG != null ? compact(pool.priceBDAG) : "–"} <span class="s">BDAG</span></div><div class="s">in its Reef BDAG pool</div></div>
-    <div class="box"><div class="k">FDV</div><div class="v">${fdv != null ? compact(fdv) : "–"} <span class="s">BDAG</span></div><div class="s">total supply × pool price</div></div>
+    <div class="box"><div class="k">FDV</div><div class="v">${fdv != null ? compact(fdv) : "–"} <span class="s">BDAG</span></div><div class="s">supply × pool price · theoretical, not what it could be sold for</div></div>
     <div class="box"><div class="k">Liquidity</div><div class="v">${compact(liq)} <span class="s">BDAG</span></div><div class="s">both sides of the pool</div></div>
     <div class="box"><div class="k">Holders</div><div class="v">${info && (info.holders_count ?? info.holders) ? Number(info.holders_count ?? info.holders).toLocaleString("en-US") : "–"}</div><div class="s">supply ${supply ? compact(supply) : "–"} ${esc(sym)}</div></div>
   </div>
