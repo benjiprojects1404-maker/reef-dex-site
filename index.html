@@ -1788,10 +1788,10 @@ async function loadFdvBadge(pairAddr) {
     const box = $("#fdvBadge");
     box.style.display = "flex";
     box.classList.toggle("warn", f.thin);
-    box.title = "FDV = total supply x price in this pool. Liquidity = both sides of the pool, in BDAG.";
+    box.title = "FDV = total supply x price in this pool: a theoretical value, not realisable. Liquidity = both sides of the pool, in BDAG.";
     box.innerHTML = `<svg class="lockicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg>
       <span><b>FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))} BDAG</b> · liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG · supply ${fmtCompact(ethers.formatUnits(supply, dec))} ${escHtml(sym)}.
-      ${f.thin ? " Thin liquidity: the FDV is a rough guide only." : ""} FDV = total supply × this pool's price. <a href="/token/?a=${token}">Full safety report →</a></span>`;
+      ${f.thin ? " Thin liquidity: the FDV is a rough guide only." : ""} FDV = total supply × this pool's price: a theoretical value, not what the tokens could actually be sold for, since selling moves the price. <a href="/token/?a=${token}">Full safety report →</a></span>`;
   } catch (e) { hideFdvBadge(); }
 }
 async function loadLockBadge(pairAddr) {
@@ -2806,7 +2806,7 @@ async function loadTopTokens() {
       const main = rows.byVol ? x.vol : x.liq;
       const mainLabel = rows.byVol ? "BDAG 24h" : "BDAG liquidity";
       const f = fdvFrom(x.rB, x.rT, supplies[i]);
-      const fdvHtml = f ? `<span class="fdv${f.thin ? " thin" : ""}" title="Fully diluted value: total supply x price in its BDAG pool. Pool liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG (both sides).${f.thin ? " Thin liquidity: a rough guide only." : ""}">FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))}${f.thin ? " · thin" : ""}</span>` : "";
+      const fdvHtml = f ? `<span class="fdv${f.thin ? " thin" : ""}" title="Fully diluted value: total supply x price in its BDAG pool. A theoretical value, not what the tokens could be sold for: selling moves the price. Pool liquidity ${fmtCompact(ethers.formatUnits(f.liq, 18))} BDAG (both sides).${f.thin ? " Thin liquidity: a rough guide only." : ""}">FDV ${fmtCompact(ethers.formatUnits(f.fdv, 18))}${f.thin ? " · thin" : ""}</span>` : "";
       li.innerHTML = `<div class="tk"><b></b><span></span><div class="safety"></div></div><div class="v"><b>${fmt(ethers.formatUnits(main, 18), 0)}</b>${mainLabel}${fdvHtml}</div>`;
       li.querySelector(".tk b").textContent = t.symbol;
       li.querySelector(".tk span").textContent = t.name;
