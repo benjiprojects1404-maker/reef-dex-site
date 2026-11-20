@@ -2099,16 +2099,27 @@ async function buildReceipt(tx, rc, ctx) {
   const block = await ro.getBlock(blk).catch(() => null);
   const factory = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro);
   const hops = [];
+  // Names and decimals for every token on the route (BDAG travels as WBDAG inside the pools).
+  const meta = {}; const w = ADDR.WBDAG.toLowerCase();
+  meta[w] = { sym: "BDAG", dec: 18 };
+  for (const t of [ctx.from, ctx.to]) if (!t.native) meta[t.address.toLowerCase()] = { sym: t.symbol, dec: t.decimals };
+  const human = (x, a0, a1) => {
+    if (!x) return null;
+    const m0 = meta[a0.toLowerCase()] || { sym: short(a0), dec: 18 }, m1 = meta[a1.toLowerCase()] || { sym: short(a1), dec: 18 };
+    const f = (v, d) => Number(ethers.formatUnits(v, d)).toLocaleString("en-US", { maximumFractionDigits: 6 });
+    return `${f(x[0], m0.dec)} ${m0.sym} / ${f(x[1], m1.dec)} ${m1.sym}`;
+  };
   for (let i = 0; i < ctx.path.length - 1; i++) {
     const pairAddr = await factory.getPair(ctx.path[i], ctx.path[i + 1]);
     const pair = new ethers.Contract(pairAddr, PAIR_ABI, ro);
-    const [t0, before, after] = await Promise.all([
-      pair.token0(),
+    const [t0, t1, before, after] = await Promise.all([
+      pair.token0(), pair.token1(),
       pair.getReserves({ blockTag: blk - 1 }).catch(() => null),
       pair.getReserves({ blockTag: blk }).catch(() => null),
     ]);
     const r = (x) => (x ? { reserve0: x[0].toString(), reserve1: x[1].toString() } : null);
-    hops.push({ pair: pairAddr, token0: t0, tokenIn: ctx.path[i], tokenOut: ctx.path[i + 1], reservesBefore: r(before), reservesAfter: r(after) });
+    hops.push({ pair: pairAddr, token0: t0, token1: t1, tokenIn: ctx.path[i], tokenOut: ctx.path[i + 1],
+      reservesBefore: r(before), reservesAfter: r(after), before: human(before, t0, t1), after: human(after, t0, t1) });
   }
   // What came out of the last pool, from its Swap event in this transaction.
   let received = null;
@@ -2158,8 +2169,7 @@ function downloadReceipt() {
 function printReceipt() {
   const r = lastReceipt; if (!r) return;
   const e = escHtml, n = (v) => (v == null ? "–" : e(Number(v).toLocaleString("en-US", { maximumFractionDigits: 8 })));
-  const res = (x, d0, d1) => (x ? `${e(x.reserve0)} / ${e(x.reserve1)}` : "–");
-  const rows = (pairs) => pairs.map((h, i) => `<tr><td>${i + 1}</td><td class="m">${e(h.pair)}</td><td class="m">${res(h.reservesBefore)}</td><td class="m">${res(h.reservesAfter)}</td></tr>`).join("");
+  const rows = (pairs) => pairs.map((h, i) => `<tr><td>${i + 1}</td><td class="m">${e(h.pair)}</td><td>${e(h.before || "–")}</td><td>${e(h.after || "–")}</td></tr>`).join("");
   const w = window.open("", "_blank");
   if (!w) { downloadReceipt(); return; }
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Reef swap record · block ${r.block}</title>
@@ -2178,7 +2188,7 @@ table{width:100%;border-collapse:collapse;margin:10px 0}td,th{text-align:left;bo
 <tr><td class="k">Trader</td><td class="m">${e(r.trader)}</td></tr>
 <tr><td class="k">Tokens</td><td class="m">${e(r.sold.symbol)}: ${e(r.sold.address || "native BDAG")}<br>${e(r.bought.symbol)}: ${e(r.bought.address || "native BDAG")}</td></tr>
 </table>
-<h2 style="font-size:15px">Pools on the route (raw reserves, reserve0 / reserve1)</h2>
+<h2 style="font-size:15px">What was in each pool on the route</h2>
 <table><thead><tr><th>#</th><th>Pool</th><th>Before (block ${e(r.block - 1)})</th><th>After (block ${e(r.block)})</th></tr></thead><tbody>${rows(r.route)}</tbody></table>
 <p class="s">Check it: ${e(r.explorer)} · Made on ${e(r.createdBy)} for BlockDAG chain ${e(r.chainId)}.</p>
 <script>window.onload=()=>window.print()<\/script></body></html>`);
