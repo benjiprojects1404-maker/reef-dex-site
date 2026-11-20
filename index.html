@@ -2251,8 +2251,9 @@ async function nodesAgree(pair) {
 async function runTokenCheck(token) {
   const a = token.address, al = a.toLowerCase();
   const [pool, sc, tax] = await Promise.all([
-    getJsonT("/api/v1/pairs/" + al).catch(() => undefined),
-    getJsonT(`${EXPLORER_API}/smart-contracts/${a}`).catch(() => undefined),
+    // Both can be slow on a cold start: a long wait, then one retry, before reporting "couldn't check".
+    getJsonT("/api/v1/pairs/" + al, 15000).catch(() => getJsonT("/api/v1/pairs/" + al, 15000)).catch(() => undefined),
+    getJsonT(`${EXPLORER_API}/smart-contracts/${a}`, 10000).catch(() => getJsonT(`${EXPLORER_API}/smart-contracts/${a}`, 15000)).catch(() => undefined),
     taxCheck(token).catch(() => undefined),
   ]);
   let kitchen = null;
@@ -2305,6 +2306,8 @@ async function runTokenCheck(token) {
     else items.push(["bad", "LP not locked: the liquidity can be removed at any time"]);
   } else if (pool === null) {
     items.push(["na", "No BDAG pool on Reef, so no LP lock to check"]);
+  } else {
+    items.push(["na", "LP lock: couldn't check just now (full report has it)"]);
   }
   if (!pair) { try { const f = new ethers.Contract(ADDR.FACTORY, FACTORY_ABI, ro); const pa = await f.getPair(a, ADDR.WBDAG); if (pa && !/^0x0+$/.test(pa)) pair = pa; } catch (e) {} }
   // Several nodes agree on the pool
@@ -2314,13 +2317,13 @@ async function runTokenCheck(token) {
     else if (n.agree === n.of) items.push(["ok", `${n.agree} of ${n.of} nodes agree on this pool`]);
     else items.push(["bad", `Nodes disagree on this pool (${n.agree} of ${n.of} match): wait before trading`]);
   }
-  return { items, sym: token.symbol };
+  return { items, sym: token.symbol, partial: items.some((x) => x[0] === "na") };
 }
 function tokenCheckFor(token) {
   const k = token.address.toLowerCase(), c = tokCheckCache.get(k);
-  if (c && Date.now() - c.at < 120000) return c.v;
-  const v = runTokenCheck(token); tokCheckCache.set(k, { at: Date.now(), v });
-  v.catch(() => tokCheckCache.delete(k));
+  if (c && Date.now() - c.at < (c.partial ? 15000 : 120000)) return c.v;
+  const v = runTokenCheck(token); const entry = { at: Date.now(), v, partial: false }; tokCheckCache.set(k, entry);
+  v.then((r) => { entry.partial = !!r.partial; }, () => tokCheckCache.delete(k));
   return v;
 }
 async function renderTokenCheck() {
