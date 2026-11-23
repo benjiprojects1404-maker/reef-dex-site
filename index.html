@@ -916,10 +916,76 @@ function fmtPrice(n) {
   const digits = Math.min(20, Math.max(2, 3 - Math.floor(Math.log10(Math.abs(x)))));
   return x.toLocaleString(undefined, { maximumFractionDigits: digits });
 }
+// Every read goes through a provider with an 8-second limit per request: a node that hangs (rather than
+// refusing) used to leave pools "Loading…" for minutes, because ethers waits up to 5 minutes by default.
+const RPC_TIMEOUT_MS = 8000;
+function makeProvider(url) {
+  const req = new ethers.FetchRequest(url);
+  req.timeout = RPC_TIMEOUT_MS;
+  return new ethers.JsonRpcProvider(req, { chainId: CHAIN_ID, name: "blockdag" }, { staticNetwork: true });
+}
 function initReadOnly(url) {
   activeRpc = url || activeRpc;
-  ro = new ethers.JsonRpcProvider(activeRpc, { chainId: CHAIN_ID, name: "blockdag" }, { staticNetwork: true });
+  ro = makeProvider(activeRpc);
 }
+function setRpcBadge() {
+  const b = $("#rpcBadge");
+  if (b) b.textContent = "RPC: " + ((RPC_ENDPOINTS.find((e) => e.url === activeRpc) || {}).name || rpcName(activeRpc));
+}
+// Asks up to five usable nodes for the latest block at once and returns the fastest one that is
+// within 20 blocks of the highest head seen (so a fast but stale node isn't picked).
+async function fastestRpc(urls) {
+  const pool = urls.slice(0, 5);
+  const heads = [];
+  await new Promise((resolve) => {
+    let left = pool.length;
+    const done = () => { if (--left === 0) resolve(); };
+    const timer = setTimeout(resolve, 4000);
+    pool.forEach((url) => {
+      const t0 = performance.now();
+      const ctl = new AbortController();
+      setTimeout(() => ctl.abort(), 4000);
+      fetch(url, { method: "POST", headers: { "content-type": "application/json" }, signal: ctl.signal,
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] }) })
+        .then((r) => r.json())
+        .then((j) => { if (j && j.result) heads.push({ url, head: parseInt(j.result, 16), ms: performance.now() - t0 }); })
+        .catch(() => {})
+        .finally(done);
+    });
+    if (!pool.length) { clearTimeout(timer); resolve(); }
+  });
+  if (!heads.length) return null;
+  const top = Math.max(...heads.map((h) => h.head));
+  const fresh = heads.filter((h) => h.head >= top - 20).sort((a, b) => a.ms - b.ms);
+  return fresh[0] ? fresh[0].url : null;
+}
+// Switches to the fastest healthy node and reloads what's on screen. Used at start-up and by the watchdog.
+let rpcSwitching = false;
+async function switchToHealthyRpc(reason) {
+  if (rpcSwitching) return false;
+  rpcSwitching = true;
+  try {
+    const best = await fastestRpc([activeRpc, ...RPC_URLS.filter((u) => u !== activeRpc)].filter((u) => !reason || u !== activeRpc));
+    if (!best || best === activeRpc) return false;
+    initReadOnly(best);
+    setRpcBadge();
+    refreshAll(); loadPoolList();
+    return true;
+  } finally { rpcSwitching = false; }
+}
+// Watchdog: once a minute, if the node in use doesn't answer within 8 seconds, move to another one.
+// Only switches when the page is visible, so background tabs don't hammer the nodes.
+let rpcFails = 0;
+setInterval(async () => {
+  if (document.hidden || !ro) return;
+  try {
+    await Promise.race([ro.getBlockNumber(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), RPC_TIMEOUT_MS))]);
+    rpcFails = 0;
+  } catch (e) {
+    rpcFails++;
+    await switchToHealthyRpc("unresponsive");
+  }
+}, 60000);
 
 // ---------- RPC status panel ----------
 async function probeRpc(url) {
@@ -2666,12 +2732,12 @@ async function tryRpcFallback(taskFn) {
   let lastErr;
   for (const url of order) {
     try {
-      const p = (url === activeRpc && ro) ? ro : new ethers.JsonRpcProvider(url, { chainId: CHAIN_ID, name: "blockdag" }, { staticNetwork: true });
-      const result = await taskFn(p);
+      const p = (url === activeRpc && ro) ? ro : makeProvider(url);
+      // Each node gets RPC_TIMEOUT_MS + a little for the whole task, so one that hangs can't stall the page.
+      const result = await Promise.race([taskFn(p), new Promise((_, rej) => setTimeout(() => rej(new Error("rpc timeout")), RPC_TIMEOUT_MS * 2))]);
       if (url !== activeRpc) {
         activeRpc = url; ro = p;
-        const badge = $("#rpcBadge");
-        if (badge) badge.textContent = "RPC: " + (RPC_ENDPOINTS.find((e) => e.url === url) || {}).name;
+        setRpcBadge();
       }
       return result;
     } catch (e) { lastErr = e; }
@@ -2925,8 +2991,10 @@ function init() {
   window.addEventListener("resize", fitAllAmts);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAllAmts);
   initReadOnly(RPC_URLS[0]);
-  loadRpcFeed().then((feed) => {
+  // Once the live node list is in, move to the fastest node that's up to date (if it isn't the one in use).
+  loadRpcFeed().then(async (feed) => {
     if (feed && !RPC_URLS.includes(activeRpc)) initReadOnly(RPC_URLS[0]);
+    await switchToHealthyRpc();
   });
   renderTokButtons();
   renderNet();
