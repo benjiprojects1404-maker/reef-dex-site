@@ -64,6 +64,7 @@ table{width:100%;border-collapse:collapse;font-size:14px} td,th{padding:7px 6px;
 <tr><th>Endpoint</th><th>Returns</th></tr>
 <tr><td><code>GET /api/v1/pairs</code></td><td>Every BDAG pool on Reef: token, symbol, reserves, pool price in BDAG, FDV and liquidity in BDAG, share of LP locked or burned.</td></tr>
 <tr><td><code>GET /api/v1/pairs/&lt;id&gt;</code></td><td>One pool, plus 24h volume and number of swaps. <code>&lt;id&gt;</code> is a token address, a pool address, or <code>reef</code>, <code>nocap</code>, <code>cooked</code>.</td></tr>
+<tr><td><code>GET /api/v1/tickers</code></td><td>Every pool's price in BDAG now and 24 hours ago, the % change, 24h volume and swaps, and <code>newPool</code> for pools created in the last 7 days. The 24h-ago price is the pool's own state just before its first trade in the window, read from its events; no price feed.</td></tr>
 </table>
 <pre>curl https://reefdex.fyi/api/v1/pairs/reef</pre>
 <pre>{
