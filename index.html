@@ -101,6 +101,29 @@ main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-tem
 .tvlbar .s{font-size:12px;color:var(--muted);margin-top:2px}
 .tvlbar a.more{align-self:center;font-size:13px;color:var(--coral-text);font-weight:500;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
 @media (max-width:760px){.tvlbar{grid-template-columns:repeat(2,minmax(0,1fr))}.tvlbar .tv:first-child{grid-column:1/-1}.tvlbar a.more{grid-column:1/-1;justify-self:start}}
+/* Ticker: every Reef pool's BDAG price and 24h change, auto-scrolling; swipe or hover to stop it. */
+.ticker{max-width:1080px;margin:22px auto -8px;padding:0 16px}
+.ticker[hidden]{display:none}
+.ticker .tk{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 0 12px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;position:relative;overflow:hidden}
+.ticker .tk::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,var(--line) 1px,transparent 1.2px) 0 0/14px 14px;opacity:.55;pointer-events:none}
+.ticker .lead{position:relative;display:flex;flex-direction:column;gap:2px;padding-right:4px;min-width:0}
+.ticker .lead b{font:700 15px/1.2 "Bricolage Grotesque",system-ui,sans-serif;color:var(--head);white-space:nowrap}
+.ticker .lead span{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.ticker .lead a{font-size:12px;color:var(--info);text-decoration:none;white-space:nowrap}
+.ticker .lead a:hover{text-decoration:underline}
+.ticker .rail{position:relative;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 40px),transparent)}
+.ticker .rail::-webkit-scrollbar{display:none}
+.ticker .track{display:flex;gap:8px;width:max-content;padding:2px 24px 2px 8px}
+.ticker .chip{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border:1px solid var(--line2);border-radius:999px;background:var(--raised);color:var(--text);text-decoration:none;white-space:nowrap;font-size:13px;transition:border-color .15s,transform .15s}
+.ticker .chip:hover,.ticker .chip:focus-visible{border-color:var(--polyp);transform:translateY(-1px);outline:none}
+.ticker .tdot{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 11px/1 "Bricolage Grotesque",system-ui,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.ticker .sym{font-weight:600}
+.ticker .px{color:var(--muted);font-variant-numeric:tabular-nums}
+.ticker .px sub{font-size:.75em}
+.ticker .chg{font-weight:600;font-variant-numeric:tabular-nums}
+.ticker .chg.up{color:var(--good)}.ticker .chg.down{color:var(--coral-text)}.ticker .chg.flat{color:var(--muted)}
+.ticker .new{font-size:10px;font-weight:700;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:var(--info-line);color:var(--info)}
+@media (max-width:640px){.ticker .tk{grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 0}.ticker .lead{flex-direction:row;align-items:baseline;gap:8px;padding:0 16px}.ticker .lead span{display:none}.ticker .lead a{margin-left:auto}}
 .col{display:flex;flex-direction:column;gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 0 44px -30px var(--coral-soft)}
 .panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -406,6 +429,13 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   <div class="tv"><div class="k">Pools</div><div class="v" id="tvlPools">…</div><div class="s">live on Reef</div></div>
   <div class="tv"><div class="k">Liquidity locked or burned</div><div class="v" id="tvlSafe">…</div><div class="s">can't be pulled before its unlock date</div></div>
   <a class="more" href="/pairs/">See every pool &rarr;</a>
+</section>
+
+<section class="ticker" id="ticker" aria-label="Reef pools: price in BDAG and 24-hour change" hidden>
+  <div class="tk">
+    <div class="lead"><b>Trading on Reef</b><span>Price in BDAG · 24h change</span><a href="/pairs/">All pools &rarr;</a></div>
+    <div class="rail" id="tickerRail"><div class="track" id="tickerTrack"></div></div>
+  </div>
 </section>
 
 <main>
@@ -3033,6 +3063,79 @@ async function loadTvl() {
     document.getElementById("tvlBar").hidden = false;
   } catch (e) {}
 }
+// Ticker: /api/v1/tickers (each pool's price now and 24h ago, from its own events; no price feed).
+const tickerHue = (addr) => parseInt(String(addr).slice(2, 8), 16) % 360;
+function fmtTickPrice(v) {
+  if (v === null || !isFinite(v) || v <= 0) return "–";
+  if (v >= 1000) return fmtCompact(v);
+  if (v >= 1) return v.toLocaleString("en-US", { maximumFractionDigits: v >= 100 ? 1 : 3 });
+  const z = Math.floor(-Math.log10(v)); // zeros after the decimal point
+  const digits = Math.round(v * 10 ** (z + 3)).toString().slice(0, 3).replace(/0+$/, "") || "0";
+  return z >= 4 ? `0.0<sub>${z}</sub>${digits}` : "0." + "0".repeat(z) + digits;
+}
+function tickerChip(t) {
+  const h = tickerHue(t.token), c = t.change24hPct;
+  const cls = c === null ? "flat" : c > 0.05 ? "up" : c < -0.05 ? "down" : "flat";
+  const chg = c === null ? "–" : (cls === "up" ? "▲ " : cls === "down" ? "▼ " : "") + Math.abs(c).toFixed(Math.abs(c) >= 100 ? 0 : 2) + "%";
+  const sym = escHtml(t.symbol || "?");
+  return `<a class="chip" href="/?from=BDAG&to=${encodeURIComponent(t.token)}" data-token="${escHtml(t.token)}" title="${escHtml(t.name || t.symbol)}: ${t.swaps24h} swaps, ${fmtCompact(Number(t.volume24hBDAG))} BDAG traded in 24h">`
+    + `<span class="tdot" style="background:radial-gradient(circle at 50% 22%,hsl(${h} 85% 85%),hsl(${h} 62% 48%) 62%,hsl(${h} 70% 16%))">${sym.slice(0, 1)}</span>`
+    + `<span class="sym">${sym}</span>${t.newPool ? '<span class="new">NEW</span>' : ""}<span class="px">${fmtTickPrice(t.priceBDAG)}</span><span class="chg ${cls}">${chg}</span></a>`;
+}
+let tickerAnim = null, tickerHold = 0;
+function runTicker() {
+  const rail = document.getElementById("tickerRail");
+  if (tickerAnim || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let last = performance.now(), acc = 0;
+  const step = (now) => {
+    const dt = Math.min(64, now - last); last = now;
+    if (Date.now() > tickerHold && !document.hidden) {
+      acc += dt * 0.035; // about 35 px a second
+      const px = Math.floor(acc); acc -= px;
+      if (px) { rail.scrollLeft += px; const half = rail.scrollWidth / 2; if (rail.scrollLeft >= half) rail.scrollLeft -= half; }
+    }
+    tickerAnim = requestAnimationFrame(step);
+  };
+  tickerAnim = requestAnimationFrame(step);
+  const hold = (ms) => () => { tickerHold = Date.now() + ms; };
+  rail.addEventListener("mouseenter", hold(1e9)); rail.addEventListener("mouseleave", hold(0));
+  rail.addEventListener("focusin", hold(1e9)); rail.addEventListener("focusout", hold(1500));
+  rail.addEventListener("touchstart", hold(1e9), { passive: true }); rail.addEventListener("touchend", hold(4000), { passive: true });
+  rail.addEventListener("wheel", hold(4000), { passive: true });
+}
+async function loadTicker() {
+  try {
+    const r = await fetch("/api/v1/tickers", { signal: AbortSignal.timeout(15000) });
+    const d = r.ok ? await r.json() : null;
+    if (!d || !Array.isArray(d.tickers) || !d.tickers.length) return;
+    // Busiest first (24h volume), then the deepest pools.
+    const list = d.tickers.filter((t) => t.priceBDAG > 0).sort((a, b) => (Number(b.volume24hBDAG) - Number(a.volume24hBDAG)) || (Number(b.liquidityBDAG) - Number(a.liquidityBDAG)));
+    if (!list.length) return;
+    const html = list.map(tickerChip).join("");
+    const track = document.getElementById("tickerTrack");
+    const keep = document.getElementById("tickerRail").scrollLeft;
+    const moving = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    track.innerHTML = moving ? html + html.replace(/<a class="chip"/g, '<a class="chip" aria-hidden="true" tabindex="-1"') : html; // second copy for a seamless loop
+    document.getElementById("tickerRail").scrollLeft = keep;
+    document.getElementById("ticker").hidden = false;
+    runTicker();
+  } catch (e) {}
+}
+// A chip opens the swap form with BDAG -> that token, without leaving the page (the link still works on its own).
+document.addEventListener("click", async (e) => {
+  const a = e.target.closest && e.target.closest(".ticker .chip");
+  if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+  e.preventDefault();
+  try {
+    const t = resolveShareToken(await loadPoolTokens(), a.dataset.token);
+    if (!t) { location.href = a.href; return; }
+    if (mode !== "swap") setMode("swap");
+    tokFrom = { ...NATIVE }; tokTo = t;
+    renderTokButtons(); refreshSwapQuote(); refreshBalances();
+    document.getElementById("swapCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) { location.href = a.href; }
+});
+document.addEventListener("DOMContentLoaded", () => { loadTicker(); setInterval(loadTicker, 60000); });
 document.addEventListener("DOMContentLoaded", loadTvl);
 document.addEventListener("DOMContentLoaded", init);
 

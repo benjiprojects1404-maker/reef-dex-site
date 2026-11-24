@@ -1,6 +1,8 @@
 // Reef public data API (read-only). Cloudflare Pages Function.
 //   GET /api/v1/pairs               every BDAG pool on Reef: reserves, pool price, FDV, LP locked or burned
 //   GET /api/v1/pairs/<address>     one pool (by token or pool address, or "reef" / "nocap" / "cooked"), plus 24h volume and swaps
+//   GET /api/v1/tickers             every BDAG pool's price now and 24 hours ago (from its own Sync/Swap events), the % change,
+//                                   24h volume and swaps, and whether the pool is new (created in the last 7 days)
 // Every number is read from BlockDAG chain 1404 through public RPCs and cached for 60 seconds.
 // No keys, no writes, no tracking. CORS is open so any site can use it.
 
@@ -15,6 +17,8 @@ const LP_HOLDERS = { "0x030d2466f634022fb93fbdf475ea81faff2525a0": "REEF presale
 const REEF_LOCK = "0xd999d2e6efc1d30143e23c3cc736adedff95c2a1";
 const LOCK_SEL = { lockedSummary: "0xa07aa30d", locksForToken: "0x75b99371", getLock: "0xd68f4dd1" };
 const SWAP_TOPIC = "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822";
+const SYNC_TOPIC = "0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1";
+const PAIR_CREATED_TOPIC = "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9";
 const CACHE_SECONDS = 60;
 
 const SEL = { allPairsLength: "0x574f2ba3", allPairs: "0x1e3dd18b", token0: "0x0dfe1681", token1: "0xd21220a7", getReserves: "0x0902f1ac", totalSupply: "0x18160ddd", balanceOf: "0x70a08231", symbol: "0x95d89b41", name: "0x06fdde03", decimals: "0x313ce567" };
@@ -135,6 +139,55 @@ async function readPairs() {
   });
 }
 
+// Head block and average block time, from the last 20,000 blocks.
+async function chainClock() {
+  const [head] = await rpc([{ method: "eth_blockNumber", params: [] }]);
+  const h = Number(big(head));
+  const [nowB, backB] = await rpc([{ method: "eth_getBlockByNumber", params: ["0x" + h.toString(16), false] }, { method: "eth_getBlockByNumber", params: ["0x" + Math.max(0, h - 20000).toString(16), false] }]);
+  const bt = (Number(nowB.timestamp) - Number(backB.timestamp)) / Math.min(20000, h || 1);
+  return { h, bt: bt || 1 };
+}
+// eth_getLogs, halving the block range whenever a node refuses it as too large.
+async function getLogs(filter, a, b) {
+  const [r] = await rpc([{ method: "eth_getLogs", params: [{ ...filter, fromBlock: "0x" + a.toString(16), toBlock: "0x" + b.toString(16) }] }]);
+  if (r === null || r === undefined) { if (b - a < 2) throw new Error("logs refused"); const m = Math.floor((a + b) / 2); return [...await getLogs(filter, a, m), ...await getLogs(filter, m + 1, b)]; }
+  return r;
+}
+const priceOf = (rB, rT, dec) => (rT > 0n ? Number(rB) / 1e18 / (Number(rT) / 10 ** dec) : null);
+
+// Price 24h ago without archive nodes: the pool's state just before its first event in the window. Every swap,
+// add and remove ends with Sync(reserves after); a swap's Swap event follows its Sync in the same transaction, so
+// reserves before = reserves after - amounts in + amounts out. Adds and removes don't move the price. No event in
+// the window means the price hasn't moved.
+async function tickers(pools) {
+  const { h, bt } = await chainClock();
+  const from = Math.max(0, h - Math.ceil(86400 / bt)), from7 = Math.max(0, h - Math.ceil(7 * 86400 / bt));
+  const [ev, created] = await Promise.all([
+    getLogs({ address: pools.map((p) => p.pair), topics: [[SYNC_TOPIC, SWAP_TOPIC]] }, from, h),
+    getLogs({ address: FACTORY, topics: [PAIR_CREATED_TOPIC] }, from7, h).catch(() => []),
+  ]);
+  const fresh = new Set(created.map((l) => toAddr(l.data.slice(0, 66)).toLowerCase()));
+  const byPair = {};
+  for (const l of ev) (byPair[l.address.toLowerCase()] ||= []).push(l);
+  return pools.map((p) => {
+    const logs = (byPair[p.pair.toLowerCase()] || []).sort((x, y) => Number(BigInt(x.blockNumber) - BigInt(y.blockNumber)) || Number(BigInt(x.logIndex) - BigInt(y.logIndex)));
+    const now = p.priceBDAG;
+    let before = now, vol = 0n, swaps = 0;
+    const first = logs.find((l) => l.topics[0] === SYNC_TOPIC);
+    if (first) {
+      let r0 = big(first.data, 0), r1 = big(first.data, 1);
+      const sw = logs.find((l) => l.topics[0] === SWAP_TOPIC && l.transactionHash === first.transactionHash && BigInt(l.logIndex) === BigInt(first.logIndex) + 1n);
+      if (sw) { r0 = r0 - big(sw.data, 0) + big(sw.data, 2); r1 = r1 - big(sw.data, 1) + big(sw.data, 3); }
+      before = p._bdagIs0 ? priceOf(r0, r1, p.decimals) : priceOf(r1, r0, p.decimals);
+    }
+    for (const l of logs) if (l.topics[0] === SWAP_TOPIC) { swaps++; vol += p._bdagIs0 ? big(l.data, 0) + big(l.data, 2) : big(l.data, 1) + big(l.data, 3); }
+    const change = now && before ? (now / before - 1) * 100 : null;
+    return { pair: p.pair, token: p.token, symbol: p.symbol, name: p.name, priceBDAG: now, price24hAgoBDAG: before,
+      change24hPct: change === null ? null : Math.round(change * 100) / 100, volume24hBDAG: units(vol, 18), swaps24h: swaps,
+      liquidityBDAG: p.liquidityBDAG, newPool: fresh.has(p.pair.toLowerCase()), swap: p.swap };
+  });
+}
+
 async function volume24h(p) {
   const [head] = await rpc([{ method: "eth_blockNumber", params: [] }]);
   const h = Number(big(head));
@@ -163,8 +216,11 @@ export async function onRequestGet(ctx) {
   const parts = (ctx.params.route || []).map((s) => s.toLowerCase());
   let res;
   try {
-    if (parts[0] !== "pairs" || parts.length > 2) {
-      res = json({ error: "not found", endpoints: ["/api/v1/pairs", "/api/v1/pairs/{token|pool address, or reef|nocap|cooked}"], docs: "https://reefdex.fyi/developers/" }, 404);
+    if (parts[0] === "tickers" && parts.length === 1) {
+      const pools = await readPairs();
+      res = json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), tickers: await tickers(pools) });
+    } else if (parts[0] !== "pairs" || parts.length > 2) {
+      res = json({ error: "not found", endpoints: ["/api/v1/pairs", "/api/v1/pairs/{token|pool address, or reef|nocap|cooked}", "/api/v1/tickers"], docs: "https://reefdex.fyi/developers/" }, 404);
     } else {
       const pools = await readPairs();
       if (parts.length === 1) {
