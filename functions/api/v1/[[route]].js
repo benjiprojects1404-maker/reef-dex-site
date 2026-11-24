@@ -163,9 +163,10 @@ async function tickers(pools) {
   const { h, bt } = await chainClock();
   const from = Math.max(0, h - Math.ceil(86400 / bt)), from7 = Math.max(0, h - Math.ceil(7 * 86400 / bt));
   const [ev, created] = await Promise.all([
-    getLogs({ address: pools.map((p) => p.pair), topics: [[SYNC_TOPIC, SWAP_TOPIC]] }, from, h),
+    getLogs({ address: pools.map((p) => p.pair), topics: [[SYNC_TOPIC, SWAP_TOPIC]] }, from, h).catch(() => null),
     getLogs({ address: FACTORY, topics: [PAIR_CREATED_TOPIC] }, from7, h).catch(() => []),
   ]);
+  if (ev === null) throw new Error("event scan failed"); // the caller serves the last good answer instead
   const fresh = new Set(created.map((l) => toAddr(l.data.slice(0, 66)).toLowerCase()));
   const byPair = {};
   for (const l of ev) (byPair[l.address.toLowerCase()] ||= []).push(l);
@@ -217,8 +218,20 @@ export async function onRequestGet(ctx) {
   let res;
   try {
     if (parts[0] === "tickers" && parts.length === 1) {
-      const pools = await readPairs();
-      res = json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), tickers: await tickers(pools) });
+      // Public nodes are slow or flaky at times; keep the last good answer for up to 30 minutes and serve it
+      // (marked stale) rather than an error. The 24h scan is the heaviest call in this API.
+      const lastKey = new Request(new URL("/api/v1/_last/tickers", ctx.request.url).toString());
+      try {
+        const pools = await readPairs();
+        res = json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), tickers: await tickers(pools) });
+        const keep = new Response(await res.clone().text(), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=1800" } });
+        ctx.waitUntil(cache.put(lastKey, keep));
+      } catch (e) {
+        const last = await cache.match(lastKey);
+        if (!last) throw e;
+        const body = await last.json();
+        return json({ ...body, stale: true }); // not cached, so the next request tries the chain again
+      }
     } else if (parts[0] !== "pairs" || parts.length > 2) {
       res = json({ error: "not found", endpoints: ["/api/v1/pairs", "/api/v1/pairs/{token|pool address, or reef|nocap|cooked}", "/api/v1/tickers"], docs: "https://reefdex.fyi/developers/" }, 404);
     } else {

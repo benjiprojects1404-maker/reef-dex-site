@@ -3107,7 +3107,7 @@ async function loadTicker() {
   try {
     const r = await fetch("/api/v1/tickers", { signal: AbortSignal.timeout(15000) });
     const d = r.ok ? await r.json() : null;
-    if (!d || !Array.isArray(d.tickers) || !d.tickers.length) return;
+    if (!d || !Array.isArray(d.tickers) || !d.tickers.length) throw new Error("no data");
     // Busiest first (24h volume), then the deepest pools.
     const list = d.tickers.filter((t) => t.priceBDAG > 0).sort((a, b) => (Number(b.volume24hBDAG) - Number(a.volume24hBDAG)) || (Number(b.liquidityBDAG) - Number(a.liquidityBDAG)));
     if (!list.length) return;
@@ -3119,8 +3119,13 @@ async function loadTicker() {
     document.getElementById("tickerRail").scrollLeft = keep;
     document.getElementById("ticker").hidden = false;
     runTicker();
-  } catch (e) {}
+    tickerTries = 0;
+  } catch (e) {
+    // First load failed (public nodes can be slow): try again soon rather than waiting a minute.
+    if (document.getElementById("ticker").hidden && ++tickerTries <= 3) setTimeout(loadTicker, 5000 * tickerTries);
+  }
 }
+let tickerTries = 0;
 // A chip opens the swap form with BDAG -> that token, without leaving the page (the link still works on its own).
 document.addEventListener("click", async (e) => {
   const a = e.target.closest && e.target.closest(".ticker .chip");
