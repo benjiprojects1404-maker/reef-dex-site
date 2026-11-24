@@ -92,15 +92,17 @@ button.wallet:active{transform:translateY(1px)}
 }
 main{max-width:1080px;margin:0 auto;padding:28px 16px 20px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
 @media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}.col{min-width:0}}
-.tvlbar{max-width:1080px;margin:22px auto -8px;padding:0 16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:stretch}
+.tvlbar{max-width:1080px;margin:22px auto -8px;padding:0 16px}
 .tvlbar[hidden]{display:none}
-.tvlbar .tv{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;min-width:0}
-.tvlbar .k{font-size:12px;color:var(--muted);letter-spacing:.02em}
-.tvlbar .v{font:700 20px/1.25 "Bricolage Grotesque",system-ui,sans-serif;color:var(--head);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tvlbar .v small{font:500 13px system-ui,sans-serif;color:var(--muted);margin-left:4px}
-.tvlbar .s{font-size:12px;color:var(--muted);margin-top:2px}
-.tvlbar a.more{align-self:center;font-size:13px;color:var(--coral-text);font-weight:500;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
-@media (max-width:760px){.tvlbar{grid-template-columns:repeat(2,minmax(0,1fr))}.tvlbar .tv:first-child{grid-column:1/-1}.tvlbar a.more{grid-column:1/-1;justify-self:start}}
+.tvlbar .row{background:var(--card);border:1px solid var(--line);border-radius:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.tvlbar .tv{padding:10px 16px;min-width:0;border-left:1px solid var(--line)}
+.tvlbar .tv:first-child{border-left:0}
+.tvlbar .k{font-size:12px;color:var(--muted);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tvlbar .k .short{display:none}
+.tvlbar .v{font:700 18px/1.25 "Bricolage Grotesque",system-ui,sans-serif;color:var(--head);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tvlbar .v small{font:500 12px system-ui,sans-serif;color:var(--muted);margin-left:4px}
+@media (max-width:760px){.tvlbar .row{grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr) minmax(0,1fr)}.tvlbar .tv{padding:8px 10px}.tvlbar .k{font-size:11px}.tvlbar .k .full{display:none}.tvlbar .k .short{display:inline}.tvlbar .v{font-size:16px}.tvlbar .v small{font-size:11px;margin-left:3px}#tvlSafe small{display:none}}
+@media (max-width:350px){#tvlTotal small{display:none}}
 /* Ticker: every Reef pool's BDAG price and 24h change, auto-scrolling; swipe or hover to stop it. */
 .ticker{max-width:1080px;margin:22px auto -8px;padding:0 16px}
 .ticker[hidden]{display:none}
@@ -425,10 +427,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 </header>
 
 <section class="tvlbar" id="tvlBar" aria-label="Reef at a glance" hidden>
-  <div class="tv"><div class="k">Total value locked</div><div class="v" id="tvlTotal">…</div><div class="s">all Reef pools, valued in BDAG</div></div>
-  <div class="tv"><div class="k">Pools</div><div class="v" id="tvlPools">…</div><div class="s">live on Reef</div></div>
-  <div class="tv"><div class="k">Liquidity locked or burned</div><div class="v" id="tvlSafe">…</div><div class="s">can't be pulled before its unlock date</div></div>
-  <a class="more" href="/pairs/">See every pool &rarr;</a>
+  <div class="row">
+    <div class="tv" title="All Reef pools, valued in BDAG"><div class="k"><span class="full">Total value locked</span><span class="short">TVL</span></div><div class="v" id="tvlTotal">…</div></div>
+    <div class="tv" title="Pools live on Reef"><div class="k">Pools</div><div class="v" id="tvlPools">…</div></div>
+    <div class="tv" title="Share of pool liquidity locked or burned: it can't be pulled before its unlock date"><div class="k"><span class="full">Liquidity locked or burned</span><span class="short">Locked</span></div><div class="v" id="tvlSafe">…</div></div>
+  </div>
 </section>
 
 <section class="ticker" id="ticker" aria-label="Reef pools: price in BDAG and 24-hour change" hidden>
