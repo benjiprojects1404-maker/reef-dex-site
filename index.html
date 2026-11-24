@@ -1174,21 +1174,33 @@ function cleanLabel(v, max, fallback) {
   const t = String(v == null ? "" : v).replace(/[^A-Za-z0-9 $._+\-()\/]/g, "").replace(/\s+/g, " ").trim().slice(0, max);
   return t || fallback;
 }
+// Reads a token's symbol, name and decimals. A token that really lacks one of them (the call reverts) gets a
+// fallback; a node that fails or times out is retried on the other RPCs, and if none answers this throws and
+// nothing is cached, so a bad moment on one node can't stick as "???" or as the wrong decimals for the visit.
 async function tokenInfo(address) {
   if (!address) return { ...NATIVE };
   const key = address.toLowerCase();
   if (tokenCache[key]) return tokenCache[key];
-  const c = new ethers.Contract(address, ERC20_ABI, ro);
-  const [symbol, name, decimals] = await Promise.all([
-    c.symbol().catch(() => "???"),
-    c.name().catch(() => "Unknown token"),
-    c.decimals().catch(() => 18),
-  ]);
+  const reverted = (e) => e && (e.code === "CALL_EXCEPTION" || e.code === "BAD_DATA");
+  const read = async (p) => {
+    const c = new ethers.Contract(address, ERC20_ABI, p);
+    return Promise.all([
+      c.symbol().catch((e) => (reverted(e) ? "" : Promise.reject(e))),
+      c.name().catch((e) => (reverted(e) ? "" : Promise.reject(e))),
+      c.decimals().catch((e) => (reverted(e) ? 18 : Promise.reject(e))),
+    ]);
+  };
+  const [symbol, name, decimals] = await tryRpcFallback(read);
   // Token names and symbols are chosen by whoever deployed the token, so treat them as untrusted:
   // keep only plain characters before they are shown anywhere on the page.
   const info = { symbol: cleanLabel(symbol, 16, "???"), name: cleanLabel(name, 48, "Unknown token"), decimals: Number(decimals), address, native: false };
   tokenCache[key] = info;
   return info;
+}
+// For lists that only display a token: a short-address placeholder (not cached) when it can't be read right now.
+async function tokenInfoOrLabel(address) {
+  try { return await tokenInfo(address); }
+  catch (e) { return { symbol: short(address), name: "Couldn't read this token just now", decimals: 18, address, native: false, unreadable: true }; }
 }
 function sameToken(a, b) {
   if (!a || !b) return a === b;
@@ -1267,6 +1279,7 @@ function loadPoolTokens() {
       }));
       seen.delete(ADDR.WBDAG.toLowerCase()); // shown as native BDAG
       const infos = await Promise.all([...seen].map((a) => tokenInfo(ethers.getAddress(a)).catch(() => null)));
+      if (infos.some((x) => !x)) setTimeout(() => { poolTokensPromise = null; }, 0); // a token couldn't be read: try again next time
       return infos.filter(Boolean).sort((x, y) => x.symbol.localeCompare(y.symbol));
     }).catch((e) => { poolTokensPromise = null; throw e; });
   }
@@ -2810,7 +2823,7 @@ async function loadPoolList() {
       if (HIDDEN_PAIR_INDEXES.has(idx)) return null;
       const p = new ethers.Contract(addr, PAIR_ABI, ro);
       const [t0a, t1a, r] = await Promise.all([p.token0(), p.token1(), p.getReserves()]);
-      let [t0, t1] = await Promise.all([tokenInfoWrapped(t0a), tokenInfoWrapped(t1a)]);
+      let [t0, t1] = await Promise.all([tokenInfoWrappedOrLabel(t0a), tokenInfoWrappedOrLabel(t1a)]);
       let r0 = r[0], r1 = r[1];
       // Always list the token first and BDAG second (e.g. COOKED / BDAG), whatever the on-chain token order.
       if (isBdag(t0) && !isBdag(t1)) { [t0, t1] = [t1, t0]; [r0, r1] = [r1, r0]; }
@@ -2895,7 +2908,7 @@ async function loadTopTokens() {
     $("#topNote").textContent = rows.byVol
       ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Labels show how much of each pool's LP is locked or burned, and whether the token's source code is verified on the explorer. Not an endorsement: check the contract before trading."
       : "No trades in the last 24 hours, so ranked by BDAG liquidity in each token's pool. Not an endorsement: check the contract before trading.";
-    const infos = await Promise.all(rows.top.map((x) => tokenInfo(x.token)));
+    const infos = await Promise.all(rows.top.map((x) => tokenInfoOrLabel(x.token)));
     const safety = await Promise.all(rows.top.map((x) => topSafety(x).catch(() => ({}))));
     const supplies = await Promise.all(rows.top.map((x) => new ethers.Contract(x.token, ["function totalSupply() view returns (uint256)"], ro).totalSupply().catch(() => null)));
     list.innerHTML = "";
@@ -2960,6 +2973,10 @@ function renderSafety(box, v) {
 async function tokenInfoWrapped(addr) {
   if (addr.toLowerCase() === ADDR.WBDAG.toLowerCase()) return { ...NATIVE };
   return tokenInfo(addr);
+}
+async function tokenInfoWrappedOrLabel(addr) {
+  if (addr.toLowerCase() === ADDR.WBDAG.toLowerCase()) return { ...NATIVE };
+  return tokenInfoOrLabel(addr);
 }
 function selectPoolPair(a, b) {
   tokFrom = a.native ? a : a; tokTo = b;
