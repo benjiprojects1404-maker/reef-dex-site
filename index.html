@@ -520,6 +520,18 @@ nav.tabs a:hover{color:var(--text)}
 .appfoot{max-width:1080px;margin:0 auto;padding:6px 16px 40px;color:var(--muted)}
 .appfoot .footlinks{font-size:13px;margin:0}
 .bottomnav{display:none}
+/* RPC badge: health dot, and on phones it sits next to the logo (27 Nov 2026) */
+.rpcbtn .rpcdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;flex:none}
+.rpcbtn.ok .rpcdot{background:var(--good)}
+.rpcbtn.slow .rpcdot{background:var(--amber)}
+.rpcbtn.bad .rpcdot{background:var(--ember)}
+.rpcbtn.bad{border-color:color-mix(in srgb,var(--ember) 50%,transparent)}
+@media (max-width:760px){
+  .topwrap .brand{order:0}
+  .topwrap .rpcbtn{order:1;margin-left:-2px}
+  .topwrap .spacer{order:2}
+  .topwrap button.wallet{order:3}
+}
 /* One type scale across the app (27 Nov 2026): page titles 24px, section and card titles 18px like Swap/Pool, body 15px */
 .lp .hero{padding:16px 0 6px}
 .lp .hero h1{font-size:24px;font-weight:700;line-height:1.2;margin:8px 0 10px}
@@ -1324,7 +1336,9 @@ function initReadOnly(url) {
 }
 // "RPC: <name>"; on phones only "RPC" shows (the name is in the panel and the tooltip).
 function rpcBadgeText(b, name) {
-  b.textContent = "RPC";
+  b.textContent = "";
+  const dot = document.createElement("i"); dot.className = "rpcdot"; dot.setAttribute("aria-hidden", "true");
+  b.append(dot, "RPC");
   const s = document.createElement("span"); s.className = "rpcname"; s.textContent = ": " + name;
   b.append(s); b.title = "RPC: " + name + " (tap to switch)";
 }
@@ -1332,6 +1346,21 @@ function setRpcBadge() {
   const b = $("#rpcBadge");
   if (b) rpcBadgeText(b, (RPC_ENDPOINTS.find((e) => e.url === activeRpc) || {}).name || rpcName(activeRpc));
 }
+// RPC health dot on the badge: green = answering in under 3 s, amber = slow, red = not answering. Checked every 60 s.
+async function rpcHealth() {
+  const b = $("#rpcBadge");
+  if (!b || !ro || document.hidden) return;
+  const t0 = performance.now();
+  let state = "bad";
+  try {
+    await Promise.race([ro.getBlockNumber(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000))]);
+    state = performance.now() - t0 < 3000 ? "ok" : "slow";
+  } catch (e) { state = "bad"; }
+  b.classList.remove("ok", "slow", "bad"); b.classList.add(state);
+  const n = (RPC_ENDPOINTS.find((e) => e.url === activeRpc) || {}).name || rpcName(activeRpc);
+  b.title = "RPC: " + n + (state === "ok" ? " (working)" : state === "slow" ? " (slow)" : " (not answering: tap to switch)");
+}
+setTimeout(rpcHealth, 2500); setInterval(rpcHealth, 60000);
 // Asks up to five usable nodes for the latest block at once and returns the fastest one that is
 // within 20 blocks of the highest head seen (so a fast but stale node isn't picked).
 async function fastestRpc(urls) {
