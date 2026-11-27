@@ -426,7 +426,13 @@ nav.tabs a:hover{color:var(--text)}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
   .swapwrap{padding:14px 12px 20px}
 }
-@media (max-width:400px){.betapill{display:none}}
+@media (max-width:760px){
+  .topwrap{gap:8px}
+  .topwrap .rpcbtn{font-size:11px;padding:5px 8px;flex:none}
+  .topwrap button.wallet{font-size:13px;padding:9px 11px;flex:none;max-width:none}
+  .brand{min-width:0;gap:8px}
+}
+@media (max-width:440px){.betapill{display:none}.brand .logo-mark{height:22px}}
 </style>
 </head>
 <body>
