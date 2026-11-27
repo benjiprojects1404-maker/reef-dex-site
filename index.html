@@ -3185,6 +3185,8 @@ function filterPools() {
   $("#poolCount").textContent = poolRows.length ? (q ? `${shown} of ${poolRows.length}` : `${poolRows.length}`) : "";
 }
 async function loadPoolList() {
+  // Only the latest call renders: an RPC switch can start a second load while the first is still running.
+  const gen = loadPoolList.gen = (loadPoolList.gen || 0) + 1;
   const list = $("#poolList");
   list.innerHTML = '<div class="empty">Loading pools…</div>';
   poolRows = [];
@@ -3211,6 +3213,9 @@ async function loadPoolList() {
     // Pin Reef's own REEF/BDAG pool to the top; the rest keep their on-chain order.
     const isPinned = (r) => r && [r.t0a, r.t1a].some((a) => a.toLowerCase() === AIRDROP_CFG.token.toLowerCase());
     rows.sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
+    if (gen !== loadPoolList.gen) return;
+    loadPoolList.tries = 0;
+    poolRows = [];
     list.innerHTML = "";
     for (const row of rows) {
       if (!row) continue;
@@ -3225,6 +3230,7 @@ async function loadPoolList() {
     }
     filterPools();
   } catch (e) {
+    if (gen !== loadPoolList.gen) return;
     // Public chain-1404 nodes are often slow on a cold start: try again a few times before giving up.
     loadPoolList.tries = (loadPoolList.tries || 0) + 1;
     if (loadPoolList.tries <= 3) { list.innerHTML = '<div class="empty">Loading pools&hellip; (retrying)</div>'; setTimeout(loadPoolList, 4000 * loadPoolList.tries); }
