@@ -520,6 +520,16 @@ nav.tabs a:hover{color:var(--text)}
 .appfoot{max-width:1080px;margin:0 auto;padding:6px 16px 40px;color:var(--muted)}
 .appfoot .footlinks{font-size:13px;margin:0}
 .bottomnav{display:none}
+/* Backdrop like the share card (27 Nov 2026): near-black, teal glow top-left, coral glow bottom-right, faint wave lines. Dark only. */
+:root{--bg:#07090b}
+body{background-image:radial-gradient(55% 45% at 0% 0%, rgba(10,113,161,.20), transparent 70%),radial-gradient(45% 40% at 100% 100%, rgba(194,58,94,.16), transparent 70%)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630' preserveAspectRatio='xMaxYMax slice'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='#7fd0f7' stop-opacity='0'/%3E%3Cstop offset='.55' stop-color='#9fb7c4' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='#c23a5e' stop-opacity='.35'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url%28#g%29' stroke-width='1.1'%3E%3Cpath d='M260 640 C 620 600, 860 450.0, 1220 330.0' /%3E%3Cpath d='M260 650 C 620 604, 860 436.6, 1220 316.6' /%3E%3Cpath d='M260 660 C 620 608, 860 424.4, 1220 304.4' /%3E%3Cpath d='M260 670 C 620 612, 860 413.4, 1220 293.4' /%3E%3Cpath d='M260 680 C 620 616, 860 403.6, 1220 283.6' /%3E%3Cpath d='M260 690 C 620 620, 860 395.0, 1220 275.0' /%3E%3Cpath d='M260 700 C 620 624, 860 387.6, 1220 267.6' /%3E%3Cpath d='M260 710 C 620 628, 860 381.4, 1220 261.4' /%3E%3Cpath d='M260 720 C 620 632, 860 376.4, 1220 256.4' /%3E%3Cpath d='M260 730 C 620 636, 860 372.6, 1220 252.6' /%3E%3Cpath d='M260 740 C 620 640, 860 370.0, 1220 250.0' /%3E%3Cpath d='M260 750 C 620 644, 860 368.6, 1220 248.6' /%3E%3C/g%3E%3Ccircle cx='1080' cy='491' r='5' fill='#e5486f' opacity='.85'/%3E%3Ccircle cx='1080' cy='491' r='14' fill='#e5486f' opacity='.12'/%3E%3C/svg%3E") right bottom / min(1200px,120vw) auto no-repeat;opacity:.9}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#e6f4f6}
+  :root:not([data-theme="dark"]) body{background-image:radial-gradient(46% 30% at 88% 0%, var(--glow1), transparent 60%), radial-gradient(40% 26% at 4% 100%, var(--glow2), transparent 65%)}
+  :root:not([data-theme="dark"]) body::before{display:none}
+}
+
 /* RPC badge: health dot, and on phones it sits next to the logo (27 Nov 2026) */
 .rpcbtn .rpcdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;flex:none}
 .rpcbtn.ok .rpcdot{background:var(--good)}
