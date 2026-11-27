@@ -426,6 +426,7 @@ nav.tabs a:hover{color:var(--text)}
   .bottomnav svg circle{fill:currentColor;stroke:none}
   .bottomnav a.on{color:var(--polyp)}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  body:not([data-view="more"]) .appfoot{display:none}
   .swapwrap{padding:14px 12px 20px}
 }
 @media (max-width:760px){
@@ -1452,6 +1453,7 @@ const VIEWS = ["swap", "pools", "more"];
 function setView(v, opts = {}) {
   if (!VIEWS.includes(v)) v = "swap";
   document.querySelectorAll(".view").forEach((el) => { el.hidden = el.dataset.view !== v; });
+  document.body.dataset.view = v;
   document.querySelectorAll("nav.tabs a[data-view], .bottomnav a[data-view]").forEach((a) => a.classList.toggle("on", a.dataset.view === v));
   if (v === "pools") { mode = "pool"; refreshPool(); } else if (v === "swap") mode = "swap";
   if (opts.hash !== false) { const h = "#" + v; if (location.hash !== h && !(v === "swap" && !location.hash)) history.replaceState(null, "", location.pathname + location.search + h); }
