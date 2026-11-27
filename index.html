@@ -520,6 +520,13 @@ nav.tabs a:hover{color:var(--text)}
 .appfoot{max-width:1080px;margin:0 auto;padding:6px 16px 40px;color:var(--muted)}
 .appfoot .footlinks{font-size:13px;margin:0}
 .bottomnav{display:none}
+/* Even 16px spacing between every box: price strip, TVL bar, cards (27 Nov 2026) */
+.ticker{margin:16px auto 0}
+#view-pools .tvlbar{margin:16px auto 0}
+.poolsgrid{padding:16px 16px 20px;gap:16px}
+.swapwrap{padding-top:16px}
+.narrow{padding-top:16px}
+#view-pools .card>h3{font:700 15px "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 12px}
 .poolsgrid{grid-template-columns:420px minmax(0,1fr)}
 @media (max-width:860px){.poolsgrid{grid-template-columns:minmax(0,1fr)}}
 .topwrap .rpcbtn{gap:0;white-space:nowrap}
@@ -541,7 +548,7 @@ nav.tabs a:hover{color:var(--text)}
   .bottomnav a.on{color:var(--polyp)}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
   body:not([data-view="safety"]) .appfoot{display:none}
-  .swapwrap{padding:14px 12px 20px}
+  .swapwrap{padding:16px 12px 20px}
 }
 @media (max-width:760px){
   .topwrap{gap:8px}
