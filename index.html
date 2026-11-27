@@ -561,6 +561,18 @@ nav.tabs a:hover{color:var(--text)}
 </section>
   <div class="poolsgrid">
     <div class="col">
+      <div class="card">
+      <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
+      <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
+      <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
+    </div>
+      <div class="card" id="topCard">
+      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
+      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
+      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
+    </div>
+    </div>
+    <div class="col side">
       <section class="card" id="poolCard" >
       <div class="panel-title"><h2>Pool</h2>
         <button class="settings-btn" title="Slippage settings" aria-controls="slipRow2" aria-expanded="false" onclick="this.setAttribute('aria-expanded',document.getElementById('slipRow2').classList.toggle('show'))">
@@ -626,22 +638,8 @@ nav.tabs a:hover{color:var(--text)}
       </div>
 
       <div class="msg" id="poolMsg"></div>
-      <div class="risk" style="margin-top:16px">
-        <b>Providing liquidity carries risk.</b> If the price of the two tokens moves apart, you can end up with less value than if you had just held them (impermanent loss). Fees earned may not offset this. Of the 0.30% swap fee, 0.25% goes to liquidity providers and 0.05% to Reef&rsquo;s treasury (the protocol fee, on since launch; controlled by a 2-of-3 hardware-wallet multisig).
-      </div>
+      <p class="swapsafe">Providing liquidity carries impermanent-loss risk. <a href="#safety">Safety</a></p>
     </section>
-      <div class="card" id="topCard">
-      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
-      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
-      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
-    </div>
-    </div>
-    <div class="col side">
-      <div class="card">
-      <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
-      <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
-      <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
-    </div>
     </div>
   </div>
 </div>
@@ -1808,6 +1806,7 @@ async function applyShareLink() {
       if (info && !info.native) {
         liqTokA = { ...NATIVE }; liqTokB = info;
         setMode("pool"); setPoolSub("add");
+        requestAnimationFrame(() => document.getElementById("poolCard").scrollIntoView({ block: "start" }));
         renderTokButtons(); refreshPool(); refreshBalances();
         showMsg("pool", `Opened from a link: add liquidity for ${info.symbol} (${info.address.slice(0, 6)}…${info.address.slice(-4)}). Check the token address; nothing is sent until you confirm in your wallet.`, "info");
         return;
