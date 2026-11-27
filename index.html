@@ -428,7 +428,8 @@ nav.tabs a:hover{color:var(--text)}
 }
 @media (max-width:760px){
   .topwrap{gap:8px}
-  .topwrap .rpcbtn{font-size:11px;padding:5px 8px;flex:none}
+  .topwrap .rpcbtn{font-size:11px;padding:5px 9px;flex:none}
+  .rpcbtn .rpcname{display:none}
   .topwrap button.wallet{font-size:13px;padding:9px 11px;flex:none;max-width:none}
   .brand{min-width:0;gap:8px}
 }
@@ -1035,9 +1036,15 @@ function initReadOnly(url) {
   activeRpc = url || activeRpc;
   ro = makeProvider(activeRpc);
 }
+// "RPC: <name>"; on phones only "RPC" shows (the name is in the panel and the tooltip).
+function rpcBadgeText(b, name) {
+  b.textContent = "RPC";
+  const s = document.createElement("span"); s.className = "rpcname"; s.textContent = ": " + name;
+  b.append(s); b.title = "RPC: " + name + " (tap to switch)";
+}
 function setRpcBadge() {
   const b = $("#rpcBadge");
-  if (b) b.textContent = "RPC: " + ((RPC_ENDPOINTS.find((e) => e.url === activeRpc) || {}).name || rpcName(activeRpc));
+  if (b) rpcBadgeText(b, (RPC_ENDPOINTS.find((e) => e.url === activeRpc) || {}).name || rpcName(activeRpc));
 }
 // Asks up to five usable nodes for the latest block at once and returns the fastest one that is
 // within 20 blocks of the highest head seen (so a fast but stale node isn't picked).
@@ -1134,7 +1141,7 @@ async function openRpcPanel() {
       const url = b.dataset.url;
       initReadOnly(url);
       $("#rpcDialog").close();
-      $("#rpcBadge").textContent = "RPC: " + (RPC_ENDPOINTS.find((e) => e.url === url) || {}).name;
+      rpcBadgeText($("#rpcBadge"), (RPC_ENDPOINTS.find((e) => e.url === url) || {}).name);
       refreshAll(); loadPoolList();
     };
   });
