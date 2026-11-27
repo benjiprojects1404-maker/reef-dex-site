@@ -2946,7 +2946,12 @@ async function loadPoolList() {
       poolRows.push({ li, hay });
     }
     filterPools();
-  } catch (e) { list.innerHTML = '<div class="empty">Could not load pools right now.</div>'; }
+  } catch (e) {
+    // Public chain-1404 nodes are often slow on a cold start: try again a few times before giving up.
+    loadPoolList.tries = (loadPoolList.tries || 0) + 1;
+    if (loadPoolList.tries <= 3) { list.innerHTML = '<div class="empty">Loading pools&hellip; (retrying)</div>'; setTimeout(loadPoolList, 4000 * loadPoolList.tries); }
+    else list.innerHTML = '<div class="empty">Could not load pools right now. <button type="button" class="linklike" onclick="loadPoolList.tries=0;loadPoolList()">Try again</button></div>';
+  }
   loadTopTokens();
 }
 
