@@ -384,6 +384,118 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 /* Links inside grey helper text stand out from it (6 Nov 2026) */
 .hint a,.adout a,.adclaimnote a,.muted a,.how a,.rf-note a{color:var(--coral-text);font-weight:500;text-decoration:underline;text-underline-offset:2px}
 
+
+/* Launchpad and Partners inside the app (from /launchpad/, scoped under .lp) */
+.lp .wrap{max-width:1080px;margin:0 auto;padding:0 16px 30px}
+.lp h1,.lp h2,.lp h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.lp .lpbeta{margin:16px 0 0;font-size:12.5px;color:var(--muted);background:var(--raised);border:1px solid var(--coral-soft);border-radius:12px;padding:8px 12px}
+.lp .lpbeta a{color:var(--coral-text);text-decoration:underline}
+.lp .hero{padding:40px 0 10px}
+.lp .eyebrow{color:var(--accent);font:600 12px "Instrument Sans",sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.lp .hero h1{font-size:clamp(32px,5.6vw,52px);font-weight:800;line-height:1.04;margin:10px 0 12px}
+.lp .hero h1 .c{color:var(--coral-text)}
+.lp .lede{font-size:17px;color:var(--muted);max-width:720px;margin:0;white-space:pre-line}
+.lp .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.lp .links a{font-size:13px;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;text-decoration:none}
+.lp .links a:hover{color:var(--text)}
+.lp .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 0}
+@media (max-width:760px){.lp .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lp .stat{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.lp .stat .k{font-size:12px;color:var(--muted)}
+.lp .stat .v{font:700 22px/1.2 "Bricolage Grotesque",sans-serif;margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.lp .stat .s{font-size:12px;color:var(--muted);margin-top:2px}
+
+.lp section.block{padding:36px 0 0}
+.lp .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.lp .sechead h2{font-size:clamp(24px,3.6vw,30px);font-weight:700;position:relative;padding-bottom:10px}
+.lp .sechead h2::after{content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;border-radius:2px;background:var(--coral)}
+.lp .sechead p{color:var(--muted);margin:0;font-size:14px}
+.lp .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 0 44px -30px var(--coral-soft);min-width:0}
+.lp .card h3{font-size:18px;margin-bottom:10px}
+.lp .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.lp .grid2{grid-template-columns:minmax(0,1fr)}}
+.lp .muted{color:var(--muted)}.small{font-size:13px}
+.lp dl.terms{display:grid;grid-template-columns:auto 1fr;margin:0}
+.lp dl.terms dt,.lp dl.terms dd{padding:10px 0;border-bottom:1px solid var(--line);margin:0}
+.lp dl.terms dt{color:var(--muted);font-size:13px;padding-right:16px}
+.lp dl.terms dd{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.lp dl.terms dd small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.lp dl.terms dt:last-of-type,.lp dl.terms dd:last-of-type{border-bottom:0}
+.lp ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:10px}
+.lp ol.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 50px;background:var(--raised);border:1px solid var(--line);border-radius:14px;font-size:14px}
+.lp ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--coral-soft);color:var(--coral-text);font:700 13px/22px "Bricolage Grotesque",sans-serif;text-align:center}
+.lp ol.steps b{font-weight:600}
+.lp ol.steps .muted{font-size:13px}
+.lp .risk{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--coral);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.lp .risk b{color:var(--text)}
+.lp .note{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--polyp);border-radius:14px 16px 16px 14px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.lp .note b{color:var(--text)}
+.lp .warn{border-left-color:var(--amber)}
+.lp .addrs{display:grid;gap:8px}
+.lp .addr{display:grid;grid-template-columns:190px minmax(0,1fr);align-items:center;gap:12px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+@media (max-width:700px){.lp .addr{grid-template-columns:minmax(0,1fr)}}
+.lp .addr .lbl{font-size:13px;color:var(--muted)}
+.lp .addr .lbl b{color:var(--text);font-weight:600;display:block;font-size:14px}
+.lp .addr a{text-decoration:none;border-bottom:1px dashed var(--line2)}
+
+
+.lp .salegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.lp a.sale{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.lp a.sale:hover{border-color:var(--coral-soft)}
+.lp a.sale b{font:700 18px "Bricolage Grotesque",sans-serif;display:block}
+.lp a.sale span{font-size:13px;color:var(--muted)}
+.lp .empty{background:var(--card);border:1px dashed var(--line2);border-radius:18px;padding:22px;color:var(--muted);font-size:14px}
+.lp .lpcta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.lp .lpcta a{display:inline-block;padding:11px 18px;border-radius:12px;font:600 14px "Instrument Sans",sans-serif;text-decoration:none}
+.lp .lpcta a.go{background:var(--coral);color:#fff}
+.lp .lpcta a.alt{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.lp ul.ticks{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.lp ul.ticks li{position:relative;padding-left:22px}
+.lp ul.ticks li::before{content:"";position:absolute;left:2px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--good)}
+.lp ul.ticks.warn li::before{background:var(--amber)}
+.lp .card h3+p{margin-top:0}
+.lp .pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:860px){.lp .pgrid{grid-template-columns:minmax(0,1fr)}}
+.lp .pcard{display:flex;flex-direction:column}
+.lp .pcard p{margin:0 0 10px;color:var(--muted)}
+.lp .pcard p b{color:var(--text)}
+.lp a.pbtn{margin-top:auto;align-self:flex-start;display:inline-block;padding:9px 14px;border-radius:11px;font:600 13px "Instrument Sans",sans-serif;text-decoration:none;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.lp a.pbtn:hover{box-shadow:inset 0 0 0 1px var(--coral-soft)}
+dialog.contact{border:1px solid var(--line2);border-radius:20px;background:var(--card);color:var(--text);padding:0;width:min(420px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.45)}
+dialog.contact::backdrop{background:rgba(2,8,11,.6);backdrop-filter:blur(2px)}
+.cbox{padding:22px}
+.cbox h3{font-size:20px;margin:0 0 4px}
+.cbox .subj{font-size:13px;color:var(--muted);margin:0 0 16px}
+.cbox .caddr{display:flex;align-items:center;gap:8px;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.cbox .caddr code{flex:1;font-size:14px}
+.cbox button,.cbox a.copt{font:600 14px "Instrument Sans",sans-serif;border:0;border-radius:11px;cursor:pointer;text-decoration:none;display:block;text-align:center}
+.cbox .copy{padding:7px 12px;background:var(--card);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.cbox a.copt{padding:11px 14px;margin-top:8px;background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+.cbox a.copt.main{background:var(--coral);color:#fff;box-shadow:none}
+.cbox .close{position:absolute;top:12px;right:12px;width:32px;height:32px;padding:0;background:transparent;color:var(--muted);font-size:22px;line-height:32px}
+.cbox .hint{font-size:12px;color:var(--muted);margin:12px 0 0;text-align:center}
+@media (max-width:600px){.lp .lpcta a{flex:1;text-align:center}}
+
+/* Logo menu (like Peach) */
+.brand{position:relative}
+header.top{position:relative;z-index:50}
+.brandbtn{display:flex;align-items:center;gap:6px;background:none;border:0;padding:2px 4px 2px 0;cursor:pointer;color:var(--muted)}
+.brandbtn .chev{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.brandbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.appmenu{position:absolute;top:calc(100% + 10px);left:0;z-index:60;width:250px;max-height:calc(100vh - 90px);overflow:auto;background:var(--card);border:1px solid var(--line2);border-radius:16px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.appmenu .mgrp{display:flex;flex-direction:column;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.appmenu .mgrp b{font:700 15px "Bricolage Grotesque",sans-serif;color:var(--head);margin-bottom:4px}
+.appmenu .mgrp a{font-size:13.5px;color:var(--muted);text-decoration:none;padding:4px 0}
+.appmenu .mgrp a:hover{color:var(--text)}
+.appmenu .msoc{display:flex;gap:16px;padding-top:2px}
+.appmenu .msoc a{color:var(--muted)}
+.appmenu .msoc svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.narrow{max-width:560px;margin:0 auto;padding:22px 16px 10px;display:flex;flex-direction:column;gap:16px}
+.narrow.wide{max-width:1080px}
+#view-safety .safety{margin-top:22px}
+/* Pools: add/remove liquidity on the left (first on phones), list and Top 5 on the right */
+@media (max-width:760px){.appmenu{position:fixed;top:64px;left:10px;right:10px;width:auto}}
+
 /* ---------- App layout (27 Nov 2026): Swap / Pools / Launch / More, bottom bar on phones ---------- */
 nav.tabs a{color:var(--muted);font:600 14px "Instrument Sans",sans-serif;padding:8px 14px;border-radius:9px;text-decoration:none}
 nav.tabs a.on{background:var(--card);color:var(--text);box-shadow:0 0 0 1px var(--coral-soft),0 0 14px -6px var(--coral-soft)}
@@ -408,6 +520,8 @@ nav.tabs a:hover{color:var(--text)}
 .appfoot{max-width:1080px;margin:0 auto;padding:6px 16px 40px;color:var(--muted)}
 .appfoot .footlinks{font-size:13px;margin:0}
 .bottomnav{display:none}
+.poolsgrid{grid-template-columns:420px minmax(0,1fr)}
+@media (max-width:860px){.poolsgrid{grid-template-columns:minmax(0,1fr)}}
 .topwrap .rpcbtn{gap:0;white-space:nowrap}
 .topwrap .net{white-space:nowrap}
 @media (max-width:860px){
@@ -426,7 +540,7 @@ nav.tabs a:hover{color:var(--text)}
   .bottomnav svg circle{fill:currentColor;stroke:none}
   .bottomnav a.on{color:var(--polyp)}
   body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
-  body:not([data-view="more"]) .appfoot{display:none}
+  body:not([data-view="safety"]) .appfoot{display:none}
   .swapwrap{padding:14px 12px 20px}
 }
 @media (max-width:760px){
@@ -466,14 +580,33 @@ nav.tabs a:hover{color:var(--text)}
 <header class="top">
   <div class="topwrap">
     <div class="brand">
-      <img class="logo-mark" src="/assets/reef-dex-wordmark.png?v=2" alt="reef.dex" width="846" height="175">
+      <button type="button" class="brandbtn" id="brandBtn" aria-haspopup="true" aria-expanded="false" aria-controls="appMenu" title="Menu">
+        <img class="logo-mark" src="/assets/reef-dex-wordmark.png?v=2" alt="reef.dex" width="846" height="175">
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
       <a class="betapill" href="#safety" title="Unaudited beta on an early-stage chain: read Safety before trading">Beta</a>
+      <div class="appmenu" id="appMenu" hidden>
+        <div class="mgrp"><b>Resources</b>
+          <a href="/docs/">Documentation</a><a href="/security/">Security review &amp; tests</a><a href="/developers/">Developers &amp; embed widget</a><a href="/launch/">Free launch guide</a><a href="/overview.pdf" target="_blank" rel="noopener">Overview brief (PDF)</a>
+        </div>
+        <div class="mgrp"><b>Tools</b>
+          <a href="#airdrop">REEF airdrop check</a><a href="/token/">Token safety reports</a><a href="/pairs/">Pair pages</a><a href="/lock/">Reef Lock</a><a href="/pay/">Get paid</a><a href="/portfolio/">Portfolio</a><a href="/cards/">COOKED &times; NOCAP cards</a><a href="https://cookedmeme.fyi" target="_blank" rel="noopener">The Kitchen</a>
+        </div>
+        <div class="mgrp"><b>Legal</b>
+          <a href="#safety">Safety, risks &amp; contracts</a><a href="#faq">Read before you trade (FAQ)</a>
+        </div>
+        <div class="msoc">
+          <a href="https://x.com/benji107" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4 4 20" /></svg></a>
+          <a href="https://t.me/undercurrentworks" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="m21 4-18 7 6 2 2 6 3-4 5 4 2-15Z"/></svg></a>
+          <a href="https://github.com/benjiprojects1404-maker/reef-dex-site" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M9 19c-4 1.5-4-2-6-2.5m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a>
+        </div>
+      </div>
     </div>
     <nav class="tabs" aria-label="Sections">
       <a data-view="swap" class="on" href="#swap">Swap</a>
       <a data-view="pools" href="#pools">Pools</a>
-      <a href="/launchpad/">Launch</a>
-      <a data-view="more" href="#more">More</a>
+      <a data-view="launch" href="#launch">Launchpad</a>
+      <a data-view="partners" href="#partners">Partners</a>
     </nav>
     <div class="spacer"></div>
     <button class="rpcbtn" id="rpcBadge" onclick="openRpcPanel()">RPC status</button>
@@ -484,7 +617,7 @@ nav.tabs a:hover{color:var(--text)}
 
 <section class="ticker" id="ticker" aria-label="Reef pools: price in BDAG and 24-hour change" hidden>
   <div class="tk">
-    <div class="lead"><b>Trading on Reef</b><span>Price in BDAG · 24h change</span><a href="/pairs/">All pools &rarr;</a></div>
+    <div class="lead"><b>Trading on Reef</b><span>Price in BDAG · 24h change</span><a href="#pools">All pools &rarr;</a></div>
     <div class="rail" id="tickerRail"><div class="track" id="tickerTrack"></div></div>
   </div>
 </section>
@@ -563,18 +696,6 @@ nav.tabs a:hover{color:var(--text)}
   </div>
 </section>
   <div class="poolsgrid">
-    <div class="col">
-      <div class="card">
-      <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
-      <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
-      <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
-    </div>
-      <div class="card" id="topCard">
-      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
-      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
-      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
-    </div>
-    </div>
     <div class="col side">
       <section class="card" id="poolCard" >
       <div class="panel-title"><h2>Pool</h2>
@@ -644,14 +765,152 @@ nav.tabs a:hover{color:var(--text)}
       <p class="swapsafe">Providing liquidity carries impermanent-loss risk. <a href="#safety">Safety</a></p>
     </section>
     </div>
+    <div class="col">
+      <div class="card">
+      <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
+      <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
+      <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
+    </div>
+      <div class="card" id="topCard">
+      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
+      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
+      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
+    </div>
+    </div>
   </div>
 </div>
 
-<div class="view" data-view="more" id="view-more" hidden>
-  <div class="moregrid">
-    <div class="col">
-      <div class="card presalecard"><b>The REEF/BDAG pool is live.</b> Presale buyers: <a href="/reef/#buy">claim your REEF &rarr;</a> <span class="adbar">Airdrop claims are open until Thu 4 Feb 2027, just below. <a href="/reef/#airdrop">Rules</a></span></div>
-      <div class="card" id="airdropCard">
+
+<div class="view lp" data-view="launch" id="view-launch" hidden>
+ <div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Reef Launchpad · beta · BlockDAG chain 1404</div>
+    <h1>Token sales that launch <span class="c">straight into locked pools.</span></h1>
+    <p class="lede">Buyers pay BDAG at a fixed price. When the sale ends, the contract takes a disclosed 2% fee and puts every other BDAG into the token's pools on Reef, locked for 12 months. Unsold tokens are burned. If the sale doesn't launch, everyone gets a full refund.</p>
+    <div class="lpcta"><a class="go" href="#apply">Launch with Reef Launchpad</a><a class="alt" href="#sales">See live sales</a></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Launchpad fee</div><div class="v">2%</div><div class="s">of the BDAG raised, only if it launches</div></div>
+      <div class="stat"><div class="k">LP lock</div><div class="v">12 months</div><div class="s">held inside the sale contract</div></div>
+      <div class="stat"><div class="k">If it doesn't launch</div><div class="v">Full refund</div><div class="s">every BDAG back to buyers</div></div>
+      <div class="stat"><div class="k">Beta cap</div><div class="v">5M BDAG</div><div class="s">per sale, until an independent review</div></div>
+    </div>
+  </section>
+  <p class="lpbeta">BETA &mdash; unaudited, capped launchpad (<a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review</a>) on an early-stage chain. US and UK persons may not take part.</p>
+
+  <section class="block" id="sales">
+    <div class="sechead"><h2>Live sales</h2><p>Only sales Reef has listed. Always check the contract address on the sale page.</p></div>
+    <div id="saleList"><div class="empty">Loading&hellip;</div></div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="sechead"><h2>How a sale works</h2><p>One contract per sale. No owner, no admin, and no way for anyone to take the BDAG.</p></div>
+    <ol class="steps">
+      <li><b>The project deposits first.</b> <span class="muted">Every token buyers will claim, plus the tokens for the pools, plus a 1,000 REEF bond. Buying stays switched off until it's all in.</span></li>
+      <li><b>Buyers pay BDAG at a fixed price</b> during the sale window, up to a per-wallet cap. <span class="muted">They receive nothing yet.</span></li>
+      <li><b>Anyone launches the pool</b> once the sale ends (or hits its hard cap) above its soft cap. <span class="muted">2% goes to Reef's treasury. 80% of the rest opens a TOKEN/BDAG pool; 20% buys REEF for a TOKEN/REEF pool, only when that's safe, otherwise it all goes to TOKEN/BDAG. Every token not owed to a buyer goes to the dead address.</span></li>
+      <li><b>Buyers claim their tokens</b> whenever they like. <span class="muted">The LP stays locked in the sale contract for 12 months, then can only go to the named beneficiary.</span></li>
+      <li><b>If the sale fails, nobody loses BDAG.</b> <span class="muted">Under the soft cap, or not launched within 7 days of closing: every buyer refunds in full, and the project gets its tokens back.</span></li>
+    </ol>
+  </section>
+
+  <section class="block">
+    <div class="grid2">
+      <div class="card">
+        <h3>For buyers</h3>
+        <p class="muted small">What the contract guarantees, and what it can't.</p>
+        <ul class="ticks">
+          <li>BDAG can only go into the pools, to the 2% fee, or back to you as a refund</li>
+          <li>Every sale's terms are fixed at deployment and readable on-chain</li>
+          <li>The pools open at the advertised price and the LP is locked</li>
+          <li>Unsold tokens are burned, never kept by the team</li>
+        </ul>
+        <ul class="ticks warn" style="margin-top:12px">
+          <li>The contracts are not independently audited</li>
+          <li>After launch the token's price can fall well below what you paid</li>
+          <li>Part of the liquidity is a TOKEN/REEF pool, which also moves with REEF</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>For projects</h3>
+        <p class="muted small">A launch your buyers can check for themselves.</p>
+        <ul class="ticks">
+          <li>Sale contract set up, verified and listed with its own sale page</li>
+          <li>Two pools at launch: TOKEN/BDAG, plus TOKEN/REEF when it's safe</li>
+          <li>You set the prices, caps and dates; Reef's standard terms cover the rest</li>
+        </ul>
+        <ul class="ticks warn" style="margin-top:12px">
+          <li>Deposit the sale tokens and a 1,000 REEF bond before it opens</li>
+          <li>Hand out no tokens before launch; the bond is burned if the launch is blocked</li>
+          <li>A standard ERC-20 only, and no promises about price</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="terms">
+    <div class="sechead"><h2>Standard terms</h2><p>The same for every Reef Launchpad sale. The sale page switches buying off if a contract doesn't match them.</p></div>
+    <div class="card">
+      <dl class="terms">
+        <dt>Launchpad fee</dt><dd>2% of the BDAG raised<small>to Reef's treasury, taken only if the sale launches</small></dd>
+        <dt>Pools at launch</dt><dd>80% TOKEN/BDAG · 20% TOKEN/REEF<small>REEF pool only while REEF/BDAG holds 10M+ BDAG and REEF's price is within 5% of its average</small></dd>
+        <dt>LP lock</dt><dd>12 months from launch<small>inside the sale contract</small></dd>
+        <dt>Leftover tokens</dt><dd>Burned<small>sent to the dead address at launch</small></dd>
+        <dt>Project bond</dt><dd>1,000 REEF<small>returned after a good launch or a missed soft cap; burned only if a launch is blocked</small></dd>
+        <dt>Refunds</dt><dd>Full, in BDAG<small>at the close if under the soft cap, or 7 days after if not launched</small></dd>
+        <dt>Beta cap</dt><dd>5,000,000 BDAG per sale<small>until an independent review</small></dd>
+        <dt>Set by each project</dt><dd>Prices, caps, window<small>sale price, opening price (at least the sale price), soft and hard cap, per-wallet cap</small></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="beta">
+    <div class="note warn"><b>Why "beta".</b> The sale contract hasn't had an independent audit yet. It has been through extensive testing (random-action fuzzing of every way a sale can go, and a full browser test of the sale page), and the builder's own <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.REVIEW.md" target="_blank" rel="noopener">self-review and results</a> are public, as is the <a href="https://github.com/benjiprojects1404-maker/reef-dex-site/blob/main/contracts/contracts/reef/ReefLaunchSale.sol" target="_blank" rel="noopener">source</a>. Fees from the first launches go towards an independent review; the 5M BDAG cap comes off after that. Until then, only use BDAG you're fully prepared to lose.</div>
+  </section>
+
+  <section class="block" id="apply">
+    <div class="sechead"><h2>Launch with Reef Launchpad</h2><p>During the beta, launches are set up as part of Undercurrent Works' build and launch service.</p></div>
+    <div class="card">
+      <p style="margin-top:0">Tell us about your token: what it is, the team, how much you want to raise and when. We check the token and the project, agree the sale settings with you, then deploy, verify and list the sale. You'll sign short beta terms first. Projects and buyers in the US and UK can't take part.</p>
+      <div class="lpcta" style="margin-top:6px"><a class="go" href="mailto:benjamin@chordotc.com?subject=Reef%20Launchpad%20enquiry" data-contact="Reef Launchpad enquiry">Email Undercurrent Works</a><a class="alt" href="https://benjiprojects1404-services.pages.dev" target="_blank" rel="noopener">Services and prices</a></div>
+      <p class="muted small" style="margin:14px 0 0">Want to launch on your own instead, with no fee? The free <a href="/launch/">launch guide</a> shows how to deploy a token, open its BDAG pool and lock the liquidity yourself.</p>
+    </div>
+  </section>
+ </div>
+</div>
+
+<div class="view lp" data-view="partners" id="view-partners" hidden>
+ <div class="wrap">
+  <section class="block" id="partners">
+    <div class="sechead"><h2>Partners</h2><p>Credited for helping Reef grow. Nobody can buy a token placement or a say over the contracts.</p></div>
+    <div class="pgrid">
+      <div class="card pcard">
+        <h3>Audit partner</h3>
+        <p class="small"><b>You give:</b> Review the Launchpad sale contract (about 360 lines, tests and self-review included) at a discount or for credit.</p>
+        <p class="small"><b>You get:</b> An &ldquo;Audited by&rdquo; credit here and on every sale page, your logo below, and a case study.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20audit" data-contact="Reef partner: audit">Email about this</a>
+      </div>
+      <div class="card pcard">
+        <h3>Launch partner</h3>
+        <p class="small"><b>You give:</b> Introduce projects that want to launch: communities, KOLs and agencies.</p>
+        <p class="small"><b>You get:</b> 25% of the 2% launchpad fee (0.5% of the BDAG raised) on every sale you introduce that launches, paid in BDAG within 7 days.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20launch" data-contact="Reef partner: launch">Email about this</a>
+      </div>
+      <div class="card pcard">
+        <h3>Infrastructure partner</h3>
+        <p class="small"><b>You give:</b> Reliable service on chain 1404: an RPC endpoint, explorer, wallet or mining pool.</p>
+        <p class="small"><b>You get:</b> A &ldquo;Built with&rdquo; listing with your logo in the docs, on the RPC status page and here.</p>
+        <a class="pbtn" href="mailto:benjamin@chordotc.com?subject=Reef%20partner:%20infrastructure" data-contact="Reef partner: infrastructure">Email about this</a>
+      </div>
+    </div>
+    <p class="muted small" style="margin:12px 0 0">Partners have no say over listings, the contracts or the fee split, and Reef's token rankings stay purely on-chain. Launch referrals count for sales that launch within 6 months of the first introduction; projects still go through normal vetting. <span id="partnerList">No partners listed yet.</span></p>
+  </section>
+ </div>
+</div>
+
+<div class="view" data-view="airdrop" id="view-airdrop" hidden>
+  <div class="narrow">
+    <div class="card presalecard"><b>The REEF/BDAG pool is live.</b> Presale buyers: <a href="/reef/#buy">claim your REEF &rarr;</a> <span class="adbar">Airdrop claims are open until Thu 4 Feb 2027, just below. <a href="/reef/#airdrop">Rules</a></span></div>
+    <div class="card" id="airdropCard">
       <h3>REEF airdrop check</h3>
       <p class="hint" style="margin-top:6px">Check shows which of a wallet's Reef actions matched the airdrop rules. The final list from the 6 Nov snapshot is <a href="/reef/airdrop.csv">published</a>: 20 wallets, 79,800 REEF.</p>
       <div class="adrow"><input id="adAddr" placeholder="0x… wallet address" spellcheck="false" autocomplete="off" aria-label="Wallet address to check"><button type="button" class="qbtn" id="adBtn" onclick="runAirdropCheck()">Check</button><button type="button" class="qbtn claim" id="adClaim" onclick="runAirdropClaim()" disabled aria-describedby="adClaimNote">Claim REEF</button></div>
@@ -659,30 +918,10 @@ nav.tabs a:hover{color:var(--text)}
       <p class="hint" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">Also on Reef: <a href="/token/">token safety reports</a> &middot; <a href="/cards/">COOKED &times; NOCAP cards</a> &middot; <a href="/launch/">Launch your own token</a> with a locked BDAG pool.</p>
       <div id="adOut" class="adout" aria-live="polite"></div>
     </div>
-    </div>
-    <div class="col side">
-      <div class="card">
-      <h3>Contracts</h3>
-      <div class="contracts">
-        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener">Router &middot; 0xbd6fbA&hellip;Cc76</a><button type="button" class="copybtn" data-copy="0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" aria-label="Copy address">Copy</button></div>
-        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x9603042044b6B1A1637c508F731ba01219142239" target="_blank" rel="noopener">Factory &middot; 0x960304&hellip;2239</a><button type="button" class="copybtn" data-copy="0x9603042044b6B1A1637c508F731ba01219142239" aria-label="Copy address">Copy</button></div>
-        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
-      </div>
-      <p class="hint">Always check these against the source you trust before approving a large amount.</p>
-    </div>
-    </div>
   </div>
-  <section class="uses" aria-label="What you can do on Reef">
-  <h2>What you can do on Reef</h2>
-  <div class="usegrid">
-    <a class="use launchuse" href="/launchpad/"><b>Launch a token</b><span>Fixed-price sale into locked pools on Reef Launchpad, or no code in The Kitchen, or free with the guide.</span><i>Reef Launchpad &rarr;</i></a>
-    <a class="use" href="/docs/#liquidity"><b>Provide liquidity</b><span>Add both sides of a pool and earn 0.25% of its trades. Impermanent loss can outweigh the fees.</span><i>How liquidity works &rarr;</i></a>
-    <a class="use" href="/pairs/"><b>Check a pool</b><span>Live depth, 24h volume, recent swaps and how much of the liquidity is locked or burned.</span><i>Pair pages &rarr;</i></a>
-    <a class="use" href="/lock/"><b>Lock liquidity</b><span>Lock LP tokens or any token for 30 days to 10 years. Nobody can unlock early, including Reef.</span><i>Reef Lock &rarr;</i></a>
-    <a class="use" href="/token/"><b>Token safety report</b><span>Paste any token on chain 1404: what its code lets the owner do, holders and locked liquidity.</span><i>Check a token &rarr;</i></a>
-    <a class="use" href="/pay/"><b>Get paid</b><span>Send someone a link or QR code for BDAG or any token on Reef. Wallet to wallet, nothing held.</span><i>Make a payment link &rarr;</i></a>
-  </div>
-</section>
+</div>
+
+<div class="view" data-view="safety" id="view-safety" hidden>
   <section class="safety" id="safety" aria-label="Safety and disclaimers">
     <h2>Safety</h2>
     <p class="gist"><b>Beta, not independently audited, on an early-stage chain.</b> Reef never holds your funds: you review and sign every transaction. <a href="/security/">Security review and tests</a></p>
@@ -744,6 +983,17 @@ nav.tabs a:hover{color:var(--text)}
     </details>
   </div>
   </section>
+  <div class="narrow wide">
+    <div class="card">
+      <h3>Contracts</h3>
+      <div class="contracts">
+        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" target="_blank" rel="noopener">Router &middot; 0xbd6fbA&hellip;Cc76</a><button type="button" class="copybtn" data-copy="0xbd6fbA41Ab84292163A599510a12d6Bf8B7CCc76" aria-label="Copy address">Copy</button></div>
+        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x9603042044b6B1A1637c508F731ba01219142239" target="_blank" rel="noopener">Factory &middot; 0x960304&hellip;2239</a><button type="button" class="copybtn" data-copy="0x9603042044b6B1A1637c508F731ba01219142239" aria-label="Copy address">Copy</button></div>
+        <div class="crow"><a href="https://explorer.east.bdag-us.org/address/0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" target="_blank" rel="noopener">WBDAG &middot; 0x62ba5c&hellip;1FBA</a><button type="button" class="copybtn" data-copy="0x62ba5c4F067989a7f6644488C875bEa69Bfa1FBA" aria-label="Copy address">Copy</button></div>
+      </div>
+      <p class="hint">Always check these against the source you trust before approving a large amount.</p>
+    </div>
+  </div>
 </div>
 
 <footer class="appfoot">
@@ -753,9 +1003,22 @@ nav.tabs a:hover{color:var(--text)}
 <nav class="bottomnav" aria-label="Sections">
   <a data-view="swap" class="on" href="#swap"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v14M7 18l-3-3M7 18l3-3M17 20V6M17 6l-3 3M17 6l3 3"/></svg><span>Swap</span></a>
   <a data-view="pools" href="#pools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c2 0 2-1.5 4.5-1.5S10 15 12 15s2-1.5 4.5-1.5S19 15 21 15M3 19c2 0 2-1.5 4.5-1.5S10 19 12 19s2-1.5 4.5-1.5S19 19 21 19M8 11V5h8v6"/></svg><span>Pools</span></a>
-  <a href="/launchpad/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 2 5 5.5 5 9.5L15 15H9l-2-2.5C7 8.5 9 5 12 3ZM12 10.5a1.5 1.5 0 1 0 0-.01M9 15l-2 4 3.5-1.5M15 15l2 4-3.5-1.5"/></svg><span>Launch</span></a>
-  <a data-view="more" href="#more"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></a>
+  <a data-view="launch" href="#launch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 2 5 5.5 5 9.5L15 15H9l-2-2.5C7 8.5 9 5 12 3ZM12 10.5a1.5 1.5 0 1 0 0-.01M9 15l-2 4 3.5-1.5M15 15l2 4-3.5-1.5"/></svg><span>Launchpad</span></a>
+  <a data-view="partners" href="#partners"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5M14.5 14.6c.5-.1 1-.1 1.5-.1 3 0 5.4 2.1 6 5.5"/></svg><span>Partners</span></a>
 </nav>
+
+<dialog class="contact" id="contactDlg" aria-labelledby="contactTitle">
+  <div class="cbox">
+    <button type="button" class="close" id="contactClose" aria-label="Close">&times;</button>
+    <h3 id="contactTitle">Get in touch</h3>
+    <p class="subj">Subject: <b id="contactSubj"></b></p>
+    <div class="caddr"><code id="contactAddr">benjamin@chordotc.com</code><button type="button" class="copy" id="contactCopy">Copy</button></div>
+    <a class="copt main" id="contactGmail" href="#" target="_blank" rel="noopener">Write in Gmail</a>
+    <a class="copt" id="contactMail" href="#">Use my email app</a>
+    <a class="copt" href="https://t.me/undercurrentworks" target="_blank" rel="noopener">Message on Telegram</a>
+    <p class="hint">Based in Thailand (UTC+7).</p>
+  </div>
+</dialog>
 
 <!-- Token picker -->
 <dialog id="tokDialog">
@@ -1449,13 +1712,15 @@ function renderTokButtons() {
 // ---------- Tabs ----------
 // Sections (27 Nov 2026): Swap, Pools and More are views of this page (#swap, #pools, #more); Launch is /launchpad/.
 // Old links still land: #faq and #safety open More at that spot.
-const VIEWS = ["swap", "pools", "more"];
+const VIEWS = ["swap", "pools", "launch", "partners", "airdrop", "safety"];
 function setView(v, opts = {}) {
   if (!VIEWS.includes(v)) v = "swap";
   document.querySelectorAll(".view").forEach((el) => { el.hidden = el.dataset.view !== v; });
   document.body.dataset.view = v;
   document.querySelectorAll("nav.tabs a[data-view], .bottomnav a[data-view]").forEach((a) => a.classList.toggle("on", a.dataset.view === v));
   if (v === "pools") { mode = "pool"; refreshPool(); } else if (v === "swap") mode = "swap";
+  if (v === "launch" && !setView.salesLoaded && window.loadSales) { setView.salesLoaded = true; window.loadSales(); }
+  closeMenu();
   if (opts.hash !== false) { const h = "#" + v; if (location.hash !== h && !(v === "swap" && !location.hash)) history.replaceState(null, "", location.pathname + location.search + h); }
   if (!opts.keepScroll) window.scrollTo(0, 0);
 }
@@ -1463,7 +1728,9 @@ function viewForHash(h) {
   h = (h || "").replace(/^#/, "");
   if (VIEWS.includes(h)) return { view: h };
   if (h === "pool") return { view: "pools" };
-  if (h === "faq" || h === "safety") return { view: "more", anchor: h };
+  if (h === "launchpad" || h === "sales" || h === "apply") return { view: "launch", anchor: h === "launchpad" ? null : h };
+  if (h === "more") return { view: "safety" };
+  if (h === "faq") return { view: "safety", anchor: "faq" };
   return null;
 }
 function routeHash() {
@@ -1473,6 +1740,14 @@ function routeHash() {
   if (r.anchor) requestAnimationFrame(() => document.getElementById(r.anchor)?.scrollIntoView({ block: "start" }));
 }
 window.addEventListener("hashchange", routeHash);
+// Logo menu
+function closeMenu() { const m = document.getElementById("appMenu"), b = document.getElementById("brandBtn"); if (m && !m.hidden) { m.hidden = true; b.setAttribute("aria-expanded", "false"); } }
+document.getElementById("brandBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const m = document.getElementById("appMenu"); m.hidden = !m.hidden; e.currentTarget.setAttribute("aria-expanded", String(!m.hidden));
+});
+document.addEventListener("click", (e) => { if (!e.target.closest("#appMenu")) closeMenu(); else if (e.target.closest("a")) closeMenu(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
 function setMode(m) {
   mode = m;
   setView(m === "pool" ? "pools" : "swap");
@@ -2910,6 +3185,8 @@ function filterPools() {
   $("#poolCount").textContent = poolRows.length ? (q ? `${shown} of ${poolRows.length}` : `${poolRows.length}`) : "";
 }
 async function loadPoolList() {
+  // Only the latest call renders: an RPC switch can start a second load while the first is still running.
+  const gen = loadPoolList.gen = (loadPoolList.gen || 0) + 1;
   const list = $("#poolList");
   list.innerHTML = '<div class="empty">Loading pools…</div>';
   poolRows = [];
@@ -2936,6 +3213,9 @@ async function loadPoolList() {
     // Pin Reef's own REEF/BDAG pool to the top; the rest keep their on-chain order.
     const isPinned = (r) => r && [r.t0a, r.t1a].some((a) => a.toLowerCase() === AIRDROP_CFG.token.toLowerCase());
     rows.sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
+    if (gen !== loadPoolList.gen) return;
+    loadPoolList.tries = 0;
+    poolRows = [];
     list.innerHTML = "";
     for (const row of rows) {
       if (!row) continue;
@@ -2950,6 +3230,7 @@ async function loadPoolList() {
     }
     filterPools();
   } catch (e) {
+    if (gen !== loadPoolList.gen) return;
     // Public chain-1404 nodes are often slow on a cold start: try again a few times before giving up.
     loadPoolList.tries = (loadPoolList.tries || 0) + 1;
     if (loadPoolList.tries <= 3) { list.innerHTML = '<div class="empty">Loading pools&hellip; (retrying)</div>'; setTimeout(loadPoolList, 4000 * loadPoolList.tries); }
@@ -3274,6 +3555,44 @@ document.addEventListener("DOMContentLoaded", () => { loadTicker(); setInterval(
 document.addEventListener("DOMContentLoaded", loadTvl);
 document.addEventListener("DOMContentLoaded", init);
 
+</script>
+<script>
+window.loadSales = async function () {
+  const box = document.getElementById("saleList");
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const empty = '<div class="empty"><b style="color:var(--text)">No sales yet.</b> The first launches are for Undercurrent Works clients during the beta. Each listed sale will appear here with a link to its own page.</div>';
+  try {
+    const r = await fetch("/launch/sales.json", { cache: "no-store" });
+    const list = r.ok ? ((await r.json()).sales || []).filter((s) => s && s.id && s.name) : [];
+    box.innerHTML = list.length
+      ? '<div class="salegrid">' + list.map((s) => `<a class="sale" href="/launch/sale/?id=${encodeURIComponent(s.id)}"><b>${esc(s.name)}</b><span>${esc(s.about || "")}</span></a>`).join("") + "</div>"
+      : empty;
+  } catch (e) { box.innerHTML = empty; }
+};
+</script>
+<script>
+(function () {
+  const dlg = document.getElementById("contactDlg");
+  if (!dlg || typeof dlg.showModal !== "function") return; // old browsers keep the plain email link
+  const ADDR = "benjamin@chordotc.com";
+  const subj = document.getElementById("contactSubj"), gmail = document.getElementById("contactGmail"), mail = document.getElementById("contactMail"), copy = document.getElementById("contactCopy");
+  document.querySelectorAll("a[data-contact]").forEach((a) => a.addEventListener("click", (e) => {
+    e.preventDefault();
+    const s = a.getAttribute("data-contact");
+    subj.textContent = s;
+    gmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(ADDR) + "&su=" + encodeURIComponent(s);
+    mail.href = "mailto:" + ADDR + "?subject=" + encodeURIComponent(s);
+    copy.textContent = "Copy";
+    dlg.showModal();
+  }));
+  copy.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(ADDR); copy.textContent = "Copied"; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("contactAddr")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); copy.textContent = "Selected"; }
+  });
+  document.getElementById("contactClose").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }); // click outside closes
+  [gmail, mail].forEach((l) => l.addEventListener("click", () => setTimeout(() => dlg.close(), 300)));
+})();
 </script>
 </body>
 </html>
