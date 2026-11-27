@@ -1038,6 +1038,12 @@ nav.tabs a:hover{color:var(--text)}
 </dialog>
 
 <!-- Token picker -->
+<!-- Wallet messages: shown on every tab (the swap card is hidden on Pools, Launchpad and Partners) -->
+<dialog id="walletDialog" aria-labelledby="walletDlgTitle">
+  <div class="dhead"><h3 id="walletDlgTitle">Connect a wallet</h3><button class="dclose" type="button" aria-label="Close" onclick="document.getElementById('walletDialog').close()">&times;</button></div>
+  <div class="dbody" id="walletDlgBody"></div>
+</dialog>
+
 <dialog id="tokDialog">
   <div class="dhead"><h3>Select a token</h3><button class="dclose" onclick="document.getElementById('tokDialog').close()">&times;</button></div>
   <div class="dbody">
@@ -1461,12 +1467,20 @@ function walletAppLinks() {
   return '<a ' + st + ' href="' + mm + '">Open in MetaMask</a><a ' + st + ' href="' + tw + '">Open in Trust Wallet</a>';
 }
 function isMobileBrowser() { return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); }
+function walletNotice(title, html) {
+  const d = document.getElementById("walletDialog");
+  document.getElementById("walletDlgTitle").textContent = title;
+  document.getElementById("walletDlgBody").innerHTML = html;
+  if (typeof d.showModal === "function") { if (!d.open) d.showModal(); }
+  else alert(document.getElementById("walletDlgBody").textContent);
+}
 async function connect() {
   if (!window.ethereum) {
     if (isMobileBrowser()) {
-      showMsg("swap", "", "ok");
-      $("#swapMsg").innerHTML = "No wallet in this browser. Open this page in your wallet app:<br>" + walletAppLinks();
-    } else showMsg("swap", "No wallet found. Install MetaMask or a similar wallet, then reload.", "err");
+      walletNotice("Open Reef in your wallet", '<p class="hint" style="margin:0 0 6px">This browser has no wallet. On a phone, open Reef inside your wallet app&rsquo;s own browser and connect there:</p>' + walletAppLinks() + '<p class="hint" style="margin:12px 0 0">Or open your wallet app, go to its browser, and type <b>reefdex.fyi</b>.</p>');
+    } else {
+      walletNotice("No wallet found", '<p class="hint" style="margin:0">This browser has no wallet extension. Install <a href="https://metamask.io/download/" target="_blank" rel="noopener">MetaMask</a> or <a href="https://rabby.io" target="_blank" rel="noopener">Rabby</a>, then reload this page and press Connect wallet again.</p>');
+    }
     return;
   }
   try {
@@ -1482,7 +1496,12 @@ async function connect() {
     renderWallet();
     refreshAll();
   } catch (e) {
-    showMsg("swap", walletErr(e), "err");
+    const msg = e && e.code === -32002 ? "Your wallet already has a connection request open. Open the wallet and approve or reject it." : walletErr(e);
+    showMsg("swap", msg, "err");
+    if (msg !== "Request cancelled.") {
+      walletNotice("Couldn't connect", '<p class="hint" style="margin:0"></p>');
+      document.querySelector("#walletDlgBody p").textContent = msg;
+    }
   }
 }
 function onAccountsChanged(accs) {
