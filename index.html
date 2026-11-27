@@ -493,8 +493,6 @@ dialog.contact::backdrop{background:rgba(2,8,11,.6);backdrop-filter:blur(2px)}
 .narrow.wide{max-width:1080px}
 #view-safety .safety{margin-top:22px}
 /* Pools: add/remove liquidity on the left (first on phones), list and Top 5 on the right */
-.poolsgrid{grid-template-columns:400px minmax(0,1fr)}
-@media (max-width:860px){.poolsgrid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:760px){.appmenu{position:fixed;top:64px;left:10px;right:10px;width:auto}}
 
 /* ---------- App layout (27 Nov 2026): Swap / Pools / Launch / More, bottom bar on phones ---------- */
@@ -521,6 +519,8 @@ nav.tabs a:hover{color:var(--text)}
 .appfoot{max-width:1080px;margin:0 auto;padding:6px 16px 40px;color:var(--muted)}
 .appfoot .footlinks{font-size:13px;margin:0}
 .bottomnav{display:none}
+.poolsgrid{grid-template-columns:420px minmax(0,1fr)}
+@media (max-width:860px){.poolsgrid{grid-template-columns:minmax(0,1fr)}}
 .topwrap .rpcbtn{gap:0;white-space:nowrap}
 .topwrap .net{white-space:nowrap}
 @media (max-width:860px){
