@@ -503,6 +503,24 @@ nav.tabs a:hover{color:var(--text)}
 .betapill{font:700 10.5px "Instrument Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-text);border:1px solid var(--coral-soft);border-radius:999px;padding:3px 8px;text-decoration:none;white-space:nowrap}
 .view[hidden]{display:none!important}
 .swapwrap{max-width:480px;margin:0 auto;padding:22px 16px 28px}
+/* Swap | Limit switch and the Limit card (Nov 2026) */
+.tradeseg{display:flex;gap:16px}
+.tradeseg button{border:0;background:none;padding:0 0 8px;font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.01em;color:var(--muted);cursor:pointer;position:relative}
+.tradeseg button.on{color:var(--text)}
+.tradeseg button.on::after{content:"";position:absolute;left:0;bottom:0;width:26px;height:2px;border-radius:2px;background:var(--coral)}
+.limside{margin:0}
+.limside button{flex:1;padding:9px 10px;font-size:13px}
+.limside button[data-side="sell"].on{background:var(--coral);border-color:var(--coral)}
+.limtok{background:var(--card);color:var(--text);border:1px solid var(--line2);border-radius:12px;padding:8px 10px;font:600 14px "Instrument Sans",sans-serif;max-width:46%}
+.limquick{margin-top:10px;flex-wrap:wrap}
+.limsum{margin-top:12px;font-size:13px;line-height:1.6;color:var(--muted)}
+.limsum b{color:var(--text);font-weight:600}
+.limsum .row{display:flex;justify-content:space-between;gap:10px}
+.limsum .warn{color:var(--coral-text)}
+a.cta{text-align:center;text-decoration:none}
+a.cta[aria-disabled="true"]{background:var(--raised);color:var(--coral-text);pointer-events:none;box-shadow:inset 0 0 0 1px var(--coral-soft)}
+.limnote{font-size:12px;line-height:1.55;color:var(--muted);margin:12px 0 0}
+
 .swapsafe{margin:14px 0 0;font-size:12.5px;color:var(--muted);text-align:center}
 .swapsafe a{color:var(--coral-text);text-decoration:underline;text-underline-offset:2px}
 .poolsgrid,.moregrid{max-width:1080px;margin:0 auto;padding:22px 16px 20px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
@@ -666,7 +684,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 <div class="view" data-view="swap" id="view-swap">
   <div class="swapwrap">
     <section class="card" id="swapCard">
-      <div class="panel-title"><h2>Swap</h2>
+      <div class="panel-title"><div class="tradeseg" role="tablist" aria-label="Order type"><button type="button" role="tab" data-trade="swap" class="on" aria-selected="true">Swap</button><button type="button" role="tab" data-trade="limit" aria-selected="false">Limit</button></div>
         <button class="settings-btn" title="Slippage settings" aria-controls="slipRow" aria-expanded="false" onclick="this.setAttribute('aria-expanded',document.getElementById('slipRow').classList.toggle('show'))">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
         </button>
@@ -723,6 +741,28 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
       <p class="swapsafe">Unaudited beta: only trade what you can afford to lose. <a href="#safety">Safety</a></p>
     </section>
+    <!-- Limit orders (Nov 2026): a limit order on Reef is a Handshake offer. Another trader fills it at the exact price;
+         nothing leaves the wallet until then, and it can be cancelled any time. Signed on handshakeotc.fyi. -->
+    <section class="card" id="limitCard" hidden>
+      <div class="panel-title"><div class="tradeseg" role="tablist" aria-label="Order type"><button type="button" role="tab" data-trade="swap" aria-selected="false">Swap</button><button type="button" role="tab" data-trade="limit" class="on" aria-selected="true">Limit</button></div></div>
+      <div class="slip limside" role="group" aria-label="Buy or sell"><button type="button" data-side="buy" class="on">Buy</button><button type="button" data-side="sell">Sell</button></div>
+      <div class="field" style="margin-top:12px">
+        <div class="row1"><span id="limAmtLabel">Amount to buy</span><span id="limPoolPx"></span></div>
+        <div class="row2">
+          <input id="limAmt" type="text" inputmode="decimal" placeholder="0.0" aria-label="Token amount">
+          <select id="limTok" class="limtok" aria-label="Token"></select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="row1"><span>Limit price, BDAG per token</span><span><button type="button" id="limUsePool">Use pool price</button></span></div>
+        <div class="row2"><input id="limPx" type="text" inputmode="decimal" placeholder="0.0" aria-label="Limit price in BDAG"></div>
+        <div class="slip limquick" id="limQuick"></div>
+      </div>
+      <div class="limsum" id="limSum" aria-live="polite"></div>
+      <a class="cta" id="limGo" href="https://handshakeotc.fyi/" target="_blank" rel="noopener" aria-disabled="true">Enter an amount</a>
+      <p class="limnote">A limit order here is a <b>Handshake</b> offer: another trader fills it at exactly your price, not the pool. Your side stays in your wallet until then, there's no expiry, and you can cancel any time. You sign it on Handshake, where the 0.25% Handshake fee is shown before you confirm. <a href="https://handshakeotc.fyi/" target="_blank" rel="noopener">See open offers</a></p>
+    </section>
+
   </div>
 </div>
 
@@ -1803,6 +1843,7 @@ function viewForHash(h) {
   h = (h || "").replace(/^#/, "");
   if (VIEWS.includes(h)) return { view: h };
   if (h === "pool") return { view: "pools" };
+  if (h === "limit") return { view: "swap", trade: "limit" };
   if (h === "launchpad" || h === "sales" || h === "apply") return { view: "launch", anchor: h === "launchpad" ? null : h };
   if (h === "more") return { view: "safety" };
   if (h === "faq") return { view: "safety", anchor: "faq" };
@@ -1812,6 +1853,7 @@ function routeHash() {
   const r = viewForHash(location.hash);
   if (!r) return;
   setView(r.view, { hash: false, keepScroll: !!r.anchor });
+  if (r.view === "swap" && window.setTrade) window.setTrade(r.trade || (location.hash === "#limit" ? "limit" : "swap"), false);
   if (r.anchor) requestAnimationFrame(() => document.getElementById(r.anchor)?.scrollIntoView({ block: "start" }));
 }
 window.addEventListener("hashchange", routeHash);
@@ -3667,6 +3709,70 @@ window.loadSales = async function () {
   document.getElementById("contactClose").addEventListener("click", () => dlg.close());
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); }); // click outside closes
   [gmail, mail].forEach((l) => l.addEventListener("click", () => setTimeout(() => dlg.close(), 300)));
+})();
+</script>
+<script>
+// Limit orders as Handshake offers. Reads pool prices from Reef's own API, builds the offer, and hands over to
+// handshakeotc.fyi (#new&t=…&g=…&b=…&a=…) where the person checks and signs it. Nothing is signed here.
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let side = "buy", pools = [], loaded = false;
+  const dec = (x, max = 18) => !(x > 0) ? "" : x.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: Math.min(max, 20) });
+  const show = (x) => !(x > 0) ? "0" : x >= 1000 ? x.toLocaleString("en-US", { maximumFractionDigits: 2 }) : x >= 1 ? x.toLocaleString("en-US", { maximumFractionDigits: 4 }) : x.toPrecision(4).replace(/0+$/, "").replace(/\.$/, "");
+  const num = (v) => { const n = Number(String(v || "").replace(/,/g, "").trim()); return n > 0 && isFinite(n) ? n : 0; };
+  const cur = () => pools.find((p) => p.token === $("limTok").value);
+  window.setTrade = function (t, push = true) {
+    $("swapCard").hidden = t === "limit"; $("limitCard").hidden = t !== "limit";
+    document.querySelectorAll(".tradeseg button").forEach((b) => { const on = b.dataset.trade === t; b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on)); });
+    if (push) history.replaceState(null, "", location.pathname + location.search + (t === "limit" ? "#limit" : "#swap"));
+    if (t === "limit") load();
+  };
+  document.querySelectorAll(".tradeseg button").forEach((b) => b.addEventListener("click", () => window.setTrade(b.dataset.trade)));
+  async function load() {
+    if (loaded) return; loaded = true;
+    try {
+      const j = await fetch("/api/v1/pairs", { signal: AbortSignal.timeout(12000) }).then((r) => r.json());
+      pools = (j.pairs || []).filter((p) => p.priceBDAG > 0).sort((a, b) => Number(b.liquidityBDAG) - Number(a.liquidityBDAG));
+      const sel = $("limTok"); sel.replaceChildren(...pools.map((p) => new Option(p.symbol, p.token)));
+      const want = new URLSearchParams(location.search).get("to"); if (want && pools.some((p) => p.token === want.toLowerCase())) sel.value = want.toLowerCase();
+      usePool();
+    } catch (e) { loaded = false; $("limSum").innerHTML = '<span class="warn">Couldn\'t load Reef\'s pool prices just now. Try again shortly.</span>'; }
+  }
+  function usePool() { const p = cur(); if (p) $("limPx").value = dec(p.priceBDAG, 12); update(); }
+  function quick() {
+    const p = cur(); const el = $("limQuick"); el.replaceChildren();
+    if (!p) return;
+    const steps = side === "buy" ? [-2, -5, -10] : [2, 5, 10];
+    for (const k of steps) { const b = document.createElement("button"); b.type = "button"; b.textContent = (k > 0 ? "+" : "") + k + "%"; b.onclick = () => { $("limPx").value = dec(p.priceBDAG * (1 + k / 100), 12); update(); }; el.append(b); }
+  }
+  function update() {
+    const p = cur(); const go = $("limGo");
+    $("limAmtLabel").textContent = side === "buy" ? "Amount to buy" : "Amount to sell";
+    $("limPoolPx").textContent = p ? "Pool: " + show(p.priceBDAG) + " BDAG" : "";
+    quick();
+    const amt = num($("limAmt").value), px = num($("limPx").value);
+    const off = p && px ? (px / p.priceBDAG - 1) * 100 : null;
+    if (!p || !amt || !px) { go.setAttribute("aria-disabled", "true"); go.textContent = !p ? "Loading pools…" : !amt ? "Enter an amount" : "Enter a price"; $("limSum").innerHTML = ""; return; }
+    const bdag = amt * px, sym = p.symbol;
+    const vs = Math.abs(off) < 0.05 ? "at the pool price" : Math.abs(off).toFixed(Math.abs(off) < 10 ? 1 : 0) + "% " + (off > 0 ? "above" : "below") + " the pool";
+    const odd = side === "buy" ? off > 0.5 : off < -0.5;
+    const rows = side === "buy"
+      ? [["You give", show(bdag) + " BDAG"], ["You get", show(amt) + " " + sym], ["Your price", show(px) + " BDAG · " + vs]]
+      : [["You give", show(amt) + " " + sym], ["You get", show(bdag) + " BDAG"], ["Your price", show(px) + " BDAG · " + vs]];
+    const sum = $("limSum"); sum.replaceChildren();
+    for (const [k, v] of rows) { const d = document.createElement("div"); d.className = "row"; const a = document.createElement("span"); a.textContent = k; const b = document.createElement("b"); b.textContent = v; d.append(a, b); sum.append(d); }
+    if (odd) { const w = document.createElement("div"); w.className = "warn"; w.textContent = side === "buy" ? "That's above the pool price: a plain swap gets you " + sym + " cheaper right now." : "That's below the pool price: a plain swap sells your " + sym + " for more right now."; sum.append(w); }
+    const q = new URLSearchParams({ t: p.token, g: side === "buy" ? "bdag" : "token", b: dec(bdag), a: dec(amt, Math.min(18, Number(p.decimals) || 18)) });
+    go.href = "https://handshakeotc.fyi/#new&" + q.toString();
+    go.removeAttribute("aria-disabled");
+    go.textContent = (side === "buy" ? "Post buy order" : "Post sell order") + " on Handshake ↗";
+  }
+  document.querySelectorAll(".limside button").forEach((b) => b.addEventListener("click", () => { side = b.dataset.side; document.querySelectorAll(".limside button").forEach((x) => x.classList.toggle("on", x === b)); update(); }));
+  $("limTok").addEventListener("change", usePool);
+  $("limUsePool").addEventListener("click", usePool);
+  $("limAmt").addEventListener("input", update);
+  $("limPx").addEventListener("input", update);
+  if (location.hash === "#limit") window.setTrade("limit", false);
 })();
 </script>
 </body>
