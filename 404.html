@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8"><script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Page not found · Reef DEX</title>
 <meta name="robots" content="noindex">
@@ -13,6 +13,9 @@
 /* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
 :root{--head:#b9e4f8}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+/* theme switch: light by choice */
+:root[data-theme="light"]{--head:var(--text)}
+
 :root[data-theme="light"]{--head:var(--text)}
 h1,h2,h3,h4{color:var(--head)}
 

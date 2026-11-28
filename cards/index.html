@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <script>if(/^www\./i.test(location.hostname)){location.replace(location.protocol+"//"+location.hostname.replace(/^www\./i,"")+location.pathname+location.search+location.hash);}</script>
-<meta charset="utf-8">
+<meta charset="utf-8"><script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>COOKED × NOCAP Cards · Reef DEX</title>
 <link rel="canonical" href="https://reefdex.fyi/cards/">
@@ -23,6 +23,9 @@
 /* Titles: Reef sky in dark mode, normal text colour in light mode. Page rules that colour a heading still win. */
 :root{--head:#b9e4f8}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--head:var(--text)}}
+/* theme switch: light by choice */
+:root[data-theme="light"]{--head:var(--text)}
+
 :root[data-theme="light"]{--head:var(--text)}
 h1,h2,h3,h4{color:var(--head)}
 
@@ -31,6 +34,9 @@ h1,h2,h3,h4{color:var(--head)}
   --coral:#c23a5e;--coral-soft:rgba(194,58,94,.4);--glow1:rgba(10,113,161,.22);--glow2:rgba(127,208,247,.16);--bg:var(--ink);--accent:var(--polyp);
   --mustard:#FFC23A;--ketchup:#D7372B;--purple:#9B3FE0;--cyan:#4FCBE8}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}}
+/* theme switch: light by choice */
+:root[data-theme="light"]{--bg:#e6f4f6;--text:#0b1f24;--muted:#2a464d;--coral-text:#9c2f4a;--line:rgba(6,40,46,.14);--line2:rgba(6,40,46,.22);--card:#f5fcfd;--raised:#eaf6f8;--glow1:rgba(10,113,161,.10);--glow2:rgba(127,208,247,.08);--accent:#0a5f88}
+
 :root[data-theme="dark"]{--bg:var(--ink)}
 *{box-sizing:border-box}
 body{margin:0;color:var(--text);font:400 15px/1.6 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;background-color:var(--bg);
