@@ -585,7 +585,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .lp .card h3{font-size:16px}
 /* Even 16px spacing between every box: price strip, TVL bar, cards (27 Nov 2026) */
 .ticker{margin:16px auto 0}
-#view-pools .tvlbar{margin:16px auto 0}
+#view-swap .tvlbar{margin:16px auto 0}
 .poolsgrid{padding:16px 16px 20px;gap:16px}
 .swapwrap{padding-top:16px}
 .narrow{padding-top:16px}
@@ -629,6 +629,18 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 @media (max-width:760px){header.top .topwrap .themebtn{order:3;width:32px;height:32px}header.top .topwrap button.wallet{order:4}}
 @media (max-width:420px){header.top .topwrap{gap:6px;padding-left:12px;padding-right:12px}header.top .topwrap .themebtn{width:30px;height:30px}header.top .topwrap button.wallet{padding:9px 10px}header.top .topwrap .rpcbtn{padding:5px 7px;margin-left:0}}
 @media (max-width:380px){header.top .topwrap{gap:4px;padding-left:10px;padding-right:10px}}
+
+/* Swap tab: at a glance (TVL) + a compact Top 5 under the swap card. Pools tab is only pools (28 Nov 2026). */
+body[data-view="pools"] .ticker{display:none}
+#topCard{margin-top:16px;padding:14px 16px}
+#topCard h3{font:700 14px "Bricolage Grotesque",system-ui,sans-serif;margin:0}
+#topCard .toplist{gap:6px;margin-top:8px}
+#topCard .toplist li{padding:6px 10px;gap:8px;font-size:12.5px}
+#topCard .toplist .tk>span,#topCard .toplist .v .fdv{display:none}
+#topCard .toplist .safety{margin-top:3px}
+#topCard .toplist .sf{font-size:10px;padding:2px 5px}
+#topCard .toplist .v b{font-size:12.5px}
+#topCard .hint{font-size:11px;margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -704,6 +716,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 
 
 <div class="view" data-view="swap" id="view-swap">
+<section class="tvlbar" id="tvlBar" aria-label="Reef at a glance" hidden>
+  <div class="row">
+    <div class="tv" title="All Reef pools, valued in BDAG"><div class="k"><span class="full">Total value locked</span><span class="short">TVL</span></div><div class="v" id="tvlTotal">…</div></div>
+    <div class="tv" title="Pools live on Reef"><div class="k">Pools</div><div class="v" id="tvlPools">…</div></div>
+    <div class="tv" title="Share of pool liquidity locked or burned: it can't be pulled before its unlock date"><div class="k"><span class="full">Liquidity locked or burned</span><span class="short">Locked</span></div><div class="v" id="tvlSafe">…</div></div>
+  </div>
+</section>
   <div class="swapwrap">
     <section class="card" id="swapCard">
       <div class="panel-title"><div class="tradeseg" role="tablist" aria-label="Order type"><button type="button" role="tab" data-trade="swap" class="on" aria-selected="true">Swap</button><button type="button" role="tab" data-trade="limit" aria-selected="false">Limit</button></div>
@@ -784,18 +803,16 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       <a class="cta" id="limGo" href="https://handshakeotc.fyi/" target="_blank" rel="noopener" aria-disabled="true">Enter an amount</a>
       <p class="limnote">A limit order here is a <b>Handshake</b> offer: another trader fills it at exactly your price, not the pool. Your side stays in your wallet until then, there's no expiry, and you can cancel any time. You sign it on Handshake, where the 0.25% Handshake fee is shown before you confirm. <a href="https://handshakeotc.fyi/" target="_blank" rel="noopener">See open offers</a></p>
     </section>
+      <section class="card" id="topCard">
+      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
+      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
+      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
+    </section>
 
   </div>
 </div>
 
 <div class="view" data-view="pools" id="view-pools" hidden>
-<section class="tvlbar" id="tvlBar" aria-label="Reef at a glance" hidden>
-  <div class="row">
-    <div class="tv" title="All Reef pools, valued in BDAG"><div class="k"><span class="full">Total value locked</span><span class="short">TVL</span></div><div class="v" id="tvlTotal">…</div></div>
-    <div class="tv" title="Pools live on Reef"><div class="k">Pools</div><div class="v" id="tvlPools">…</div></div>
-    <div class="tv" title="Share of pool liquidity locked or burned: it can't be pulled before its unlock date"><div class="k"><span class="full">Liquidity locked or burned</span><span class="short">Locked</span></div><div class="v" id="tvlSafe">…</div></div>
-  </div>
-</section>
   <div class="poolsgrid">
     <div class="col side">
       <section class="card" id="poolCard" >
@@ -871,11 +888,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
       <h3>Pools <span class="poolcount" id="poolCount"></span></h3>
       <input class="poolsearch" id="poolSearch" type="search" placeholder="Search name, symbol or contract address" spellcheck="false" autocomplete="off" aria-label="Search pools by name, symbol or contract address">
       <ul class="poollist" id="poolList"><div class="empty">Loading pools&hellip;</div></ul>
-    </div>
-      <div class="card" id="topCard">
-      <h3>Top 5 tokens <span class="poolcount" id="topBasis"></span></h3>
-      <ol class="toplist" id="topList"><div class="empty">Loading&hellip;</div></ol>
-      <p class="hint" id="topNote">Ranked by BDAG traded through each token's BDAG pool. Rankings are not an endorsement: check the contract before trading.</p>
     </div>
     </div>
   </div>
@@ -3435,8 +3447,8 @@ async function loadTopTokens() {
     if (!rows || !rows.top || !rows.top.length) { list.innerHTML = '<div class="empty">No BDAG pools yet.</div>'; return; }
     basis.textContent = rows.byVol ? "· 24h volume" : "· by liquidity";
     $("#topNote").textContent = rows.byVol
-      ? "Ranked by BDAG traded through each token's BDAG pool in about the last 24 hours. Labels show how much of each pool's LP is locked or burned, and whether the token's source code is verified on the explorer. Not an endorsement: check the contract before trading."
-      : "No trades in the last 24 hours, so ranked by BDAG liquidity in each token's pool. Not an endorsement: check the contract before trading.";
+      ? "Ranked by BDAG traded in about the last 24 hours. Tap one to swap. Not an endorsement: check the contract first."
+      : "No trades in the last 24 hours, so ranked by pool liquidity. Tap one to swap. Not an endorsement: check the contract first.";
     const infos = await Promise.all(rows.top.map((x) => tokenInfoOrLabel(x.token)));
     const safety = await Promise.all(rows.top.map((x) => topSafety(x).catch(() => ({}))));
     const supplies = await Promise.all(rows.top.map((x) => new ethers.Contract(x.token, ["function totalSupply() view returns (uint256)"], ro).totalSupply().catch(() => null)));
@@ -3456,7 +3468,13 @@ async function loadTopTokens() {
       rep.addEventListener("click", (e) => e.stopPropagation());
       li.querySelector(".safety").appendChild(rep);
       li.title = `${t.name} · ${x.token}`;
-      li.onclick = () => selectPoolPair(t, { ...NATIVE });
+      li.onclick = () => { // opens the swap form: BDAG -> this token (28 Nov 2026)
+        if (window.setTrade) window.setTrade("swap", false);
+        if (mode !== "swap") setMode("swap");
+        tokFrom = { ...NATIVE }; tokTo = t;
+        renderTokButtons(); refreshSwapQuote(); refreshBalances();
+        document.getElementById("swapCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      };
       list.appendChild(li);
     });
   } catch (e) {
