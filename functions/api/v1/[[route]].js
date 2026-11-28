@@ -3,7 +3,9 @@
 //   GET /api/v1/pairs/<address>     one pool (by token or pool address, or "reef" / "nocap" / "cooked"), plus 24h volume and swaps
 //   GET /api/v1/tickers             every BDAG pool's price now and 24 hours ago (from its own Sync/Swap events), the % change,
 //                                   24h volume and swaps, and whether the pool is new (created in the last 7 days)
-// Every number is read from BlockDAG chain 1404 through public RPCs and cached for 60 seconds.
+// Every number is read from BlockDAG chain 1404 through public RPCs. Answers are cached at the edge and refreshed in the
+// background (tickers every 5 minutes, pairs every 2), so visitors never wait on the chain and the free plan's 10 ms CPU
+// limit is only touched by an occasional background refresh.
 // No keys, no writes, no tracking. CORS is open so any site can use it.
 
 const RPCS = ["https://rpc.community.bdag-us.org", "https://rpc.capedag.com", "https://rpc.bdagexplorer.com", "https://rpc.dvdmining.com", "https://rpc.escrowhubs.io"];
@@ -19,7 +21,8 @@ const LOCK_SEL = { lockedSummary: "0xa07aa30d", locksForToken: "0x75b99371", get
 const SWAP_TOPIC = "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822";
 const SYNC_TOPIC = "0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1";
 const PAIR_CREATED_TOPIC = "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9";
-const CACHE_SECONDS = 60;
+const FRESH_SECONDS = { tickers: 300, pairs: 120 }; // how long an answer is served before a background refresh
+const KEEP_SECONDS = 1800; // how long a stale answer may still be served while the chain is slow or a refresh fails
 
 const SEL = { allPairsLength: "0x574f2ba3", allPairs: "0x1e3dd18b", token0: "0x0dfe1681", token1: "0xd21220a7", getReserves: "0x0902f1ac", totalSupply: "0x18160ddd", balanceOf: "0x70a08231", symbol: "0x95d89b41", name: "0x06fdde03", decimals: "0x313ce567" };
 const word = (n) => BigInt(n).toString(16).padStart(64, "0");
@@ -171,13 +174,14 @@ async function tickers(pools) {
   const byPair = {};
   for (const l of ev) (byPair[l.address.toLowerCase()] ||= []).push(l);
   return pools.map((p) => {
-    const logs = (byPair[p.pair.toLowerCase()] || []).sort((x, y) => Number(BigInt(x.blockNumber) - BigInt(y.blockNumber)) || Number(BigInt(x.logIndex) - BigInt(y.logIndex)));
+    const logs = byPair[p.pair.toLowerCase()] || []; // eth_getLogs returns logs in block and log order already
     const now = p.priceBDAG;
     let before = now, vol = 0n, swaps = 0;
     const first = logs.find((l) => l.topics[0] === SYNC_TOPIC);
     if (first) {
       let r0 = big(first.data, 0), r1 = big(first.data, 1);
-      const sw = logs.find((l) => l.topics[0] === SWAP_TOPIC && l.transactionHash === first.transactionHash && BigInt(l.logIndex) === BigInt(first.logIndex) + 1n);
+      const fi = logs.indexOf(first), nx = logs[fi + 1];
+      const sw = nx && nx.topics[0] === SWAP_TOPIC && nx.transactionHash === first.transactionHash ? nx : null;
       if (sw) { r0 = r0 - big(sw.data, 0) + big(sw.data, 2); r1 = r1 - big(sw.data, 1) + big(sw.data, 3); }
       before = p._bdagIs0 ? priceOf(r0, r1, p.decimals) : priceOf(r1, r0, p.decimals);
     }
@@ -206,50 +210,65 @@ async function volume24h(p) {
   return { volume24hBDAG: units(vol, 18), swaps24h: ev.length, block: h };
 }
 
-const json = (body, status = 200) => new Response(JSON.stringify(body, null, 2), { status, headers: {
-  "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*", "cache-control": `public, max-age=${CACHE_SECONDS}` } });
+const json = (body, status = 200, maxAge = 60) => new Response(JSON.stringify(body), { status, headers: {
+  "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*", "cache-control": `public, max-age=${maxAge}` } });
 const clean = ({ _bdagIs0, ...rest }) => rest;
+
+// Builds one answer from the chain. Throws when the chain can't be read.
+async function build(parts) {
+  if (parts[0] === "tickers" && parts.length === 1) {
+    const pools = await readPairs();
+    return { kind: "tickers", body: { chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), tickers: await tickers(pools) } };
+  }
+  if (parts[0] !== "pairs" || parts.length > 2) return null;
+  const pools = await readPairs();
+  if (parts.length === 1) return { kind: "pairs", body: { chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), pairs: pools.map(clean) } };
+  const want = ALIASES[parts[1]] || parts[1];
+  const p = pools.find((x) => x.token === want || x.pair.toLowerCase() === want);
+  if (!p) return { kind: "pairs", status: 404, body: { error: "no BDAG pool on Reef for that token or pool address" } };
+  return { kind: "pairs", body: { chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), ...clean(p), ...(await volume24h(p)) } };
+}
+
+// Stored copies carry the time they were made, and are kept for KEEP_SECONDS so a stale copy can be served.
+async function store(cache, key, made, built) {
+  const text = JSON.stringify(built.body);
+  await cache.put(key, new Response(text, { status: built.status || 200, headers: {
+    "content-type": "application/json; charset=utf-8", "cache-control": `public, max-age=${KEEP_SECONDS}`, "x-made": String(made), "x-kind": built.kind } }));
+  return text;
+}
+const refreshing = new Set(); // one background refresh per answer per isolate
 
 export async function onRequestGet(ctx) {
   const cache = caches.default;
-  const hit = await cache.match(ctx.request);
-  if (hit) return hit;
+  const url = new URL(ctx.request.url);
   const parts = (ctx.params.route || []).map((s) => s.toLowerCase());
-  let res;
-  try {
-    if (parts[0] === "tickers" && parts.length === 1) {
-      // Public nodes are slow or flaky at times; keep the last good answer for up to 30 minutes and serve it
-      // (marked stale) rather than an error. The 24h scan is the heaviest call in this API.
-      const lastKey = new Request(new URL("/api/v1/_last/tickers", ctx.request.url).toString());
-      try {
-        const pools = await readPairs();
-        res = json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), tickers: await tickers(pools) });
-        const keep = new Response(await res.clone().text(), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=1800" } });
-        ctx.waitUntil(cache.put(lastKey, keep));
-      } catch (e) {
-        const last = await cache.match(lastKey);
-        if (!last) throw e;
-        const body = await last.json();
-        return json({ ...body, stale: true }); // not cached, so the next request tries the chain again
-      }
-    } else if (parts[0] !== "pairs" || parts.length > 2) {
-      res = json({ error: "not found", endpoints: ["/api/v1/pairs", "/api/v1/pairs/{token|pool address, or reef|nocap|cooked}", "/api/v1/tickers"], docs: "https://reefdex.fyi/developers/" }, 404);
-    } else {
-      const pools = await readPairs();
-      if (parts.length === 1) {
-        res = json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), pairs: pools.map(clean) });
-      } else {
-        const want = ALIASES[parts[1]] || parts[1];
-        const p = pools.find((x) => x.token === want || x.pair.toLowerCase() === want);
-        res = p ? json({ chainId: 1404, quote: "BDAG", updated: new Date().toISOString(), ...clean(p), ...(await volume24h(p)) })
-                : json({ error: "no BDAG pool on Reef for that token or pool address" }, 404);
-      }
+  // One cache key per answer: query strings (cache-busters) don't force a fresh read of the chain.
+  const key = new Request(url.origin + "/api/v1/" + parts.join("/"));
+  const now = Math.floor(Date.now() / 1000);
+  const hit = await cache.match(key);
+  if (hit) {
+    const made = Number(hit.headers.get("x-made")) || 0, kind = hit.headers.get("x-kind") || "pairs";
+    const fresh = FRESH_SECONDS[kind] || 120, age = now - made;
+    if (age >= fresh && !refreshing.has(key.url)) {
+      // Serve the stored copy now; refresh it after the response is sent. If the refresh fails or runs out of CPU,
+      // the stored copy simply stays in place.
+      refreshing.add(key.url);
+      ctx.waitUntil(build(parts).then((b) => b && store(cache, key, Math.floor(Date.now() / 1000), b)).catch(() => {}).finally(() => refreshing.delete(key.url)));
     }
-  } catch (e) {
-    return json({ error: "couldn't read the chain just now; try again shortly" }, 503); // not cached
+    const body = await hit.text();
+    return new Response(body, { status: hit.status, headers: { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*",
+      "cache-control": `public, max-age=${Math.max(30, Math.min(fresh, fresh - age))}` } });
   }
-  ctx.waitUntil(cache.put(ctx.request, res.clone()));
-  return res;
+  let built;
+  try {
+    built = await build(parts);
+  } catch (e) {
+    return json({ error: "couldn't read the chain just now; try again shortly" }, 503, 0); // not stored
+  }
+  if (!built) return json({ error: "not found", endpoints: ["/api/v1/pairs", "/api/v1/pairs/{token|pool address, or reef|nocap|cooked}", "/api/v1/tickers"], docs: "https://reefdex.fyi/developers/" }, 404, 3600);
+  const text = await store(cache, key, now, built).catch(() => JSON.stringify(built.body));
+  return new Response(text, { status: built.status || 200, headers: { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*",
+    "cache-control": `public, max-age=${FRESH_SECONDS[built.kind] || 120}` } });
 }
 
 export function onRequestOptions() {
